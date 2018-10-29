@@ -374,20 +374,45 @@ height:50vh;
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2018/10/29/20181029/">
+            
+                <span>Java并发编程实战-第5章-基础构建模块</span>
+        </a>
+        <div class="abstract-content">
+            &#x672C;&#x7AE0;&#x4E2D;&#x8BB2;&#x4ECB;&#x7ECD;&#x5728;Java5&#x548C;6&#x4E2D;&#x5F15;&#x5165;&#x7684;&#x4E00;&#x4E9B;&#x6784;&#x5EFA;&#x5E76;&#x53D1;&#x6A21;&#x5757;&#xFF0C;&#x4EE5;&#x53CA;&#x5982...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/10/29</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class="abstract-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="读书笔记">读书笔记</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2018/10/28/20181028/">
             
                 <span>Java并发编程实战-第4章-对象的组合</span>
         </a>
         <div class="abstract-content">
-            在本章中涉及的组合模式中，将会把一些现有的线程安全组件组合成更大的程序，从而实现线程安全。
-设计线程安全的类我们可以通过封装来确保程序是线程安全的。线程安全的类的设计过程：
-
-找出构成对象状态的所有属性
-找出约束这些属性的不变性条件
-建立这些属性的并发访问策略（同步策略）
-
-比如我们想要设计出下面这样的线程安全的程序，需要什么样的过程？
-1234567891011121314@ThreadS...
+            &#x5728;&#x672C;&#x7AE0;&#x4E2D;&#x6D89;&#x53CA;&#x7684;&#x7EC4;&#x5408;&#x6A21;&#x5F0F;&#x4E2D;&#xFF0C;&#x5C06;&#x4F1A;&#x628A;&#x4E00;&#x4E9B;&#x73B0;&#x6709;&#x7684;&#x7EBF;&#x7A0B;&#x5B89;&#x51...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -420,10 +445,7 @@ height:50vh;
                 <span>Java并发编程实战-第3章-对象的共享</span>
         </a>
         <div class="abstract-content">
-            在上一章中介绍了如何通过同步来避免多个线程在同一时间访问相同数据，在这一章中将介绍如何共享和发布对象，从而能安全地被多个线程同时访问。
-可见性什么是内存可见性？可见性就是值一个线程修改了对象状态之后，其他线程能够看到发生的状态变化。然而，通常无法确定读操作的线程能适时地看见其他线程写入的值，所以需要同步。
-:anguished: 在没有同步情况下的共享变量
-12345678910111213...
+            &#x5728;&#x4E0A;&#x4E00;&#x7AE0;&#x4E2D;&#x4ECB;&#x7ECD;&#x4E86;&#x5982;&#x4F55;&#x901A;&#x8FC7;&#x540C;&#x6B65;&#x6765;&#x907F;&#x514D;&#x591A;&#x4E2A;&#x7EBF;&#x7A0B;&#x5728;&#x540C;&#x4E00;&#x65...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -456,13 +478,7 @@ height:50vh;
                 <span>Java并发编程实战-第2章-线程安全性</span>
         </a>
         <div class="abstract-content">
-            编写线程安全的代码 就是对共享的和可变的状态访问操作进行管理。那么什么是状态？
-状态是指存储在状态变量总的数据。比如某个HashMap的状态，不仅是HashMap本身,也包括存储的Map.Entry对象。对外部有影响的数据都能称为是状态。
-
-共享的 : 可以被多个线程同时访问的变量
-可变的 : 变量的值在生命周期内可以发生变化
-
-如果一个对象会被多个线程同时访问，那么他就需要是线程安全的，因...
+            &#x7F16;&#x5199;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x4EE3;&#x7801; &#x5C31;&#x662F;&#x5BF9;&#x5171;&#x4EAB;&#x7684;&#x548C;&#x53EF;&#x53D8;&#x7684;&#x72B6;&#x6001;&#x8BBF;&#x95EE;&#x64CD;&#x4...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -677,9 +693,22 @@ height:50vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 3
+        Total : 4
         </div>
         <!-- search  -->
         
@@ -696,6 +725,11 @@ height:50vh;
     
     <div class="archive-year"> 2018 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/29</span><a class="archive-post-title" href="/2018/10/29/20181029/">Java并发编程实战-第5章-基础构建模块</a>
+        </li>
     
     
         <li class="archive-post-item">
