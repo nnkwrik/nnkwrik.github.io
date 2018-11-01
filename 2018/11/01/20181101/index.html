@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="曽生">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="曽生">
+    
+    <meta name="keywords" content="nnkwrik,曽生,曾丽桦,野々川麗樺">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>并发操作合集-3.Synchronized使用指南 · 农场主的黑科技.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin="">
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin="">
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"输入关键字 :D","hits_empty":"没有找到相关信息 :(","hits_stats":"找到 ${hits} 个相关信息,耗时 ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'LXR3VBZBS6',
+                apiKey: '17d6d4ab4ba943bab3232eced0eea766',
+                indexName: 'index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">农场主的黑科技.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">并发操作合集-3.Synchronized使用指南</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href="/">农场主的黑科技.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:30vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/andrew-leu-1113236-unsplash.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            并发操作合集-3.Synchronized使用指南
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class="post-intro-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">3.4k</span>阅读时长: <span class="post-count reading-time">21 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2018/11/01</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <blockquote>
+<p><a href="https://github.com/nnkwrik/learn-java-concurrency" target="_blank" rel="noopener">&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;</a></p>
+</blockquote>
+<p>&#x8FD9;&#x7BC7;&#x6587;&#x7AE0;&#x5C06;&#x544A;&#x8BC9;&#x4F60;&#x5982;&#x4F55;&#x6B63;&#x786E;&#x7684;&#x4F7F;&#x7528;<em>synchronized</em>&#x5173;&#x952E;&#x5B57;&#x3002;&#x901A;&#x8FC7;&#x793A;&#x4F8B;&#x4EE3;&#x7801;&#x5F7B;&#x5E95;&#x4E86;&#x89E3;<em>synchronized</em>&#x5173;&#x952E;&#x5B57;&#x7684;&#x4F7F;&#x7528;&#x89C4;&#x5219;&#x548C;&#x4E00;&#x4E9B;&#x9690;&#x60A3;&#x3002;</p>
+<h2 id="1-Java&#x7684;&#x9501;"><a href="#1-Java&#x7684;&#x9501;" class="headerlink" title="1.Java&#x7684;&#x9501;"></a>1.Java&#x7684;&#x9501;</h2><h2 id="1-1-&#x9501;&#x7684;&#x5185;&#x5B58;&#x8BED;&#x4E49;"><a href="#1-1-&#x9501;&#x7684;&#x5185;&#x5B58;&#x8BED;&#x4E49;" class="headerlink" title="1.1 &#x9501;&#x7684;&#x5185;&#x5B58;&#x8BED;&#x4E49;"></a>1.1 &#x9501;&#x7684;&#x5185;&#x5B58;&#x8BED;&#x4E49;</h2><ul>
+<li>&#x9501;&#x53EF;&#x4EE5;&#x8BA9;&#x4E34;&#x754C;&#x533A;&#x4E92;&#x65A5;&#x6267;&#x884C;&#xFF0C;&#x8FD8;&#x53EF;&#x4EE5;&#x8BA9;&#x91CA;&#x653E;&#x9501;&#x7684;&#x7EBF;&#x7A0B;&#x5411;&#x540C;&#x4E00;&#x4E2A;&#x9501;&#x7684;&#x7EBF;&#x7A0B;&#x53D1;&#x9001;&#x6D88;&#x606F;</li>
+<li>&#x9501;&#x7684;&#x91CA;&#x653E;&#x8981;&#x9075;&#x5FAA;Happens-before&#x539F;&#x5219;&#xFF08;<code>&#x9501;&#x89C4;&#x5219;&#xFF1A;&#x89E3;&#x9501;&#x5FC5;&#x7136;&#x53D1;&#x751F;&#x5728;&#x968F;&#x540E;&#x7684;&#x52A0;&#x9501;&#x4E4B;&#x524D;</code>&#xFF09;</li>
+<li>&#x9501;&#x5728;Java&#x4E2D;&#x7684;&#x5177;&#x4F53;&#x8868;&#x73B0;&#x662F; <code>Synchronized</code> &#x548C; <code>Lock</code></li>
+</ul>
+<h2 id="2-Synchronized&#x7684;&#x7EFC;&#x8FF0;"><a href="#2-Synchronized&#x7684;&#x7EFC;&#x8FF0;" class="headerlink" title="2.Synchronized&#x7684;&#x7EFC;&#x8FF0;"></a>2.Synchronized&#x7684;&#x7EFC;&#x8FF0;</h2><ul>
+<li><strong>&#x540C;&#x6B65;&#x673A;&#x5236;&#xFF1A;</strong> synchronized&#x662F;Java&#x540C;&#x6B65;&#x673A;&#x5236;&#x7684;&#x4E00;&#x79CD;&#x5B9E;&#x73B0;&#xFF0C;&#x5373;&#x4E92;&#x65A5;&#x9501;&#x673A;&#x5236;&#xFF0C;&#x5B83;&#x6240;&#x83B7;&#x5F97;&#x7684;&#x9501;&#x53EB;&#x505A;&#x4E92;&#x65A5;&#x9501;</li>
+<li><strong>&#x4E92;&#x65A5;&#x9501;&#xFF1A;</strong> &#x6307;&#x7684;&#x662F;&#x6BCF;&#x4E2A;&#x5BF9;&#x8C61;&#x7684;&#x9501;&#x4E00;&#x6B21;&#x53EA;&#x80FD;&#x5206;&#x914D;&#x7ED9;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#xFF0C;&#x540C;&#x4E00;&#x65F6;&#x95F4;&#x53EA;&#x80FD;&#x7531;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x5360;&#x7528;</li>
+<li><strong>&#x4F5C;&#x7528;&#xFF1A;</strong> synchronized&#x7528;&#x4E8E;&#x4FDD;&#x8BC1;&#x540C;&#x4E00;&#x65F6;&#x523B;&#x53EA;&#x80FD;&#x7531;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x8FDB;&#x5165;&#x5230;&#x4E34;&#x754C;&#x533A;&#xFF0C;&#x540C;&#x65F6;&#x4FDD;&#x8BC1;&#x5171;&#x4EAB;&#x53D8;&#x91CF;&#x7684;&#x53EF;&#x89C1;&#x6027;&#x3001;&#x539F;&#x5B50;&#x6027;&#x548C;&#x6709;&#x5E8F;&#x6027;</li>
+<li><strong>&#x4F7F;&#x7528;&#xFF1A;</strong> &#x5F53;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x8BD5;&#x56FE;&#x8BBF;&#x95EE;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x65B9;&#x6CD5;(&#x5757;)&#x65F6;&#xFF0C;&#x5B83;&#x9996;&#x5148;&#x5FC5;&#x987B;&#x5F97;&#x5230;&#x9501;&#xFF0C;&#x9000;&#x51FA;&#x6216;&#x629B;&#x51FA;&#x5F02;&#x5E38;&#x65F6;&#x5FC5;&#x987B;&#x91CA;&#x653E;&#x9501;</li>
+</ul>
+<h2 id="3-Synchronized&#x7684;&#x4F7F;&#x7528;"><a href="#3-Synchronized&#x7684;&#x4F7F;&#x7528;" class="headerlink" title="3.Synchronized&#x7684;&#x4F7F;&#x7528;"></a>3.Synchronized&#x7684;&#x4F7F;&#x7528;</h2><h2 id="3-1-Synchronized&#x7684;&#x4E09;&#x79CD;&#x5E94;&#x7528;&#x65B9;&#x5F0F;"><a href="#3-1-Synchronized&#x7684;&#x4E09;&#x79CD;&#x5E94;&#x7528;&#x65B9;&#x5F0F;" class="headerlink" title="3.1 Synchronized&#x7684;&#x4E09;&#x79CD;&#x5E94;&#x7528;&#x65B9;&#x5F0F;"></a>3.1 Synchronized&#x7684;&#x4E09;&#x79CD;&#x5E94;&#x7528;&#x65B9;&#x5F0F;</h2><p><img src="v2-31082db517ab544d94dae0714369802f_r.jpg" alt="preview"></p>
+<blockquote>
+<p><strong>&#x8865;&#x5145;&#xFF1A;</strong> &#x4F7F;&#x7528;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x5757;&#x7684;&#x597D;&#x5904;&#x5728;&#x4E8E;&#x5176;&#x4ED6;&#x7EBF;&#x7A0B;&#x4ECD;&#x53EF;&#x4EE5;&#x8BBF;&#x95EE;&#x975E;synchronized(this)&#x7684;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x5757;</p>
+</blockquote>
+<h2 id="3-2-Synchronized&#x7684;&#x4F7F;&#x7528;&#x89C4;&#x5219;"><a href="#3-2-Synchronized&#x7684;&#x4F7F;&#x7528;&#x89C4;&#x5219;" class="headerlink" title="3.2 Synchronized&#x7684;&#x4F7F;&#x7528;&#x89C4;&#x5219;"></a>3.2 Synchronized&#x7684;&#x4F7F;&#x7528;&#x89C4;&#x5219;</h2><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * &#x5148;&#x5B9A;&#x4E49;&#x4E00;&#x4E2A;&#x6D4B;&#x8BD5;&#x6A21;&#x677F;&#x7C7B;</span></span><br><span class="line"><span class="comment">  *     &#x8FD9;&#x91CC;&#x8865;&#x5145;&#x4E00;&#x4E2A;&#x77E5;&#x8BC6;&#x70B9;&#xFF1A;Thread.sleep(long)&#x4E0D;&#x4F1A;&#x91CA;&#x653E;&#x9501;</span></span><br><span class="line"><span class="comment">  *     &#x8BFB;&#x8005;&#x53EF;&#x53C2;&#x89C1;&#x7B14;&#x8005;&#x7684;`&#x5E76;&#x53D1;&#x756A;<span class="doctag">@Thread</span>&#x4E00;&#x6587;&#x901A;`</span></span><br><span class="line"><span class="comment">  */</span> </span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SynchronizedDemo</span> </span>{</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">staticMethod</span><span class="params">()</span></span>{</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x8BBF;&#x95EE;&#x4E86;&#x9759;&#x6001;&#x540C;&#x6B65;&#x65B9;&#x6CD5;staticMethod&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">        } <span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        }</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x7ED3;&#x675F;&#x8BBF;&#x95EE;&#x9759;&#x6001;&#x540C;&#x6B65;&#x65B9;&#x6CD5;staticMethod&quot;</span>);</span><br><span class="line">    }</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">staticMethod2</span><span class="params">()</span></span>{</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x8BBF;&#x95EE;&#x4E86;&#x9759;&#x6001;&#x540C;&#x6B65;&#x65B9;&#x6CD5;staticMethod2&quot;</span>);</span><br><span class="line">        <span class="keyword">synchronized</span> (SynchronizedDemo.class){</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x5728;staticMethod2&#x65B9;&#x6CD5;&#x4E2D;&#x83B7;&#x53D6;&#x4E86;SynchronizedDemo.class&quot;</span>);</span><br><span class="line">            <span class="keyword">try</span> {</span><br><span class="line">                Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">            } <span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">synMethod</span><span class="params">()</span></span>{</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x8BBF;&#x95EE;&#x4E86;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">        } <span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        }</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x7ED3;&#x675F;&#x8BBF;&#x95EE;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod&quot;</span>);</span><br><span class="line">    }</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">synMethod2</span><span class="params">()</span></span>{</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x8BBF;&#x95EE;&#x4E86;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod2&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">        } <span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        }</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x7ED3;&#x675F;&#x8BBF;&#x95EE;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod2&quot;</span>);</span><br><span class="line">    }</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">method</span><span class="params">()</span></span>{</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x8BBF;&#x95EE;&#x4E86;&#x666E;&#x901A;&#x65B9;&#x6CD5;method&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">        } <span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        }</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x7ED3;&#x675F;&#x8BBF;&#x95EE;&#x666E;&#x901A;&#x65B9;&#x6CD5;method&quot;</span>);</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">private</span> Object lock = <span class="keyword">new</span> Object();</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">chunkMethod</span><span class="params">()</span></span>{</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x8BBF;&#x95EE;&#x4E86;chunkMethod&#x65B9;&#x6CD5;&quot;</span>);</span><br><span class="line">        <span class="keyword">synchronized</span> (lock){</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x5728;chunkMethod&#x65B9;&#x6CD5;&#x4E2D;&#x83B7;&#x53D6;&#x4E86;lock&quot;</span>);</span><br><span class="line">            <span class="keyword">try</span> {</span><br><span class="line">                Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">            } <span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">chunkMethod2</span><span class="params">()</span></span>{</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x8BBF;&#x95EE;&#x4E86;chunkMethod2&#x65B9;&#x6CD5;&quot;</span>);</span><br><span class="line">        <span class="keyword">synchronized</span> (lock){</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x5728;chunkMethod2&#x65B9;&#x6CD5;&#x4E2D;&#x83B7;&#x53D6;&#x4E86;lock&quot;</span>);</span><br><span class="line">            <span class="keyword">try</span> {</span><br><span class="line">                Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">            } <span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">chunkMethod3</span><span class="params">()</span></span>{</span><br><span class="line">        System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x8BBF;&#x95EE;&#x4E86;chunkMethod3&#x65B9;&#x6CD5;&quot;</span>);</span><br><span class="line">        <span class="comment">//&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x5757;</span></span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>){</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x5728;chunkMethod3&#x65B9;&#x6CD5;&#x4E2D;&#x83B7;&#x53D6;&#x4E86;this&quot;</span>);</span><br><span class="line">            <span class="keyword">try</span> {</span><br><span class="line">                Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">            } <span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">stringMethod</span><span class="params">(String lock)</span></span>{</span><br><span class="line">        <span class="keyword">synchronized</span> (lock){</span><br><span class="line">            <span class="keyword">while</span> (<span class="keyword">true</span>){</span><br><span class="line">                System.out.println(Thread.currentThread().getName());</span><br><span class="line">                <span class="keyword">try</span> {</span><br><span class="line">                    Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">                } <span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="3-2-1-&#x666E;&#x901A;&#x65B9;&#x6CD5;&#x4E0E;&#x540C;&#x6B65;&#x65B9;&#x6CD5;&#x8C03;&#x7528;&#x4E92;&#x4E0D;&#x5173;&#x8054;"><a href="#3-2-1-&#x666E;&#x901A;&#x65B9;&#x6CD5;&#x4E0E;&#x540C;&#x6B65;&#x65B9;&#x6CD5;&#x8C03;&#x7528;&#x4E92;&#x4E0D;&#x5173;&#x8054;" class="headerlink" title="3.2.1 &#x666E;&#x901A;&#x65B9;&#x6CD5;&#x4E0E;&#x540C;&#x6B65;&#x65B9;&#x6CD5;&#x8C03;&#x7528;&#x4E92;&#x4E0D;&#x5173;&#x8054;"></a>3.2.1 &#x666E;&#x901A;&#x65B9;&#x6CD5;&#x4E0E;&#x540C;&#x6B65;&#x65B9;&#x6CD5;&#x8C03;&#x7528;&#x4E92;&#x4E0D;&#x5173;&#x8054;</h2><blockquote>
+<p><strong>&#x5F53;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x8FDB;&#x5165;&#x540C;&#x6B65;&#x65B9;&#x6CD5;&#x65F6;&#xFF0C;&#x5176;&#x4ED6;&#x7EBF;&#x7A0B;&#x53EF;&#x4EE5;&#x6B63;&#x5E38;&#x8BBF;&#x95EE;&#x5176;&#x4ED6;&#x975E;&#x540C;&#x6B65;&#x65B9;&#x6CD5;</strong></p>
+</blockquote>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{</span><br><span class="line">    SynchronizedDemo synDemo = <span class="keyword">new</span> SynchronizedDemo();</span><br><span class="line">    Thread thread1 = <span class="keyword">new</span> Thread(() -&gt; {</span><br><span class="line">        <span class="comment">//&#x8C03;&#x7528;&#x666E;&#x901A;&#x65B9;&#x6CD5;</span></span><br><span class="line">        synDemo.method();</span><br><span class="line">    });</span><br><span class="line">    Thread thread2 = <span class="keyword">new</span> Thread(() -&gt; {</span><br><span class="line">        <span class="comment">//&#x8C03;&#x7528;&#x540C;&#x6B65;&#x65B9;&#x6CD5;</span></span><br><span class="line">        synDemo.synMethod();</span><br><span class="line">    });</span><br><span class="line">    thread1.start();</span><br><span class="line">    thread2.start();</span><br><span class="line">}</span><br><span class="line">---------------------</span><br><span class="line"><span class="comment">//&#x8F93;&#x51FA;&#xFF1A;</span></span><br><span class="line">Thread-<span class="number">1</span>&#x8BBF;&#x95EE;&#x4E86;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod</span><br><span class="line">Thread-<span class="number">0</span>&#x8BBF;&#x95EE;&#x4E86;&#x666E;&#x901A;&#x65B9;&#x6CD5;method</span><br><span class="line">Thread-<span class="number">0</span>&#x7ED3;&#x675F;&#x8BBF;&#x95EE;&#x666E;&#x901A;&#x65B9;&#x6CD5;method</span><br><span class="line">Thread-<span class="number">1</span>&#x7ED3;&#x675F;&#x8BBF;&#x95EE;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod</span><br><span class="line"><span class="comment">//&#x5206;&#x6790;&#xFF1A;&#x901A;&#x8FC7;&#x7ED3;&#x679C;&#x53EF;&#x77E5;&#xFF0C;&#x666E;&#x901A;&#x65B9;&#x6CD5;&#x548C;&#x540C;&#x6B65;&#x65B9;&#x6CD5;&#x662F;&#x975E;&#x963B;&#x585E;&#x6267;&#x884C;&#x7684;</span></span><br></pre></td></tr></tbody></table></figure>
+<h2 id="3-2-2-&#x6240;&#x6709;&#x540C;&#x6B65;&#x65B9;&#x6CD5;&#x53EA;&#x80FD;&#x88AB;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x8BBF;&#x95EE;"><a href="#3-2-2-&#x6240;&#x6709;&#x540C;&#x6B65;&#x65B9;&#x6CD5;&#x53EA;&#x80FD;&#x88AB;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x8BBF;&#x95EE;" class="headerlink" title="3.2.2 &#x6240;&#x6709;&#x540C;&#x6B65;&#x65B9;&#x6CD5;&#x53EA;&#x80FD;&#x88AB;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x8BBF;&#x95EE;"></a>3.2.2 &#x6240;&#x6709;&#x540C;&#x6B65;&#x65B9;&#x6CD5;&#x53EA;&#x80FD;&#x88AB;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x8BBF;&#x95EE;</h2><blockquote>
+<p><strong>&#x5F53;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x6267;&#x884C;&#x540C;&#x6B65;&#x65B9;&#x6CD5;&#x65F6;&#xFF0C;&#x5176;&#x4ED6;&#x7EBF;&#x7A0B;&#x4E0D;&#x80FD;&#x8BBF;&#x95EE;&#x4EFB;&#x4F55;&#x540C;&#x6B65;&#x65B9;&#x6CD5;</strong></p>
+</blockquote>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{</span><br><span class="line">    SynchronizedDemo synDemo = <span class="keyword">new</span> SynchronizedDemo();</span><br><span class="line">    Thread thread1 = <span class="keyword">new</span> Thread(() -&gt; {</span><br><span class="line">        synDemo.synMethod();</span><br><span class="line">        synDemo.synMethod2();</span><br><span class="line">    });</span><br><span class="line">    Thread thread2 = <span class="keyword">new</span> Thread(() -&gt; {</span><br><span class="line">        synDemo.synMethod2();</span><br><span class="line">        synDemo.synMethod();</span><br><span class="line">    });</span><br><span class="line">    thread1.start();</span><br><span class="line">    thread2.start();</span><br><span class="line">}</span><br><span class="line">---------------------</span><br><span class="line"><span class="comment">//&#x8F93;&#x51FA;&#xFF1A;</span></span><br><span class="line">Thread-<span class="number">0</span>&#x8BBF;&#x95EE;&#x4E86;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod</span><br><span class="line">Thread-<span class="number">0</span>&#x7ED3;&#x675F;&#x8BBF;&#x95EE;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod</span><br><span class="line">Thread-<span class="number">0</span>&#x8BBF;&#x95EE;&#x4E86;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod2</span><br><span class="line">Thread-<span class="number">0</span>&#x7ED3;&#x675F;&#x8BBF;&#x95EE;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod2</span><br><span class="line">Thread-<span class="number">1</span>&#x8BBF;&#x95EE;&#x4E86;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod2</span><br><span class="line">Thread-<span class="number">1</span>&#x7ED3;&#x675F;&#x8BBF;&#x95EE;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod2</span><br><span class="line">Thread-<span class="number">1</span>&#x8BBF;&#x95EE;&#x4E86;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod</span><br><span class="line">Thread-<span class="number">1</span>&#x7ED3;&#x675F;&#x8BBF;&#x95EE;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod</span><br><span class="line"><span class="comment">//&#x5206;&#x6790;&#xFF1A;&#x901A;&#x8FC7;&#x7ED3;&#x679C;&#x53EF;&#x77E5;&#xFF0C;&#x4EFB;&#x52A1;&#x7684;&#x6267;&#x884C;&#x662F;&#x963B;&#x585E;&#x7684;&#xFF0C;&#x663E;&#x7136;Thread-1&#x5FC5;&#x987B;&#x7B49;&#x5F85;Thread-0&#x6267;&#x884C;&#x5B8C;&#x6BD5;&#x4E4B;&#x540E;&#x624D;&#x80FD;&#x7EE7;&#x7EED;&#x6267;&#x884C;</span></span><br></pre></td></tr></tbody></table></figure>
+<h2 id="3-2-3-&#x540C;&#x4E00;&#x4E2A;&#x9501;&#x7684;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x5757;&#x540C;&#x4E00;&#x65F6;&#x523B;&#x53EA;&#x80FD;&#x88AB;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x8BBF;&#x95EE;"><a href="#3-2-3-&#x540C;&#x4E00;&#x4E2A;&#x9501;&#x7684;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x5757;&#x540C;&#x4E00;&#x65F6;&#x523B;&#x53EA;&#x80FD;&#x88AB;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x8BBF;&#x95EE;" class="headerlink" title="3.2.3 &#x540C;&#x4E00;&#x4E2A;&#x9501;&#x7684;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x5757;&#x540C;&#x4E00;&#x65F6;&#x523B;&#x53EA;&#x80FD;&#x88AB;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x8BBF;&#x95EE;"></a>3.2.3 &#x540C;&#x4E00;&#x4E2A;&#x9501;&#x7684;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x5757;&#x540C;&#x4E00;&#x65F6;&#x523B;&#x53EA;&#x80FD;&#x88AB;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x8BBF;&#x95EE;</h2><blockquote>
+<p><strong>&#x5F53;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x5757;&#x90FD;&#x662F;&#x540C;&#x4E00;&#x4E2A;&#x9501;&#x65F6;&#xFF0C;&#x65B9;&#x6CD5;&#x53EF;&#x4EE5;&#x88AB;&#x6240;&#x6709;&#x7EBF;&#x7A0B;&#x8BBF;&#x95EE;&#xFF0C;&#x4F46;&#x540C;&#x4E00;&#x4E2A;&#x9501;&#x7684;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x5757;&#x540C;&#x4E00;&#x65F6;&#x523B;&#x53EA;&#x80FD;&#x88AB;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x8BBF;&#x95EE;</strong></p>
+</blockquote>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{</span><br><span class="line">    SynchronizedDemo synDemo = <span class="keyword">new</span> SynchronizedDemo();</span><br><span class="line">    Thread thread1 = <span class="keyword">new</span> Thread(() -&gt; {</span><br><span class="line">        <span class="comment">//&#x8C03;&#x7528;&#x540C;&#x6B65;&#x5757;&#x65B9;&#x6CD5;</span></span><br><span class="line">        synDemo.chunkMethod();</span><br><span class="line">        synDemo.chunkMethod2();</span><br><span class="line">    });</span><br><span class="line">    Thread thread2 = <span class="keyword">new</span> Thread(() -&gt; {</span><br><span class="line">        <span class="comment">//&#x8C03;&#x7528;&#x540C;&#x6B65;&#x5757;&#x65B9;&#x6CD5;</span></span><br><span class="line">        synDemo.chunkMethod();</span><br><span class="line">        synDemo.chunkMethod2();</span><br><span class="line">    });</span><br><span class="line">    thread1.start();</span><br><span class="line">    thread2.start();</span><br><span class="line">}</span><br><span class="line">---------------------</span><br><span class="line"><span class="comment">//&#x8F93;&#x51FA;&#xFF1A;</span></span><br><span class="line">Thread-<span class="number">0</span>&#x8BBF;&#x95EE;&#x4E86;chunkMethod&#x65B9;&#x6CD5;</span><br><span class="line">Thread-<span class="number">1</span>&#x8BBF;&#x95EE;&#x4E86;chunkMethod&#x65B9;&#x6CD5;</span><br><span class="line">Thread-<span class="number">0</span>&#x5728;chunkMethod&#x65B9;&#x6CD5;&#x4E2D;&#x83B7;&#x53D6;&#x4E86;lock  </span><br><span class="line">...&#x505C;&#x987F;&#x7B49;&#x5F85;...</span><br><span class="line">Thread-<span class="number">1</span>&#x5728;chunkMethod&#x65B9;&#x6CD5;&#x4E2D;&#x83B7;&#x53D6;&#x4E86;lock</span><br><span class="line">...&#x505C;&#x987F;&#x7B49;&#x5F85;...</span><br><span class="line">Thread-<span class="number">0</span>&#x8BBF;&#x95EE;&#x4E86;chunkMethod2&#x65B9;&#x6CD5;</span><br><span class="line">Thread-<span class="number">0</span>&#x5728;chunkMethod2&#x65B9;&#x6CD5;&#x4E2D;&#x83B7;&#x53D6;&#x4E86;lock</span><br><span class="line">...&#x505C;&#x987F;&#x7B49;&#x5F85;...</span><br><span class="line">Thread-<span class="number">1</span>&#x8BBF;&#x95EE;&#x4E86;chunkMethod2&#x65B9;&#x6CD5;</span><br><span class="line">Thread-<span class="number">1</span>&#x5728;chunkMethod2&#x65B9;&#x6CD5;&#x4E2D;&#x83B7;&#x53D6;&#x4E86;lock</span><br><span class="line"><span class="comment">//&#x5206;&#x6790;&#x53EF;&#x77E5;&#xFF1A;</span></span><br><span class="line"><span class="comment">//1.&#x5BF9;&#x6BD4;18&#x884C;&#x548C;19&#x884C;&#x53EF;&#x77E5;&#xFF0C;&#x5373;&#x4F7F;&#x666E;&#x901A;&#x65B9;&#x6CD5;&#x6709;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x5757;&#xFF0C;&#x4F46;&#x65B9;&#x6CD5;&#x7684;&#x8BBF;&#x95EE;&#x662F;&#x975E;&#x963B;&#x585E;&#x7684;&#xFF0C;&#x4EFB;&#x4F55;&#x7EBF;&#x7A0B;&#x90FD;&#x53EF;&#x4EE5;&#x81EA;&#x7531;&#x8FDB;&#x5165;</span></span><br><span class="line"><span class="comment">//2.&#x5BF9;&#x6BD4;20&#x884C;&#x3001;22&#x884C;&#x4EE5;&#x53CA;25&#x884C;&#x548C;27&#x884C;&#x53EF;&#x77E5;&#xFF0C;&#x5BF9;&#x4E8E;&#x540C;&#x4E00;&#x4E2A;&#x9501;&#x7684;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x5757;&#x7684;&#x8BBF;&#x95EE;&#x4E00;&#x5B9A;&#x662F;&#x963B;&#x585E;&#x7684;</span></span><br></pre></td></tr></tbody></table></figure>
+<h2 id="3-2-4-&#x7EBF;&#x7A0B;&#x95F4;&#x540C;&#x65F6;&#x8BBF;&#x95EE;&#x540C;&#x4E00;&#x4E2A;&#x9501;&#x7684;&#x591A;&#x4E2A;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x7684;&#x6267;&#x884C;&#x987A;&#x5E8F;&#x4E0D;&#x5B9A;"><a href="#3-2-4-&#x7EBF;&#x7A0B;&#x95F4;&#x540C;&#x65F6;&#x8BBF;&#x95EE;&#x540C;&#x4E00;&#x4E2A;&#x9501;&#x7684;&#x591A;&#x4E2A;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x7684;&#x6267;&#x884C;&#x987A;&#x5E8F;&#x4E0D;&#x5B9A;" class="headerlink" title="3.2.4 &#x7EBF;&#x7A0B;&#x95F4;&#x540C;&#x65F6;&#x8BBF;&#x95EE;&#x540C;&#x4E00;&#x4E2A;&#x9501;&#x7684;&#x591A;&#x4E2A;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x7684;&#x6267;&#x884C;&#x987A;&#x5E8F;&#x4E0D;&#x5B9A;"></a>3.2.4 &#x7EBF;&#x7A0B;&#x95F4;&#x540C;&#x65F6;&#x8BBF;&#x95EE;&#x540C;&#x4E00;&#x4E2A;&#x9501;&#x7684;&#x591A;&#x4E2A;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x7684;&#x6267;&#x884C;&#x987A;&#x5E8F;&#x4E0D;&#x5B9A;</h2><ul>
+<li>&#x7EBF;&#x7A0B;&#x95F4;&#x540C;&#x65F6;&#x8BBF;&#x95EE;&#x540C;&#x4E00;&#x4E2A;&#x9501;&#x591A;&#x4E2A;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x7684;&#x6267;&#x884C;&#x987A;&#x5E8F;&#x4E0D;&#x5B9A;&#xFF0C;&#x5373;&#x4F7F;&#x662F;&#x4F7F;&#x7528;&#x540C;&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;&#x9501;&#xFF0C;&#x8FD9;&#x70B9;&#x8DDF;&#x540C;&#x6B65;&#x65B9;&#x6CD5;&#x6709;&#x5F88;&#x5927;&#x5DEE;&#x5F02;</li>
+<li>&#xFF1F;&#xFF1F;&#x8BFB;&#x8005;&#x53EF;&#x4EE5;&#x5148;&#x601D;&#x8003;&#x4E3A;&#x4EC0;&#x4E48;&#x4F1A;&#x51FA;&#x73B0;&#x8FD9;&#x6837;&#x7684;&#x95EE;&#x9898;&#xFF1F;&#xFF1F;</li>
+</ul>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{</span><br><span class="line">    SynchronizedDemo synDemo = <span class="keyword">new</span> SynchronizedDemo();</span><br><span class="line">    Thread thread1 = <span class="keyword">new</span> Thread(() -&gt; {</span><br><span class="line">        <span class="comment">//&#x8C03;&#x7528;&#x540C;&#x6B65;&#x5757;&#x65B9;&#x6CD5;</span></span><br><span class="line">        synDemo.chunkMethod();</span><br><span class="line">        synDemo.chunkMethod2();</span><br><span class="line">    });</span><br><span class="line">    Thread thread2 = <span class="keyword">new</span> Thread(() -&gt; {</span><br><span class="line">        <span class="comment">//&#x8C03;&#x7528;&#x540C;&#x6B65;&#x5757;&#x65B9;&#x6CD5;</span></span><br><span class="line">        synDemo.chunkMethod2();</span><br><span class="line">        synDemo.chunkMethod();</span><br><span class="line">    });</span><br><span class="line">    thread1.start();</span><br><span class="line">    thread2.start();</span><br><span class="line">}</span><br><span class="line">---------------------</span><br><span class="line"><span class="comment">//&#x8F93;&#x51FA;&#xFF1A;</span></span><br><span class="line">Thread-<span class="number">0</span>&#x8BBF;&#x95EE;&#x4E86;chunkMethod&#x65B9;&#x6CD5;</span><br><span class="line">Thread-<span class="number">1</span>&#x8BBF;&#x95EE;&#x4E86;chunkMethod2&#x65B9;&#x6CD5;</span><br><span class="line">Thread-<span class="number">0</span>&#x5728;chunkMethod&#x65B9;&#x6CD5;&#x4E2D;&#x83B7;&#x53D6;&#x4E86;lock</span><br><span class="line">...&#x505C;&#x987F;&#x7B49;&#x5F85;...</span><br><span class="line">Thread-<span class="number">0</span>&#x8BBF;&#x95EE;&#x4E86;chunkMethod2&#x65B9;&#x6CD5;</span><br><span class="line">Thread-<span class="number">1</span>&#x5728;chunkMethod2&#x65B9;&#x6CD5;&#x4E2D;&#x83B7;&#x53D6;&#x4E86;lock</span><br><span class="line">...&#x505C;&#x987F;&#x7B49;&#x5F85;...</span><br><span class="line">Thread-<span class="number">1</span>&#x8BBF;&#x95EE;&#x4E86;chunkMethod&#x65B9;&#x6CD5;</span><br><span class="line">Thread-<span class="number">0</span>&#x5728;chunkMethod2&#x65B9;&#x6CD5;&#x4E2D;&#x83B7;&#x53D6;&#x4E86;lock</span><br><span class="line">...&#x505C;&#x987F;&#x7B49;&#x5F85;...</span><br><span class="line">Thread-<span class="number">1</span>&#x5728;chunkMethod&#x65B9;&#x6CD5;&#x4E2D;&#x83B7;&#x53D6;&#x4E86;lock</span><br><span class="line"></span><br><span class="line"><span class="comment">//&#x5206;&#x6790;&#x53EF;&#x77E5;&#xFF1A;</span></span><br><span class="line"><span class="comment">//&#x73B0;&#x8C61;&#xFF1A;&#x5BF9;&#x6BD4;20&#x884C;&#x3001;22&#x884C;&#x548C;24&#x884C;&#x3001;25&#x884C;&#x53EF;&#x77E5;&#xFF0C;&#x867D;&#x7136;&#x662F;&#x540C;&#x4E00;&#x4E2A;lock&#x5BF9;&#x8C61;&#xFF0C;&#x4F46;&#x5176;&#x4E0D;&#x540C;&#x4EE3;&#x7801;&#x5757;&#x7684;&#x8BBF;&#x95EE;&#x662F;&#x975E;&#x963B;&#x585E;&#x7684;</span></span><br><span class="line"><span class="comment">//&#x539F;&#x56E0;&#xFF1A;&#x6839;&#x6E90;&#x5728;&#x4E8E;&#x9501;&#x7684;&#x91CA;&#x653E;&#x548C;&#x91CD;&#x65B0;&#x7ADE;&#x4E89;&#xFF0C;&#x5F53;Thread-0&#x8BBF;&#x95EE;&#x5B8C;chunkMethod&#x65B9;&#x6CD5;&#x540E;&#x4F1A;&#x5148;&#x91CA;&#x653E;&#x9501;&#xFF0C;&#x8FD9;&#x65F6;Thread-1&#x5C31;&#x6709;&#x673A;&#x4F1A;&#x80FD;&#x83B7;&#x53D6;&#x5230;&#x9501;&#x4ECE;&#x800C;&#x4F18;&#x5148;&#x6267;&#x884C;&#xFF0C;&#x4F9D;&#x6B21;&#x7C7B;&#x63A8;&#x5230;24&#x884C;&#x3001;25&#x884C;&#x65F6;&#xFF0C;Thread-0&#x53C8;&#x91CD;&#x65B0;&#x83B7;&#x53D6;&#x5230;&#x9501;&#x4F18;&#x5148;&#x6267;&#x884C;&#x4E86;</span></span><br><span class="line"><span class="comment">//&#x6CE8;&#x610F;&#xFF1A;&#x4F46;&#x6709;&#x4E00;&#x70B9;&#x662F;&#x5FC5;&#x987B;&#x7684;&#xFF0C;&#x5BF9;&#x4E8E;&#x540C;&#x4E00;&#x4E2A;&#x9501;&#x7684;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x5757;&#x7684;&#x8BBF;&#x95EE;&#x4E00;&#x5B9A;&#x662F;&#x963B;&#x585E;&#x7684;</span></span><br><span class="line"><span class="comment">//&#x8865;&#x5145;&#xFF1A;&#x540C;&#x6B65;&#x65B9;&#x6CD5;&#x4E4B;&#x6240;&#x6709;&#x4F1A;&#x88AB;&#x5168;&#x90E8;&#x963B;&#x585E;&#xFF0C;&#x662F;&#x56E0;&#x4E3A;synDemo&#x5BF9;&#x8C61;&#x4E00;&#x76F4;&#x88AB;&#x7EBF;&#x7A0B;&#x5728;&#x5185;&#x90E8;&#x628A;&#x6301;&#x4F4F;&#x5C31;&#x6CA1;&#x91CA;&#x653E;&#x8FC7;&#xFF0C;&#x8BBA;&#x628A;&#x6301;&#x4F4F;&#x7684;&#x91CD;&#x8981;&#x6027;&#xFF01;</span></span><br></pre></td></tr></tbody></table></figure>
+<h2 id="3-2-5-&#x4E0D;&#x540C;&#x9501;&#x4E4B;&#x95F4;&#x8BBF;&#x95EE;&#x975E;&#x963B;&#x585E;"><a href="#3-2-5-&#x4E0D;&#x540C;&#x9501;&#x4E4B;&#x95F4;&#x8BBF;&#x95EE;&#x975E;&#x963B;&#x585E;" class="headerlink" title="3.2.5 &#x4E0D;&#x540C;&#x9501;&#x4E4B;&#x95F4;&#x8BBF;&#x95EE;&#x975E;&#x963B;&#x585E;"></a>3.2.5 &#x4E0D;&#x540C;&#x9501;&#x4E4B;&#x95F4;&#x8BBF;&#x95EE;&#x975E;&#x963B;&#x585E;</h2><ul>
+<li><p>&#x7531;&#x4E8E;&#x4E09;&#x79CD;&#x4F7F;&#x7528;&#x65B9;&#x5F0F;&#x7684;&#x9501;&#x5BF9;&#x8C61;&#x90FD;&#x4E0D;&#x4E00;&#x6837;&#xFF0C;&#x56E0;&#x6B64;&#x76F8;&#x4E92;&#x4E4B;&#x95F4;&#x4E0D;&#x4F1A;&#x6709;&#x4EFB;&#x4F55;&#x5F71;&#x54CD;</p>
+</li>
+<li><p>&#x4F46;&#x6709;&#x4E24;&#x79CD;&#x60C5;&#x51B5;&#x9664;&#x5916;&#xFF1A;</p>
+</li>
+<li><ul>
+<li>1.&#x5F53;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x5757;&#x4F7F;&#x7528;&#x7684;Class&#x5BF9;&#x8C61;&#x548C;&#x7C7B;&#x5BF9;&#x8C61;&#x4E00;&#x81F4;&#x65F6;&#x5C5E;&#x4E8E;&#x540C;&#x4E00;&#x4E2A;&#x9501;&#xFF0C;&#x9075;&#x5FAA;&#x4E0A;&#x9762;&#x7684;<code>3.2.3</code>&#x539F;&#x5219;</li>
+<li>2.&#x5F53;&#x540C;&#x6B65;&#x4EE3;&#x7801;&#x5757;&#x4F7F;&#x7528;&#x7684;&#x662F;this&#xFF0C;&#x5373;&#x4E0E;&#x540C;&#x6B65;&#x65B9;&#x6CD5;&#x4F7F;&#x7528;&#x9501;&#x5C5E;&#x4E8E;&#x540C;&#x4E00;&#x4E2A;&#x9501;&#xFF0C;&#x9075;&#x5FAA;&#x4E0A;&#x9762;&#x7684;<code>3.2.2</code>&#x548C;<code>3.2.3</code>&#x539F;&#x5219;</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{</span><br><span class="line">    SynchronizedDemo synDemo = <span class="keyword">new</span> SynchronizedDemo();</span><br><span class="line">    Thread thread1 = <span class="keyword">new</span> Thread(() -&gt; synDemo.chunkMethod());   <span class="comment">//&#x540C;&#x6B65;&#x5757;&#xFF0C;&#x9501;&#x662F;&#x4E00;&#x4E2A;object</span></span><br><span class="line">    Thread thread2 = <span class="keyword">new</span> Thread(() -&gt; synDemo.chunkMethod3());  <span class="comment">//&#x540C;&#x6B65;&#x5757;&#xFF0C;&#x9501;&#x662F;this</span></span><br><span class="line">    Thread thread3 = <span class="keyword">new</span> Thread(() -&gt; synDemo.staticMethod());  <span class="comment">//&#x9759;&#x6001;&#x540C;&#x6B65;&#x65B9;&#x6CD5;,(&#x9690;&#x89C6;&#x9501;&#x662F;SynchronizedDemo.class)</span></span><br><span class="line">    Thread thread4 = <span class="keyword">new</span> Thread(() -&gt; synDemo.staticMethod2()); <span class="comment">//&#x9759;&#x6001;&#x65B9;&#x6CD5; + &#x540C;&#x6B65;&#x5757;,&#x9501;&#x662F;SynchronizedDemo.class</span></span><br><span class="line"></span><br><span class="line">    thread1.start();</span><br><span class="line">    thread2.start();</span><br><span class="line">    thread3.start();</span><br><span class="line">    thread4.start();</span><br><span class="line">}</span><br><span class="line">---------------------</span><br><span class="line"><span class="comment">//&#x8F93;&#x51FA;&#xFF1A;</span></span><br><span class="line">Thread-<span class="number">1</span>&#x8BBF;&#x95EE;&#x4E86;chunkMethod3&#x65B9;&#x6CD5;</span><br><span class="line">Thread-<span class="number">1</span>&#x5728;chunkMethod3&#x65B9;&#x6CD5;&#x4E2D;&#x83B7;&#x53D6;&#x4E86;<span class="keyword">this</span></span><br><span class="line">Thread-<span class="number">2</span>&#x8BBF;&#x95EE;&#x4E86;&#x9759;&#x6001;&#x540C;&#x6B65;&#x65B9;&#x6CD5;staticMethod</span><br><span class="line">Thread-<span class="number">0</span>&#x8BBF;&#x95EE;&#x4E86;chunkMethod&#x65B9;&#x6CD5;</span><br><span class="line">Thread-<span class="number">0</span>&#x5728;chunkMethod&#x65B9;&#x6CD5;&#x4E2D;&#x83B7;&#x53D6;&#x4E86;lock</span><br><span class="line">Thread-<span class="number">3</span>&#x8BBF;&#x95EE;&#x4E86;&#x9759;&#x6001;&#x540C;&#x6B65;&#x65B9;&#x6CD5;staticMethod2</span><br><span class="line">...&#x505C;&#x987F;&#x7B49;&#x5F85;...</span><br><span class="line">Thread-<span class="number">2</span>&#x7ED3;&#x675F;&#x8BBF;&#x95EE;&#x9759;&#x6001;&#x540C;&#x6B65;&#x65B9;&#x6CD5;staticMethod</span><br><span class="line">Thread-<span class="number">3</span>&#x5728;staticMethod2&#x65B9;&#x6CD5;&#x4E2D;&#x83B7;&#x53D6;&#x4E86;SynchronizedDemo.class</span><br><span class="line"><span class="comment">//&#x5206;&#x6790;&#x53EF;&#x77E5;&#xFF1A;</span></span><br><span class="line"><span class="comment">//&#x73B0;&#x8C61;&#xFF1A;&#x5BF9;&#x6BD4;16&#x884C;&#x3001;18&#x884C;&#x548C;24&#x884C;&#x3001;25&#x884C;&#x53EF;&#x77E5;&#xFF0C;&#x867D;&#x7136;&#x662F;&#x540C;&#x4E00;&#x4E2A;lock&#x5BF9;&#x8C61;&#xFF0C;&#x4F46;&#x5176;&#x4E0D;&#x540C;&#x4EE3;&#x7801;&#x5757;&#x7684;&#x8BBF;&#x95EE;&#x662F;&#x975E;&#x963B;&#x585E;&#x7684;</span></span><br><span class="line"><span class="comment">//&#x539F;&#x56E0;&#xFF1A;&#x6839;&#x6E90;&#x5728;&#x4E8E;&#x9501;&#x7684;&#x91CA;&#x653E;&#x548C;&#x91CD;&#x65B0;&#x7ADE;&#x4E89;&#xFF0C;&#x5F53;Thread-0&#x8BBF;&#x95EE;&#x5B8C;chunkMethod&#x65B9;&#x6CD5;&#x540E;&#x4F1A;&#x5148;&#x91CA;&#x653E;&#x9501;&#xFF0C;&#x8FD9;&#x65F6;Thread-1&#x5C31;&#x6709;&#x673A;&#x4F1A;&#x80FD;&#x83B7;&#x53D6;&#x5230;&#x9501;&#x4ECE;&#x800C;&#x4F18;&#x5148;&#x6267;&#x884C;&#xFF0C;&#x4F9D;&#x6B21;&#x7C7B;&#x63A8;&#x5230;24&#x884C;&#x3001;25&#x884C;&#x65F6;&#xFF0C;Thread-0&#x53C8;&#x91CD;&#x65B0;&#x83B7;&#x53D6;&#x5230;&#x9501;&#x4F18;&#x5148;&#x6267;&#x884C;&#x4E86;</span></span><br></pre></td></tr></tbody></table></figure>
+<ul>
+<li><h2 id="3-3-Synchronized&#x7684;&#x53EF;&#x91CD;&#x5165;&#x6027;"><a href="#3-3-Synchronized&#x7684;&#x53EF;&#x91CD;&#x5165;&#x6027;" class="headerlink" title="3.3 Synchronized&#x7684;&#x53EF;&#x91CD;&#x5165;&#x6027;"></a>3.3 Synchronized&#x7684;&#x53EF;&#x91CD;&#x5165;&#x6027;</h2><ul>
+<li><strong>&#x91CD;&#x5165;&#x9501;&#xFF1A;</strong>&#x5F53;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x518D;&#x6B21;&#x8BF7;&#x6C42;&#x81EA;&#x5DF1;&#x6301;&#x6709;&#x5BF9;&#x8C61;&#x9501;&#x7684;&#x4E34;&#x754C;&#x8D44;&#x6E90;&#x65F6;&#xFF0C;&#x8FD9;&#x79CD;&#x60C5;&#x51B5;&#x5C5E;&#x4E8E;&#x91CD;&#x5165;&#x9501;&#xFF0C;&#x8BF7;&#x6C42;&#x5C06;&#x4F1A;&#x6210;&#x529F;</li>
+<li><strong>&#x5B9E;&#x73B0;&#xFF1A;</strong>&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x5F97;&#x5230;&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;&#x9501;&#x540E;&#x518D;&#x6B21;&#x8BF7;&#x6C42;&#x8BE5;&#x5BF9;&#x8C61;&#x9501;&#xFF0C;&#x662F;&#x5141;&#x8BB8;&#x7684;&#xFF0C;&#x6BCF;&#x91CD;&#x5165;&#x4E00;&#x6B21;&#xFF0C;monitor&#x8FDB;&#x5165;&#x6B21;&#x6570;+1</li>
+</ul>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{</span><br><span class="line">    SynchronizedDemo synDemo = <span class="keyword">new</span> SynchronizedDemo();</span><br><span class="line">    Thread thread1 = <span class="keyword">new</span> Thread(() -&gt; {</span><br><span class="line">        synDemo.synMethod();</span><br><span class="line">        synDemo.synMethod2();</span><br><span class="line">    });</span><br><span class="line">    Thread thread2 = <span class="keyword">new</span> Thread(() -&gt; {</span><br><span class="line">        synDemo.synMethod2();</span><br><span class="line">        synDemo.synMethod();</span><br><span class="line">    });</span><br><span class="line">    thread1.start();</span><br><span class="line">    thread2.start();</span><br><span class="line">}</span><br><span class="line">---------------------</span><br><span class="line"><span class="comment">//&#x8F93;&#x51FA;&#xFF1A;</span></span><br><span class="line">Thread-<span class="number">0</span>&#x8BBF;&#x95EE;&#x4E86;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod</span><br><span class="line">Thread-<span class="number">0</span>&#x7ED3;&#x675F;&#x8BBF;&#x95EE;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod</span><br><span class="line">Thread-<span class="number">0</span>&#x8BBF;&#x95EE;&#x4E86;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod2</span><br><span class="line">Thread-<span class="number">0</span>&#x7ED3;&#x675F;&#x8BBF;&#x95EE;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod2</span><br><span class="line">Thread-<span class="number">1</span>&#x8BBF;&#x95EE;&#x4E86;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod2</span><br><span class="line">Thread-<span class="number">1</span>&#x7ED3;&#x675F;&#x8BBF;&#x95EE;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod2</span><br><span class="line">Thread-<span class="number">1</span>&#x8BBF;&#x95EE;&#x4E86;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod</span><br><span class="line">Thread-<span class="number">1</span>&#x7ED3;&#x675F;&#x8BBF;&#x95EE;&#x540C;&#x6B65;&#x65B9;&#x6CD5;synMethod</span><br><span class="line"><span class="comment">//&#x5206;&#x6790;&#xFF1A;&#x5BF9;&#x6BD4;16&#x884C;&#x548C;18&#x884C;&#x53EF;&#x77E5;&#xFF0C;&#x5728;&#x4EE3;&#x7801;&#x5757;&#x4E2D;&#x7EE7;&#x7EED;&#x8C03;&#x7528;&#x4E86;&#x5F53;&#x524D;&#x5B9E;&#x4F8B;&#x5BF9;&#x8C61;&#x7684;&#x53E6;&#x5916;&#x4E00;&#x4E2A;&#x540C;&#x6B65;&#x65B9;&#x6CD5;&#xFF0C;&#x518D;&#x6B21;&#x8BF7;&#x6C42;&#x5F53;&#x524D;&#x5B9E;&#x4F8B;&#x9501;&#x65F6;&#xFF0C;&#x5C06;&#x88AB;&#x5141;&#x8BB8;&#xFF0C;&#x8FDB;&#x800C;&#x6267;&#x884C;&#x65B9;&#x6CD5;&#x4F53;&#x4EE3;&#x7801;&#xFF0C;&#x8FD9;&#x5C31;&#x662F;&#x91CD;&#x5165;&#x9501;&#x6700;&#x76F4;&#x63A5;&#x7684;&#x4F53;&#x73B0;</span></span><br></pre></td></tr></tbody></table></figure>
+<h2 id="3-4-Synchronized&#x4E0E;String&#x9501;"><a href="#3-4-Synchronized&#x4E0E;String&#x9501;" class="headerlink" title="3.4 Synchronized&#x4E0E;String&#x9501;"></a>3.4 Synchronized&#x4E0E;String&#x9501;</h2><ul>
+<li><strong>&#x9690;&#x60A3;&#xFF1A;</strong>&#x7531;&#x4E8E;&#x5728;JVM&#x4E2D;&#x5177;&#x6709;String&#x5E38;&#x91CF;&#x6C60;&#x7F13;&#x5B58;&#x7684;&#x529F;&#x80FD;&#xFF0C;&#x56E0;&#x6B64;<strong>&#x76F8;&#x540C;&#x5B57;&#x9762;&#x91CF;&#x662F;&#x540C;&#x4E00;&#x4E2A;&#x9501;&#xFF01;&#xFF01;&#xFF01;</strong></li>
+<li><strong>&#x6CE8;&#x610F;&#xFF1A;</strong>&#x4E25;&#x91CD;&#x4E0D;&#x63A8;&#x8350;&#x5C06;String&#x4F5C;&#x4E3A;&#x9501;&#x5BF9;&#x8C61;&#xFF0C;&#x800C;&#x5E94;&#x8BE5;&#x6539;&#x7528;&#x5176;&#x4ED6;&#x975E;&#x7F13;&#x5B58;&#x5BF9;&#x8C61;</li>
+<li><strong>&#x63D0;&#x793A;&#xFF1A;</strong>&#x5BF9;&#x5B57;&#x9762;&#x91CF;&#x6709;&#x7591;&#x95EE;&#x7684;&#x8BDD;&#x8BF7;&#x5148;&#x56DE;&#x987E;&#x4E00;&#x4E0B;String&#x7684;&#x57FA;&#x7840;&#xFF0C;&#x8FD9;&#x91CC;&#x4E0D;&#x52A0;&#x4EE5;&#x89E3;&#x91CA;</li>
+</ul>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{</span><br><span class="line">    SynchronizedDemo synDemo = <span class="keyword">new</span> SynchronizedDemo();</span><br><span class="line">    Thread thread1 = <span class="keyword">new</span> Thread(() -&gt; synDemo.stringMethod(<span class="string">&quot;sally&quot;</span>));</span><br><span class="line">    Thread thread2 = <span class="keyword">new</span> Thread(() -&gt; synDemo.stringMethod(<span class="string">&quot;sally&quot;</span>));</span><br><span class="line">    thread1.start();</span><br><span class="line">    thread2.start();</span><br><span class="line">}</span><br><span class="line">---------------------</span><br><span class="line"><span class="comment">//&#x8F93;&#x51FA;&#xFF1A;</span></span><br><span class="line">Thread-<span class="number">0</span></span><br><span class="line">Thread-<span class="number">0</span></span><br><span class="line">Thread-<span class="number">0</span></span><br><span class="line">Thread-<span class="number">0</span></span><br><span class="line">...&#x6B7B;&#x5FAA;&#x73AF;...</span><br><span class="line"><span class="comment">//&#x5206;&#x6790;&#xFF1A;&#x8F93;&#x51FA;&#x7ED3;&#x679C;&#x6C38;&#x8FDC;&#x90FD;&#x662F;Thread-0&#x7684;&#x6B7B;&#x5FAA;&#x73AF;&#xFF0C;&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x53E6;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#xFF0C;&#x5373;Thread-1&#x7EBF;&#x7A0B;&#x6839;&#x672C;&#x4E0D;&#x4F1A;&#x8FD0;&#x884C;</span></span><br><span class="line"><span class="comment">//&#x539F;&#x56E0;&#xFF1A;&#x540C;&#x6B65;&#x5757;&#x4E2D;&#x7684;&#x9501;&#x662F;&#x540C;&#x4E00;&#x4E2A;&#x5B57;&#x9762;&#x91CF;</span></span><br></pre></td></tr></tbody></table></figure>
+<h2 id="3-5-Synchronized&#x4E0E;&#x4E0D;&#x53EF;&#x53D8;&#x9501;"><a href="#3-5-Synchronized&#x4E0E;&#x4E0D;&#x53EF;&#x53D8;&#x9501;" class="headerlink" title="3.5 Synchronized&#x4E0E;&#x4E0D;&#x53EF;&#x53D8;&#x9501;"></a>3.5 Synchronized&#x4E0E;&#x4E0D;&#x53EF;&#x53D8;&#x9501;</h2><ul>
+<li><strong>&#x9690;&#x60A3;&#xFF1A;</strong>&#x5F53;&#x4F7F;&#x7528;&#x4E0D;&#x53EF;&#x53D8;&#x7C7B;&#x5BF9;&#x8C61;(final Class)&#x4F5C;&#x4E3A;&#x5BF9;&#x8C61;&#x9501;&#x65F6;&#xFF0C;&#x4F7F;&#x7528;synchronized&#x540C;&#x6837;&#x4F1A;&#x6709;&#x5E76;&#x53D1;&#x95EE;&#x9898;</li>
+<li><strong>&#x539F;&#x56E0;&#xFF1A;</strong>&#x7531;&#x4E8E;&#x4E0D;&#x53EF;&#x53D8;&#x7279;&#x6027;&#xFF0C;&#x5F53;&#x4F5C;&#x4E3A;&#x9501;&#x4F46;&#x540C;&#x6B65;&#x5757;&#x5185;&#x90E8;&#x4ECD;&#x7136;&#x6709;&#x8BA1;&#x7B97;&#x64CD;&#x4F5C;&#xFF0C;&#x4F1A;&#x751F;&#x6210;&#x4E00;&#x4E2A;&#x65B0;&#x7684;&#x9501;&#x5BF9;&#x8C61;</li>
+<li><strong>&#x6CE8;&#x610F;&#xFF1A;</strong>&#x4E25;&#x91CD;&#x4E0D;&#x63A8;&#x8350;&#x5C06;final Class&#x4F5C;&#x4E3A;&#x9501;&#x5BF9;&#x8C61;&#x65F6;&#x4ECD;&#x5BF9;&#x5176;&#x6709;&#x8BA1;&#x7B97;&#x64CD;&#x4F5C;</li>
+<li><strong>&#x8865;&#x5145;&#xFF1A;</strong>&#x867D;&#x7136;String&#x4E5F;&#x662F;final Class&#xFF0C;&#x4F46;&#x5B83;&#x7684;&#x539F;&#x56E0;&#x5374;&#x662F;&#x5B57;&#x9762;&#x91CF;&#x5E38;&#x91CF;&#x6C60;</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SynchronizedDemo</span> </span>{</span><br><span class="line">    <span class="keyword">static</span> Integer i = <span class="number">0</span>;   <span class="comment">//Integer&#x662F;final Class</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>{</span><br><span class="line">        Runnable runnable = <span class="keyword">new</span> Runnable() {</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>;j&lt;<span class="number">10000</span>;j++){</span><br><span class="line">                    <span class="keyword">synchronized</span> (i){</span><br><span class="line">                        i++;</span><br><span class="line">                    }</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line">        };</span><br><span class="line">        Thread thread1 = <span class="keyword">new</span> Thread(runnable);</span><br><span class="line">        Thread thread2 = <span class="keyword">new</span> Thread(runnable);</span><br><span class="line">        thread1.start();</span><br><span class="line">        thread2.start();</span><br><span class="line">        thread1.join();</span><br><span class="line">        thread2.join();</span><br><span class="line">        System.out.println(i);</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line">---------------------</span><br><span class="line"><span class="comment">//&#x8F93;&#x51FA;&#xFF1A;</span></span><br><span class="line"><span class="number">14134</span></span><br><span class="line"><span class="comment">//&#x5206;&#x6790;&#xFF1A;&#x8DDF;&#x9884;&#x60F3;&#x4E2D;&#x7684;20000&#x4E0D;&#x4E00;&#x81F4;&#xFF0C;&#x5F53;&#x4F7F;&#x7528;Integer&#x4F5C;&#x4E3A;&#x5BF9;&#x8C61;&#x9501;&#x65F6;&#x4F46;&#x8FD8;&#x6709;&#x8BA1;&#x7B97;&#x64CD;&#x4F5C;&#x5C31;&#x4F1A;&#x51FA;&#x73B0;&#x5E76;&#x53D1;&#x95EE;&#x9898;</span></span><br></pre></td></tr></tbody></table></figure>
+<h2 id="3-6-Synchronized&#x4E0E;&#x6B7B;&#x9501;"><a href="#3-6-Synchronized&#x4E0E;&#x6B7B;&#x9501;" class="headerlink" title="3.6 Synchronized&#x4E0E;&#x6B7B;&#x9501;"></a>3.6 Synchronized&#x4E0E;&#x6B7B;&#x9501;</h2><ul>
+<li><strong>&#x6B7B;&#x9501;&#xFF1A;</strong>&#x5F53;&#x7EBF;&#x7A0B;&#x95F4;&#x9700;&#x8981;<strong>&#x76F8;&#x4E92;&#x7B49;&#x5F85;&#x5BF9;&#x65B9;&#x5DF2;&#x6301;&#x6709;&#x7684;&#x9501;</strong>&#x65F6;&#xFF0C;&#x5C31;&#x5F62;&#x6210;&#x6B7B;&#x9501;&#xFF0C;&#x8FDB;&#x800C;&#x4EA7;&#x751F;&#x6B7B;&#x5FAA;&#x73AF;</li>
+<li><strong>&#x6CE8;&#x610F;&#xFF1A;**</strong>&#x4EE3;&#x7801;&#x4E2D;&#x4E25;&#x7981;&#x51FA;&#x73B0;&#x6B7B;&#x9501;&#xFF01;&#xFF01;&#xFF01;**</li>
+</ul>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{</span><br><span class="line">    Object lock = <span class="keyword">new</span> Object();</span><br><span class="line">    Object lock2 = <span class="keyword">new</span> Object();</span><br><span class="line">    Thread thread1 = <span class="keyword">new</span> Thread(() -&gt; {</span><br><span class="line">        <span class="keyword">synchronized</span> (lock){</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x83B7;&#x53D6;&#x5230;lock&#x9501;&quot;</span>);</span><br><span class="line">            <span class="keyword">try</span> {</span><br><span class="line">                Thread.sleep(<span class="number">2000</span>);</span><br><span class="line">            } <span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            }</span><br><span class="line">            <span class="keyword">synchronized</span> (lock2){</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x83B7;&#x53D6;&#x5230;lock2&#x9501;&quot;</span>);</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    });</span><br><span class="line">    Thread thread2 = <span class="keyword">new</span> Thread(() -&gt; {</span><br><span class="line">        <span class="keyword">synchronized</span> (lock2){</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x83B7;&#x53D6;&#x5230;lock2&#x9501;&quot;</span>);</span><br><span class="line">            <span class="keyword">try</span> {</span><br><span class="line">                Thread.sleep(<span class="number">2000</span>);</span><br><span class="line">            } <span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            }</span><br><span class="line">            <span class="keyword">synchronized</span> (lock){</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + <span class="string">&quot;&#x83B7;&#x53D6;&#x5230;lock&#x9501;&quot;</span>);</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    });</span><br><span class="line">    thread1.start();</span><br><span class="line">    thread2.start();</span><br><span class="line">}</span><br><span class="line">---------------------</span><br><span class="line"><span class="comment">//&#x8F93;&#x51FA;&#xFF1A;</span></span><br><span class="line">Thread-<span class="number">1</span>&#x83B7;&#x53D6;&#x5230;lock2&#x9501;</span><br><span class="line">Thread-<span class="number">0</span>&#x83B7;&#x53D6;&#x5230;lock&#x9501;</span><br><span class="line">.....</span><br><span class="line"><span class="comment">//&#x5206;&#x6790;&#xFF1A;&#x7EBF;&#x7A0B;0&#x83B7;&#x5F97;lock&#x9501;&#xFF0C;&#x7EBF;&#x7A0B;1&#x83B7;&#x5F97;lock2&#x9501;&#xFF0C;&#x4F46;&#x4E4B;&#x540E;&#x7531;&#x4E8E;&#x4E24;&#x4E2A;&#x7EBF;&#x7A0B;&#x8FD8;&#x8981;&#x83B7;&#x53D6;&#x5BF9;&#x65B9;&#x5DF2;&#x6301;&#x6709;&#x7684;&#x9501;&#xFF0C;&#x4F46;&#x5DF2;&#x6301;&#x6709;&#x7684;&#x9501;&#x90FD;&#x4E0D;&#x4F1A;&#x88AB;&#x53CC;&#x65B9;&#x91CA;&#x653E;&#xFF0C;&#x7EBF;&#x7A0B;&quot;&#x5047;&#x6B7B;&quot;&#xFF0C;&#x65E0;&#x6CD5;&#x5F80;&#x4E0B;&#x6267;&#x884C;&#xFF0C;&#x4ECE;&#x800C;&#x5F62;&#x6210;&#x6B7B;&#x5FAA;&#x73AF;&#xFF0C;&#x5373;&#x6B7B;&#x9501;&#xFF0C;&#x4E4B;&#x540E;&#x4E00;&#x76F4;&#x5728;&#x505A;&#x65E0;&#x7528;&#x7684;&#x6B7B;&#x5FAA;&#x73AF;&#xFF0C;&#x4E25;&#x91CD;&#x6D6A;&#x8D39;&#x7CFB;&#x7EDF;&#x8D44;&#x6E90;</span></span><br></pre></td></tr></tbody></table></figure>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://zhuanlan.zhihu.com/p/34537635" target="_blank" rel="noopener">Java 8 &#x5E76;&#x53D1;&#x7BC7; - &#x51B7;&#x9759;&#x5206;&#x6790; Synchronized&#xFF08;&#x4E0A;&#xFF09;</a></p>
+<p><a href="https://www.zybuluo.com/kiraSally/note/857726" target="_blank" rel="noopener">&#x5E76;&#x53D1;&#x756A;@Synchronized&#x4E00;&#x6587;&#x901A;&#xFF08;1.8&#x7248;&#xFF09;</a></p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2018/11/01/20181101-2/" title="并发操作合集-4.Lcok和Condition">
+                    <div class="nextTitle">并发操作合集-4.Lcok和Condition</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2018/11/01/20181031/" title="并发操作合集-2.线程状态转换方法">
+                    <div class="prevTitle">并发操作合集-2.线程状态转换方法</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MDUwMy8xNzAzMA==">
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:nnkwrik@gmail.com" class="iconfont-archer email" title="email"></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/nnkwrik" class="iconfont-archer github" target="_blank" title="github"></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title="wechat">
+                  
+                  <img class="profile-qr" src="/assets/qr.png">
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:30vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Java的锁"><span class="toc-number">1.</span> <span class="toc-text">1.Java的锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-锁的内存语义"><span class="toc-number">2.</span> <span class="toc-text">1.1 锁的内存语义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Synchronized的综述"><span class="toc-number">3.</span> <span class="toc-text">2.Synchronized的综述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Synchronized的使用"><span class="toc-number">4.</span> <span class="toc-text">3.Synchronized的使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-Synchronized的三种应用方式"><span class="toc-number">5.</span> <span class="toc-text">3.1 Synchronized的三种应用方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-Synchronized的使用规则"><span class="toc-number">6.</span> <span class="toc-text">3.2 Synchronized的使用规则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-1-普通方法与同步方法调用互不关联"><span class="toc-number">7.</span> <span class="toc-text">3.2.1 普通方法与同步方法调用互不关联</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-2-所有同步方法只能被一个线程访问"><span class="toc-number">8.</span> <span class="toc-text">3.2.2 所有同步方法只能被一个线程访问</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-3-同一个锁的同步代码块同一时刻只能被一个线程访问"><span class="toc-number">9.</span> <span class="toc-text">3.2.3 同一个锁的同步代码块同一时刻只能被一个线程访问</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-4-线程间同时访问同一个锁的多个同步代码的执行顺序不定"><span class="toc-number">10.</span> <span class="toc-text">3.2.4 线程间同时访问同一个锁的多个同步代码的执行顺序不定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-5-不同锁之间访问非阻塞"><span class="toc-number">11.</span> <span class="toc-text">3.2.5 不同锁之间访问非阻塞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-Synchronized的可重入性"><span class="toc-number">12.</span> <span class="toc-text">3.3 Synchronized的可重入性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-Synchronized与String锁"><span class="toc-number">13.</span> <span class="toc-text">3.4 Synchronized与String锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-5-Synchronized与不可变锁"><span class="toc-number">14.</span> <span class="toc-text">3.5 Synchronized与不可变锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-6-Synchronized与死锁"><span class="toc-number">15.</span> <span class="toc-text">3.6 Synchronized与死锁</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Reference"><span class="toc-number"></span> <span class="toc-text">Reference</span></a>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 9
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181030-2/">并发操作合集-1.线程的生命周期</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.线程状态转换方法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span><a class="archive-post-title" href="/2018/10/30/20181030/">Java并发编程实战-第6章-任务执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/29</span><a class="archive-post-title" href="/2018/10/29/20181029/">Java并发编程实战-第5章-基础构建模块</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href="/2018/10/28/20181028/">Java并发编程实战-第4章-对象的组合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span><a class="archive-post-title" href="/2018/10/27/20181027/">Java并发编程实战-第3章-对象的共享</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/25</span><a class="archive-post-title" href="/2018/10/25/20181025/">Java并发编程实战-第2章-线程安全性</a>
+        </li>
+    
+    </ul></div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发操作合集"><span class="iconfont-archer">&#xe606;</span>并发操作合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br>
+    1、请确保node版本大于6.2<br>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
+    
+        <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "曽生"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
