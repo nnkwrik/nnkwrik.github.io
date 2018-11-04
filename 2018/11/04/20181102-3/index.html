@@ -518,6 +518,7 @@ height:30vh;
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//&#x751F;&#x4EA7;&#x8005;&#x4F1A;&#x4E00;&#x76F4;&#x963B;&#x585E;&#x76F4;&#x5230;&#x81EA;&#x5DF1;&#x653E;&#x5165;&#x7684;&#x5143;&#x7D20;&#x88AB;&#x53D6;&#x8D70;</span></span><br><span class="line">TransferQueue&lt;String&gt; blockingQueue = <span class="keyword">new</span> LinkedTransferQueue&lt;&gt;();</span><br><span class="line"></span><br><span class="line">TData data = <span class="keyword">new</span> TData(blockingQueue);</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) {</span><br><span class="line">    Thread sender = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Sender(data), <span class="string">&quot;Sender Thread&quot;</span> + i);</span><br><span class="line">    sender.start();</span><br><span class="line"></span><br><span class="line">}</span><br><span class="line">Thread receiver = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Receiver(data), <span class="string">&quot;Receiver Thread&quot;</span>);</span><br><span class="line">receiver.start();</span><br></pre></td></tr></tbody></table></figure>
 <p>&#x4E4D;&#x4E00;&#x770B;&#x548C;SynchronousQueue&#x6709;&#x70B9;&#x76F8;&#x4F3C;&#xFF0C;&#x90FD;&#x662F;&#x5728;&#x751F;&#x4EA7;&#x8005;&#x653E;&#x5165;&#x7684;&#x5143;&#x7D20;&#x88AB;&#x53D6;&#x8D70;&#x524D;&#x8FDB;&#x884C;&#x8FDB;&#x884C;&#x963B;&#x585E;&#x3002;&#x4E0D;&#x540C;&#x7684;&#x662F;SynchronousQueue&#x53EA;&#x4F1A;&#x4FDD;&#x7559;<strong>&#x6240;&#x6709;&#x7EBF;&#x7A0B;&#x4E2D;&#x6700;&#x540E;&#x88AB;&#x653E;&#x5165;</strong>&#x7684;&#x90A3;&#x4E2A;&#x5143;&#x7D20;&#x3002;&#x548C;SynchronousQueue&#x4E0D;&#x540C;LinkedTransferQueue&#x4E0D;&#x4F1A;&#x4E22;&#x5931;&#x6570;&#x636E;&#x5305;&#x3002;</p>
 <h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="http://ifeve.com/java-blocking-queue/" target="_blank" rel="noopener">&#x804A;&#x804A;&#x5E76;&#x53D1;&#xFF08;&#x4E03;&#xFF09;&#x2014;&#x2014;Java&#x4E2D;&#x7684;&#x963B;&#x585E;&#x961F;&#x5217;</a></p>
+<p><a href="http://www.baeldung.com/java-delay-queue" target="_blank" rel="noopener">Guide to DelayQueue</a></p>
 <script>
         document.querySelectorAll('.github-emoji')
           .forEach(el => {
@@ -543,6 +544,11 @@ height:30vh;
     <!-- paginator  -->
     <ul class="post-paginator">
         <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2018/11/04/20181104/" title="并发操作合集-7.并发容器：CopyOnWriteArrayList">
+                    <div class="nextTitle">并发操作合集-7.并发容器：CopyOnWriteArrayList</div>
+                </a>
             
         </li>
         <li class="previous">
@@ -819,9 +825,14 @@ top:30vh;
     
     
     
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 12
+        Total : 13
         </div>
         <!-- search  -->
         
@@ -838,6 +849,11 @@ top:30vh;
     
     <div class="archive-year"> 2018 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104/">并发操作合集-7.并发容器：CopyOnWriteArrayList</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -910,9 +926,9 @@ top:30vh;
     
         <span class="sidebar-tag-name" data-tags="并发基本操作合集"><span class="iconfont-archer">&#xe606;</span>并发基本操作合集</span>
     
-        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
-    
         <span class="sidebar-tag-name" data-tags="并发操作合集"><span class="iconfont-archer">&#xe606;</span>并发操作合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
