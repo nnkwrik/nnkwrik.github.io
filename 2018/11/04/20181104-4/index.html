@@ -22,7 +22,7 @@
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>农场主的黑科技.</title>
+    <title>并发操作合集-10.ThreadLocal · 农场主的黑科技.</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -218,12 +218,23 @@
 </head>
 
     
+        <body class="post-body">
+    
     
 <header class="header">
 
     <div class="read-progress"></div>
     <div class="header-sidebar-menu">&#xe775;</div>
     <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">农场主的黑科技.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">并发操作合集-10.ThreadLocal</a>
+            </div>
+    </div>
     
     <a class="home-link" href="/">农场主的黑科技.</a>
 </header>
@@ -235,24 +246,73 @@
 
 
 
+
+height:30vh;
 ">
     
     <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
             
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/)"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/andrew-leu-1113236-unsplash.jpg)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
+            
+            并发操作合集-10.ThreadLocal
+            <!-- 404 -->
             
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
             
+            
+            <!-- 404 -->
+            
         </p>
         <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class="post-intro-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">895</span>阅读时长: <span class="post-count reading-time">5 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2018/11/04</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
         
     </div>
 </div>
@@ -353,399 +413,99 @@
 </script>        
         <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
         <div class="container container-unloaded">
-            <main class="main index-page">
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/04/20181104-4/">
-            
-                <span>并发操作合集-10.ThreadLocal</span>
-        </a>
-        <div class="abstract-content">
-            ThreadLocal&#x7684;&#x7528;&#x6CD5;ThreadLocal&#x7528;&#x4E8E;&#x4FDD;&#x5B58;&#x67D0;&#x4E2A;&#x7EBF;&#x7A0B;&#x5171;&#x4EAB;&#x53D8;&#x91CF;&#xFF1A;&#x5BF9;&#x4E8E;&#x540C;&#x4E00;&#x4E2A;static ThreadLocal&#xFF0C;&#x4E0D;&#x540C;&#x7EBF;&#x7A0B;&#x53EA;&#x80FD;&#x4ECE;&#x4E2D;get&#xFF0C;set&#xFF0C;remove&#x81EA;&#x5DF1;&#x7684;&#x53D8;&#x91CF;&#xFF0C;&#x800C;&#x4E0D;&#x4F1A;&#x5F71;&#x54CD;&#x5176;&#x4ED6;&#x7EBF;&#x7A0B;&#x7684;&#x53D8;&#x91CF;&#x3002;
-
-ThreadLocal.get: &#x83B7;&#x53D6;ThreadLocal&#x4E2D;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x5171;&#x4EAB;&#x53D8;&#x91CF;&#x7684;&#x503C;&#x3002;
-
-ThreadLocal.set: &#x8BBE;&#x7F6E;ThreadLocal&#x4E2D;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x5171;&#x4EAB;&#x53D8;&#x91CF;&#x7684;&#x503C;&#x3002;
-
-ThreadLocal.remove: &#x79FB;&#x9664;ThreadLocal&#x4E2D;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x5171;&#x4EAB;&#x53D8;&#x91CF;&#x7684;&#x503C;&#x3002;
-
-ThreadLocal.initialValue: ThreadLocal&#x6CA1;&#x6709;&#x88AB;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x8D4B;&#x50...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/04</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
-    
-</div>
-            
-        </div>
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="ThreadLocal&#x7684;&#x7528;&#x6CD5;"><a href="#ThreadLocal&#x7684;&#x7528;&#x6CD5;" class="headerlink" title="ThreadLocal&#x7684;&#x7528;&#x6CD5;"></a>ThreadLocal&#x7684;&#x7528;&#x6CD5;</h1><p>ThreadLocal&#x7528;&#x4E8E;&#x4FDD;&#x5B58;&#x67D0;&#x4E2A;&#x7EBF;&#x7A0B;&#x5171;&#x4EAB;&#x53D8;&#x91CF;&#xFF1A;&#x5BF9;&#x4E8E;&#x540C;&#x4E00;&#x4E2A;static ThreadLocal&#xFF0C;&#x4E0D;&#x540C;&#x7EBF;&#x7A0B;&#x53EA;&#x80FD;&#x4ECE;&#x4E2D;get&#xFF0C;set&#xFF0C;remove&#x81EA;&#x5DF1;&#x7684;&#x53D8;&#x91CF;&#xFF0C;&#x800C;&#x4E0D;&#x4F1A;&#x5F71;&#x54CD;&#x5176;&#x4ED6;&#x7EBF;&#x7A0B;&#x7684;&#x53D8;&#x91CF;&#x3002;</p>
+<ul>
+<li><p>ThreadLocal.get: &#x83B7;&#x53D6;ThreadLocal&#x4E2D;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x5171;&#x4EAB;&#x53D8;&#x91CF;&#x7684;&#x503C;&#x3002;</p>
+</li>
+<li><p>ThreadLocal.set: &#x8BBE;&#x7F6E;ThreadLocal&#x4E2D;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x5171;&#x4EAB;&#x53D8;&#x91CF;&#x7684;&#x503C;&#x3002;</p>
+</li>
+<li><p>ThreadLocal.remove: &#x79FB;&#x9664;ThreadLocal&#x4E2D;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x5171;&#x4EAB;&#x53D8;&#x91CF;&#x7684;&#x503C;&#x3002;</p>
+</li>
+<li><p>ThreadLocal.initialValue: ThreadLocal&#x6CA1;&#x6709;&#x88AB;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x8D4B;&#x503C;&#x65F6;&#x6216;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x521A;&#x8C03;&#x7528;remove&#x65B9;&#x6CD5;&#x540E;&#x8C03;&#x7528;get&#x65B9;&#x6CD5;&#xFF0C;&#x8FD4;&#x56DE;&#x6B64;&#x65B9;&#x6CD5;&#x503C;&#x3002;</p>
+</li>
+</ul>
+<p>&#x793A;&#x4F8B;&#x4EE3;&#x7801;&#xFF1A;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ThreadLocal&lt;String&gt; threadLocal = <span class="keyword">new</span> ThreadLocal&lt;&gt;();</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>{</span><br><span class="line">    Runnable task1 = () -&gt; {</span><br><span class="line">        threadLocal.set(Instant.now().toString());</span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            TimeUnit.SECONDS.sleep(<span class="number">3</span>);</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; ==&gt; &quot;</span> + threadLocal.get());</span><br><span class="line">        } <span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        }</span><br><span class="line">    };</span><br><span class="line">    ExecutorService executorService = Executors.newFixedThreadPool(<span class="number">10</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) {</span><br><span class="line">        executorService.submit(task1);</span><br><span class="line">        TimeUnit.SECONDS.sleep(<span class="number">1</span>);</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line">-----------------------------------</span><br><span class="line">&#x8F93;&#x51FA;</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span> ==&gt; <span class="number">2018</span>-<span class="number">11</span>-<span class="number">04</span>T11:<span class="number">17</span>:<span class="number">14.388</span>Z</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">2</span> ==&gt; <span class="number">2018</span>-<span class="number">11</span>-<span class="number">04</span>T11:<span class="number">17</span>:<span class="number">15.387</span>Z</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">3</span> ==&gt; <span class="number">2018</span>-<span class="number">11</span>-<span class="number">04</span>T11:<span class="number">17</span>:<span class="number">16.388</span>Z</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">4</span> ==&gt; <span class="number">2018</span>-<span class="number">11</span>-<span class="number">04</span>T11:<span class="number">17</span>:<span class="number">17.388</span>Z</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">5</span> ==&gt; <span class="number">2018</span>-<span class="number">11</span>-<span class="number">04</span>T11:<span class="number">17</span>:<span class="number">18.388</span>Z</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x53EF;&#x89C1;&#x6BCF;&#x4E2A;&#x7EBF;&#x7A0B;&#x4ECE;ThreadLocal&#x4E2D;&#x53D6;&#x51FA;&#x7684;&#x503C;&#xFF0C;&#x90FD;&#x662F;&#x81EA;&#x8EAB;&#x653E;&#x5165;&#x7684;&#x503C;&#x3002;</p>
+<h1 id="ThreadLocal&#x7684;&#x5B9E;&#x73B0;&#x539F;&#x7406;"><a href="#ThreadLocal&#x7684;&#x5B9E;&#x73B0;&#x539F;&#x7406;" class="headerlink" title="ThreadLocal&#x7684;&#x5B9E;&#x73B0;&#x539F;&#x7406;"></a>ThreadLocal&#x7684;&#x5B9E;&#x73B0;&#x539F;&#x7406;</h1><p>&#x4E3A;&#x4E86;&#x52A0;&#x6DF1;&#x7406;&#x89E3;&#xFF0C;&#x7B80;&#x5355;&#x770B;&#x770B;ThreadLocal&#x7684;&#x5B9E;&#x73B0;&#x539F;&#x7406;&#x3002;</p>
+<p>set()&#x7684;&#x6E90;&#x7801;&#x662F;&#x8FD9;&#x6837;&#x5B50;&#x7684;&#xFF1A;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">(T value)</span> </span>{</span><br><span class="line">	<span class="comment">//1. &#x83B7;&#x53D6;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x5B9E;&#x4F8B;&#x5BF9;&#x8C61;</span></span><br><span class="line">    Thread t = Thread.currentThread();</span><br><span class="line">	<span class="comment">//2. &#x901A;&#x8FC7;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x5B9E;&#x4F8B;&#x83B7;&#x53D6;&#x5230;ThreadLocalMap&#x5BF9;&#x8C61;</span></span><br><span class="line">    ThreadLocalMap map = getMap(t);</span><br><span class="line">    <span class="keyword">if</span> (map != <span class="keyword">null</span>)</span><br><span class="line">		<span class="comment">//3. &#x5982;&#x679C;Map&#x4E0D;&#x4E3A;null,&#x5219;&#x4EE5;&#x5F53;&#x524D;threadLocl&#x5B9E;&#x4F8B;&#x4E3A;key,&#x503C;&#x4E3A;value&#x8FDB;&#x884C;&#x5B58;&#x5165;</span></span><br><span class="line">        map.set(<span class="keyword">this</span>, value);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">		<span class="comment">//4.map&#x4E3A;null,&#x5219;&#x65B0;&#x5EFA;ThreadLocalMap&#x5E76;&#x5B58;&#x5165;value</span></span><br><span class="line">        createMap(t, value);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x901A;&#x8FC7;&#x6E90;&#x7801;&#x6211;&#x4EEC;&#x77E5;&#x9053;value&#x662F;&#x5B58;&#x653E;&#x5728;&#x4E86;ThreadLocalMap&#x91CC;&#x4E86;&#x3002;&#x8FD9;&#x4E2A;ThreadLocalMap&#x662F;&#x4ECE;&#x54EA;&#x91CC;&#x53D6;&#x51FA;&#x6765;&#x7684;&#xFF0C;&#x6211;&#x4EEC;&#x770B;&#x4E00;&#x4E0B;&#x6E90;&#x7801;&#x4E2D;&#x7684;getMap(t)&#x65B9;&#x6CD5;&#xFF1A;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ThreadLocalMap <span class="title">getMap</span><span class="params">(Thread t)</span> </span>{</span><br><span class="line">    <span class="keyword">return</span> t.threadLocals;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x8FD9;&#x4E2A;ThreadLocalMap&#x662F;&#x6211;&#x4EEC;&#x5F53;&#x524D;Thread&#x4E2D;&#x7684;&#x4E00;&#x4E2A;&#x53EB;threadLocals&#x7684;&#x6210;&#x5458;&#x53D8;&#x91CF;&#xFF0C;ThreadLocalMap&#x662F;&#x7531;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x81EA;&#x8EAB;&#x6301;&#x6709;&#x7684;&#x3002;</p>
+<p>&#x5F53;&#x8FD9;&#x4E2A;map&#x4E3A;null&#x65F6;&#xFF0C;&#x8BF4;&#x660E;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x8FD8;&#x6CA1;&#x521B;&#x5EFA;&#x8FC7;ThreadLocalMap&#xFF0C;&#x6240;&#x4EE5;&#x901A;&#x8FC7;createMap(t,value)&#x521B;&#x5EFA;ThreadLocalMap&#x5E76;&#x653E;&#x5165;&#x7EBF;&#x7A0B;&#x4E2D;&#x3002;</p>
+<p>&#x5BF9;set&#x65B9;&#x6CD5;&#x8FDB;&#x884C;&#x603B;&#x7ED3;&#x4E00;&#x4E0B;&#xFF1A; &#x901A;&#x8FC7;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x5BF9;&#x8C61;thread&#x83B7;&#x53D6;&#x8BE5;thread&#x6240;&#x7EF4;&#x62A4;&#x7684;threadLocalMap,&#x82E5;threadLocalMap&#x4E0D;&#x4E3A;null,&#x5219;&#x4EE5;threadLocal&#x5B9E;&#x4F8B;&#x4E3A;key,&#x503C;&#x4E3A;value&#x7684;&#x952E;&#x503C;&#x5BF9;&#x5B58;&#x5165;threadLocalMap,&#x82E5;threadLocalMap&#x4E3A;null&#x7684;&#x8BDD;&#xFF0C;&#x5C31;&#x65B0;&#x5EFA;threadLocalMap&#x7136;&#x540E;&#x5728;&#x4EE5;threadLocal&#x4E3A;&#x952E;&#xFF0C;&#x503C;&#x4E3A;value&#x7684;&#x952E;&#x503C;&#x5BF9;&#x5B58;&#x5165;&#x5373;&#x53EF;&#x3002;</p>
+<p>get&#xFF08;&#xFF09;&#x65B9;&#x6CD5;&#x548C;remove&#xFF08;&#xFF09;&#x5B9E;&#x9645;&#x4E0A;&#x4E5F;&#x90FD;&#x662F;&#x8C03;&#x7528;&#x4E86;&#x8FD9;&#x4E2A;&#x5F53;&#x524D;Thread&#x4E2D;&#x7EF4;&#x62A4;&#x7684;threadLocalMap&#x3002;&#x8FD9;&#x91CC;&#x5C31;&#x4E0D;&#x591A;&#x505A;&#x89E3;&#x91CA;&#x4E86;&#x3002;</p>
+<h1 id="ThreadLocal&#x7684;&#x4F7F;&#x7528;&#x573A;&#x666F;"><a href="#ThreadLocal&#x7684;&#x4F7F;&#x7528;&#x573A;&#x666F;" class="headerlink" title="ThreadLocal&#x7684;&#x4F7F;&#x7528;&#x573A;&#x666F;"></a>ThreadLocal&#x7684;&#x4F7F;&#x7528;&#x573A;&#x666F;</h1><p><strong>ThreadLocal &#x4E0D;&#x662F;&#x7528;&#x6765;&#x89E3;&#x51B3;&#x5171;&#x4EAB;&#x5BF9;&#x8C61;&#x7684;&#x591A;&#x7EBF;&#x7A0B;&#x8BBF;&#x95EE;&#x95EE;&#x9898;&#x7684;</strong>&#xFF0C;&#x6570;&#x636E;&#x5B9E;&#x8D28;&#x4E0A;&#x662F;&#x653E;&#x5728;&#x6BCF;&#x4E2A;thread&#x5B9E;&#x4F8B;&#x5F15;&#x7528;&#x7684;threadLocalMap,&#x4E5F;&#x5C31;&#x662F;&#x8BF4;<strong>&#x6BCF;&#x4E2A;&#x4E0D;&#x540C;&#x7684;&#x7EBF;&#x7A0B;&#x90FD;&#x62E5;&#x6709;&#x4E13;&#x5C5E;&#x4E8E;&#x81EA;&#x5DF1;&#x7684;&#x6570;&#x636E;&#x5BB9;&#x5668;&#xFF08;threadLocalMap&#xFF09;&#xFF0C;&#x5F7C;&#x6B64;&#x4E0D;&#x5F71;&#x54CD;</strong>&#x3002;&#x56E0;&#x6B64;threadLocal&#x53EA;&#x9002;&#x7528;&#x4E8E; <strong>&#x5171;&#x4EAB;&#x5BF9;&#x8C61;&#x4F1A;&#x9020;&#x6210;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;</strong> &#x7684;&#x4E1A;&#x52A1;&#x573A;&#x666F;&#x3002;&#x6BD4;&#x5982;<strong>hibernate&#x4E2D;&#x901A;&#x8FC7;threadLocal&#x7BA1;&#x7406;Session</strong>&#x5C31;&#x662F;&#x4E00;&#x4E2A;&#x5178;&#x578B;&#x7684;&#x6848;&#x4F8B;&#xFF0C;&#x4E0D;&#x540C;&#x7684;&#x8BF7;&#x6C42;&#x7EBF;&#x7A0B;&#xFF08;&#x7528;&#x6237;&#xFF09;&#x62E5;&#x6709;&#x81EA;&#x5DF1;&#x7684;session,&#x82E5;&#x5C06;session&#x5171;&#x4EAB;&#x51FA;&#x53BB;&#x88AB;&#x591A;&#x7EBF;&#x7A0B;&#x8BBF;&#x95EE;&#xFF0C;&#x5FC5;&#x7136;&#x4F1A;&#x5E26;&#x6765;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x95EE;&#x9898;&#x3002;</p>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://www.cnblogs.com/coshaho/p/5127135.html" target="_blank" rel="noopener">ThreadLocal&#x7528;&#x6CD5;&#x8BE6;&#x89E3;&#x548C;&#x539F;&#x7406;</a></p>
+<p><a href="https://github.com/CL0610/Java-concurrency/blob/master/17.%E5%B9%B6%E5%8F%91%E5%AE%B9%E5%99%A8%E4%B9%8BThreadLocal/%E5%B9%B6%E5%8F%91%E5%AE%B9%E5%99%A8%E4%B9%8BThreadLocal.md" target="_blank" rel="noopener">&#x5E76;&#x53D1;&#x5BB9;&#x5668;&#x4E4B;ThreadLocal</a></p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
     </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/04/20181104-3/">
-            
-                <span>并发操作合集-9.Executor和线程池</span>
-        </a>
-        <div class="abstract-content">
-            Executor&#x5E76;&#x53D1;API&#x5F15;&#x5165;&#x4E86;ExecutorService&#x4F5C;&#x4E3A;&#x4E00;&#x4E2A;&#x5728;&#x7A0B;&#x5E8F;&#x4E2D;&#x76F4;&#x63A5;&#x4F7F;&#x7528;Thread&#x7684;&#x9AD8;&#x5C42;&#x6B21;&#x7684;&#x66FF;&#x6362;&#x65B9;&#x6848;&#x3002;Executos&#x652F;&#x6301;&#x8FD0;&#x884C;&#x5F02;&#x6B65;&#x4EFB;&#x52A1;&#xFF0C;&#x901A;&#x5E38;&#x7BA1;&#x7406;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x6C60;&#xFF0C;&#x8FD9;&#x6837;&#x4E00;&#x6765;&#x6211;&#x4EEC;&#x5C31;&#x4E0D;&#x9700;&#x8981;&#x624B;&#x52A8;&#x53BB;&#x521B;&#x5EFA;&#x65B0;&#x7684;&#x7EBF;&#x7A0B;&#x3002;&#x5728;&#x4E0D;&#x65AD;&#x5730;&#x5904;&#x7406;&#x4EFB;&#x52A1;&#x7684;&#x8FC7;&#x7A0B;&#x4E2D;&#xFF0C;&#x7EBF;&#x7A0B;&#x6C60;&#x5185;&#x90E8;&#x7EBF;&#x7A0B;&#x5C06;&#x4F1A;&#x5F97;&#x5230;&#x590D;&#x7528;&#xFF0C;&#x56E0;&#x6B64;&#xFF0C;&#x5728;&#x6211;&#x4EEC;&#x53EF;&#x4EE5;&#x4F7F;&#x7528;&#x4E00;&#x4E2A;executor service&#x6765;&#x8FD0;&#x884C;&#x548C;&#x6211;&#x4EEC;&#x60F3;&#x5728;&#x6211;&#x4EEC;&#x6574;&#x4E2A;&#x7A...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/04</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/04/20181104-2/">
-            
-                <span>并发操作合集-8.并发工具：Semaphore,CountDownLatch,CyclicBarrier</span>
-        </a>
-        <div class="abstract-content">
-            &#x8FD9;&#x7BC7;&#x6587;&#x7AE0;&#x4F1A;&#x4ECB;&#x7ECD;3&#x4E2D;&#x975E;&#x5E38;&#x5B9E;&#x7528;&#x7684;&#x5E76;&#x53D1;&#x5DE5;&#x5177;&#xFF0C;Semaphore&#xFF0C;CountDownLatch&#xFF0C;CyclicBarrier&#x3002;
-SemaphoreSemaphore&#x53EF;&#x4EE5;&#x7406;&#x89E3;&#x4E3A;&#x4FE1;&#x53F7;&#x91CF;&#xFF0C;&#x7528;&#x4E8E;&#x63A7;&#x5236;&#x8D44;&#x6E90;&#x80FD;&#x591F;&#x88AB;&#x5E76;&#x53D1;&#x8BBF;&#x95EE;&#x7684;&#x7EBF;&#x7A0B;&#x6570;&#x91CF;&#xFF0C;&#x4EE5;&#x4FDD;&#x8BC1;&#x591A;&#x4E2A;&#x7EBF;&#x7A0B;&#x80FD;&#x591F;&#x5408;&#x7406;&#x7684;&#x4F7F;&#x7528;&#x7279;&#x5B9A;&#x8D44;&#x6E90;&#x3002;Semaphore&#x5C31;&#x76F8;&#x5F53;&#x4E8E;&#x4E00;&#x4E2A;&#x8BB8;&#x53EF;&#x8BC1;&#xFF0C;&#x7EBF;&#x7A0B;&#x9700;&#x8981;&#x5148;&#x901A;&#x8FC7;acquire&#x65B9;&#x6CD5;&#x83B7;&#x53D6;&#x8BE5;&#x8BB8;&#x53EF;&#x8BC1;&#xFF0C;&#x8BE5;&#x7EBF;&#x7A0B;&#x624D;&#x80FD;&#x7EE7;&#x7EED;&#x5F80;&#x4E0B;&#x6267;&#x884C;&#xFF0C;&#x5426;&#x5219;&#x53EA;&#x80FD;&#x5728;&#x8BE5;&#x65B9;&#x6CD5;&#x51FA;&#x96...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/04</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/04/20181104/">
-            
-                <span>并发操作合集-7.并发容器：CopyOnWriteArrayList</span>
-        </a>
-        <div class="abstract-content">
-            &#x8FD9;&#x4E00;&#x7BC7;&#x6587;&#x7AE0;&#x4E5F;&#x4F1A;&#x4ECB;&#x7ECD;&#x4E00;&#x4E2A;&#x5E76;&#x53D1;&#x5BB9;&#x5668;&#xFF0C;CopyOnWriteArrayList&#x3002;
-CopyOnWriteArrayListCopy-On-Write&#x7B80;&#x79F0;COW&#xFF0C;&#x662F;&#x4E00;&#x79CD;&#x7528;&#x4E8E;&#x7A0B;&#x5E8F;&#x8BBE;&#x8BA1;&#x4E2D;&#x7684;&#x4F18;&#x5316;&#x7B56;&#x7565;&#x3002;&#x5176;&#x57FA;&#x672C;&#x601D;&#x8DEF;&#x662F;&#xFF0C;&#x4ECE;&#x4E00;&#x5F00;&#x59CB;&#x5927;&#x5BB6;&#x90FD;&#x5728;&#x5171;&#x4EAB;&#x540C;&#x4E00;&#x4E2A;&#x5185;&#x5BB9;&#xFF0C;&#x5F53;&#x67D0;&#x4E2A;&#x4EBA;&#x60F3;&#x8981;&#x4FEE;&#x6539;&#x8FD9;&#x4E2A;&#x5185;&#x5BB9;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x624D;&#x4F1A;&#x771F;&#x6B63;&#x628A;&#x5185;&#x5BB9;Copy&#x51FA;&#x53BB;&#x5F62;&#x6210;&#x4E00;&#x4E2A;&#x65B0;&#x7684;&#x5185;&#x5BB9;&#x7136;&#x540E;&#x518D;&#x6539;&#xFF0C;&#x8FD9;&#x662F;&#x4E00;&#x79CD;&#x5EF6;&#x65F6;&#x61D2;&#x60F0;&#x7B56;&#x7565;&#x3002;&#x4ECE;JDK1.5&#x5F00;&#x59CB;Java&#x5E76;&#x53D1;&#x5305;&#x91CC;&#x63D...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/04</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/04/20181102-3/">
-            
-                <span>并发操作合集-6.并发容器：BlockingQueue</span>
-        </a>
-        <div class="abstract-content">
-            &#x8FD9;&#x4E00;&#x7BC7;&#x6587;&#x7AE0;&#x4E5F;&#x4F1A;&#x4ECB;&#x7ECD;&#x4E00;&#x4E2A;&#x5E76;&#x53D1;&#x5BB9;&#x5668;&#xFF0C;BlockingQueue&#x3002;
-BlockingQueue&#x963B;&#x585E;&#x961F;&#x5217;&#xFF08;BlockingQueue&#xFF09;&#x662F;&#x4E00;&#x4E2A;&#x652F;&#x6301;&#x4E24;&#x4E2A;&#x9644;&#x52A0;&#x64CD;&#x4F5C;&#x7684;&#x961F;&#x5217;&#x3002;&#x8FD9;&#x4E24;&#x4E2A;&#x9644;&#x52A0;&#x7684;&#x64CD;&#x4F5C;&#x662F;&#xFF1A;&#x5728;&#x961F;&#x5217;&#x4E3A;&#x7A7A;&#x65F6;&#xFF0C;&#x83B7;&#x53D6;&#x5143;&#x7D20;&#x7684;&#x7EBF;&#x7A0B;&#x4F1A;&#x7B49;&#x5F85;&#x961F;&#x5217;&#x53D8;&#x4E3A;&#x975E;&#x7A7A;&#x3002;&#x5F53;&#x961F;&#x5217;&#x6EE1;&#x65F6;&#xFF0C;&#x5B58;&#x50A8;&#x5143;&#x7D20;&#x7684;&#x7EBF;&#x7A0B;&#x4F1A;&#x7B49;&#x5F85;&#x961F;&#x5217;&#x53EF;&#x7528;&#x3002;&#x963B;&#x585E;&#x961F;&#x5217;&#x5E38;&#x7528;&#x4E8E;&#x751F;&#x4EA7;&#x8005;&#x548C;&#x6D88;&#x8D39;&#x8005;&#x7684;&#x573A;&#x666F;&#xFF0C;&#x751F;&#x4EA7;&#x8005;&#x662F;&#x5F80;&#x961F;&#x5217;&#x91CC;&#x6D...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/04</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/02/20181102-2/">
-            
-                <span>并发操作合集-5.并发容器：ConcurrentHashMap</span>
-        </a>
-        <div class="abstract-content">
-            Java&#x4E2D;&#x63D0;&#x4F9B;&#x4E86;&#x5927;&#x91CF;&#x7684;&#x5E76;&#x53D1;&#x5BB9;&#x5668;&#xFF0C;&#x5B83;&#x4EEC;&#x4E0D;&#x540C;&#x4E8E;&#x5E76;&#x884C;&#x5BB9;&#x5668;&#xFF08;Vector&#xFF0C;HashMap&#xFF09;&#x3002;&#x5E76;&#x53D1;&#x5BB9;&#x5668;&#x5728;&#x786E;&#x4FDD;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x540C;&#x65F6;&#x53C8;&#x5177;&#x5907;&#x8F83;&#x9AD8;&#x7684;&#x6027;&#x80FD;&#x3002;
-&#x672C;&#x7AE0;&#x4F1A;&#x4ECB;&#x7ECD;&#x5E76;&#x53D1;&#x5BB9;&#x5668;&#x4E2D;&#x6700;&#x5E38;&#x7528;&#x7684;ConcurrentHashMap&#x3002;
-ConcurrentHashMap&#x7B80;&#x4ECB;ConcurrentMap&#x63A5;&#x53E3;&#x7EE7;&#x627F;&#x81EA;Map&#x63A5;&#x53E3;&#xFF0C;&#x5B9E;&#x73B0;&#x4E86;&#x9AD8;&#x541E;&#x5410;&#x91CF;&#x7684;&#x540C;&#x65F6;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x3002;ConcurrentHashMap&#x662F;ConcurrentMap&#x7684;&#x5B9E;&#x73B0;&#x3002;&#x57FA;&#x672C;&#x7684;&#x4F7F;&#x7528;&#x65B9;&#x5F0F;&#x548C;Map&#x76F8;&#x4F3C;&#xFF0C;&#x6211;&#x4EEC;&#x5728;&#x8FD9;&#x91CC;&#x6D89;&#x53CA;&#x4E00...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/02</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/02/20181102/">
-            
-                <span>并发操作合集-5.原子变量和volatile</span>
-        </a>
-        <div class="abstract-content">
-            
-&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
-
-&#x672C;&#x7AE0;&#x4E3B;&#x8981;&#x8BB2;&#x89E3;&#x539F;&#x5B50;&#x53D8;&#x91CF;&#x548C;volatile&#x5173;&#x952E;&#x5B57;&#x7684;&#x4F7F;&#x7528;&#x65B9;&#x5F0F;&#x548C;&#x4F7F;&#x7528;&#x573A;&#x666F;&#xFF0C;&#x5305;&#x62EC;Java8&#x4E2D;&#x65B0;&#x52A0;&#x5165;&#x7684;LongAdder&#x548C;LongAccumulator&#x3002;&#x60F3;&#x8981;&#x4E86;&#x89E3;&#x539F;&#x5B50;&#x53D8;&#x91CF;&#x548C;volatile&#x5173;&#x952E;&#x5B57;&#xFF0C;&#x5C31;&#x5FC5;&#x987B;&#x5148;&#x4E86;&#x89E3;Java&#x5185;&#x5B58;&#x6A21;&#x578B;&#x4E2D;&#x7684;&#x539F;&#x5B50;&#x6027;&#x548C;&#x53EF;&#x89C1;&#x6027;&#x3002;
-&#x53EF;&#x89C1;&#x6027;&#x548C;&#x539F;&#x5B50;&#x6027;&#x539F;&#x5B50;&#x6027;&#x5728;Java&#x4E2D;&#xFF0C;&#x5BF9;&#x57FA;&#x672C;&#x6570;&#x636E;&#x7C7B;&#x578B;&#x7684;&#x53D8;&#x91CF;&#x7684;&#x8BFB;&#x53D6;&#x548C;&#x8D4B;&#x503C;&#x64CD;&#x4F5C;&#x662F;&#x539F;&#x5B50;&#x6027;&#x64CD;&#x4F5C;&#xFF0C;&...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/02</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/01/20181101-2/">
-            
-                <span>并发操作合集-4.Lcok和Condition</span>
-        </a>
-        <div class="abstract-content">
-            
-&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
-
-&#x5E76;&#x53D1;API&#x652F;&#x6301;&#x591A;&#x79CD;&#x663E;&#x5F0F;&#x7684;&#x9501;&#xFF0C;&#x5B83;&#x4EEC;&#x7531;Lock&#x63A5;&#x53E3;&#x89C4;&#x5B9A;&#xFF0C;&#x7528;&#x4E8E;&#x4EE3;&#x66FF;synchronized&#x7684;&#x9690;&#x5F0F;&#x9501;&#x3002;&#x9501;&#x5BF9;&#x7EC6;&#x7C92;&#x5EA6;&#x7684;&#x63A7;&#x5236;&#x652F;&#x6301;&#x591A;&#x79CD;&#x65B9;&#x6CD5;&#xFF0C;&#x56E0;&#x6B64;&#x5B83;&#x4EEC;&#x6BD4;&#x9690;&#x5F0F;&#x7684;&#x76D1;&#x89C6;&#x5668;&#x5177;&#x6709;&#x66F4;&#x5927;&#x7684;&#x5F00;&#x9500;&#x3002;
-Lock&#x63A5;&#x53E3;&#x548C;synchronized&#x5173;&#x952E;&#x5B57;&#x7684;&#x5DEE;&#x522B;&#x4E24;&#x8005;&#x7684;&#x533A;&#x522B;&#x5982;&#x4E0B;&#xFF1A;
-
-
-
-&#x7C7B;&#x522B;
-synchronized
-Lock
-
-
-
-
-&#x5B58;&#x5728;&#x5C42;&#x6B21;
-Java&#x7684;&#x5173;&#x952E;&#x5B57;&#xFF0C;&#x5728;jvm&#x5C42;&#x9762;&#x4E0A;
-&#x662F;&#x4E00;&#x4E2A;&#x7C7B;
-
-
-&#x9501;&#x7684;&#x91CA;&#x653E;
-1&#...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/01</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/01/20181101/">
-            
-                <span>并发操作合集-3.Synchronized使用指南</span>
-        </a>
-        <div class="abstract-content">
-            
-&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
-
-&#x8FD9;&#x7BC7;&#x6587;&#x7AE0;&#x5C06;&#x544A;&#x8BC9;&#x4F60;&#x5982;&#x4F55;&#x6B63;&#x786E;&#x7684;&#x4F7F;&#x7528;synchronized&#x5173;&#x952E;&#x5B57;&#x3002;&#x901A;&#x8FC7;&#x793A;&#x4F8B;&#x4EE3;&#x7801;&#x5F7B;&#x5E95;&#x4E86;&#x89E3;synchronized&#x5173;&#x952E;&#x5B57;&#x7684;&#x4F7F;&#x7528;&#x89C4;&#x5219;&#x548C;&#x4E00;&#x4E9B;&#x9690;&#x60A3;&#x3002;
-1.Java&#x7684;&#x9501;1.1 &#x9501;&#x7684;&#x5185;&#x5B58;&#x8BED;&#x4E49;
-&#x9501;&#x53EF;&#x4EE5;&#x8BA9;&#x4E34;&#x754C;&#x533A;&#x4E92;&#x65A5;&#x6267;&#x884C;&#xFF0C;&#x8FD8;&#x53EF;&#x4EE5;&#x8BA9;&#x91CA;&#x653E;&#x9501;&#x7684;&#x7EBF;&#x7A0B;&#x5411;&#x540C;&#x4E00;&#x4E2A;&#x9501;&#x7684;&#x7EBF;&#x7A0B;&#x53D1;&#x9001;&#x6D88;&#x606F;
-&#x9501;&#x7684;&#x91CA;&#x653E;&#x8981;&#x9075;&#x5FAA;Happens-before&#x539F;&#x5219;&#xFF08;&#x9501;&#x89C4;&#x5219;&#xFF1A;&#x89E3;&#x9501;&#x5FC5;&#x7136;&#x53D1;&#x751F;&#x5...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/01</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/01/20181031/">
-            
-                <span>并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</span>
-        </a>
-        <div class="abstract-content">
-            
- &#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
-
-&#x8FD9;&#x7BC7;&#x6587;&#x7AE0;&#x4E2D;&#x4F1A;&#x8BE6;&#x7EC6;&#x4ECB;&#x7ECD;&#x90A3;&#x4E9B;&#x5207;&#x6362;&#x7EBF;&#x7A0B;&#x72B6;&#x6001;&#x7684;&#x5E38;&#x7528;&#x65B9;&#x6CD5;(wait,notify,sleep,join,yield)&#x3002;
-&#x7EBF;&#x7A0B;&#x7684;&#x72B6;&#x6001;&#x548C;&#x5E38;&#x7528;&#x65B9;&#x6CD5;&#x8FD8;&#x662F;&#x8FD9;&#x5F20;&#x56FE;&#x3002;&#x672C;&#x7AE0;&#x4E2D;&#x4ECB;&#x7ECD;&#x7684;&#x65B9;&#x6CD5;&#x4E0E;&#x7EBF;&#x7A0B;&#x72B6;&#x6001;&#x7684;&#x5173;&#x7CFB;&#x5982;&#x4E0B;&#x56FE;&#x6240;&#x793A;
-
-wait() &#x548C; notify() &#x65B9;&#x6CD5;&#x9996;&#x5148;&#xFF0C;&#x8FD9;&#x4E24;&#x4E2A;&#x65B9;&#x6CD5;&#x662F;&#x505A;&#x4EC0;&#x4E48;&#x7684;&#xFF1A;
-
-Object.wait() &#x2013; &#x6302;&#x8D77;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;
-Object.notify() &#x2013; &#x5524;&#x9192;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;
-
-wait()&#x4F7F;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x963B;&#x585E;&#xFF0C;&...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/01</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
-    
-</div>
-            
-        </div>
-    </article>
+    <!-- license  -->
     
     <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2018/11/04/20181104-3/" title="并发操作合集-9.Executor和线程池">
+                    <div class="prevTitle">并发操作合集-9.Executor和线程池</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MDUwMy8xNzAzMA==">
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
     
-    <nav class="page-nav">
-        <span class="page-number current">1</span><a class="page-number" href="/tags/并发操作合集/page/2/">2</a><a class="extend next" rel="next" href="/tags/并发操作合集/page/2/">NEXT &#62;</a>
-    </nav>
     
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
 </main>
             <!-- profile -->
             
@@ -823,6 +583,24 @@ wait()&#x4F7F;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x963B;&#x585E;&#xFF0C;&...
 </footer>
     </div>
     <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:30vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ThreadLocal的用法"><span class="toc-number">1.</span> <span class="toc-text">ThreadLocal的用法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ThreadLocal的实现原理"><span class="toc-number">2.</span> <span class="toc-text">ThreadLocal的实现原理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ThreadLocal的使用场景"><span class="toc-number">3.</span> <span class="toc-text">ThreadLocal的使用场景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Reference"><span class="toc-number">4.</span> <span class="toc-text">Reference</span></a></li></ol>
+    </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
     <div class="sidebar sidebar-hide">
@@ -1213,6 +991,8 @@ jsonContent:
     
     </div>
     <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
      
     </body>
 </html>
