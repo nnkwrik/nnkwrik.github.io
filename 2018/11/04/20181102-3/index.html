@@ -22,7 +22,7 @@
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>并发操作合集-6.并发容器：BlockingQueue · 农场主的黑科技.</title>
+    <title>并发操作合集-7.并发容器：BlockingQueue · 农场主的黑科技.</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -232,7 +232,7 @@
                 <a href="/">农场主的黑科技.</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">并发操作合集-6.并发容器：BlockingQueue</a>
+                <a href="#" class="post-name">并发操作合集-7.并发容器：BlockingQueue</a>
             </div>
     </div>
     
@@ -262,7 +262,7 @@ height:30vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            并发操作合集-6.并发容器：BlockingQueue
+            并发操作合集-7.并发容器：BlockingQueue
             <!-- 404 -->
             
         </h1>
@@ -486,7 +486,7 @@ height:30vh;
 <p>&#x5BF9;&#x4E8E;&#x5E26;&#x6709;&#x65F6;&#x95F4;&#x9650;&#x5236;&#x7684;tryTransfer(E e, long timeout, TimeUnit unit)&#x65B9;&#x6CD5;&#xFF0C;&#x5219;&#x662F;&#x8BD5;&#x56FE;&#x628A;&#x751F;&#x4EA7;&#x8005;&#x4F20;&#x5165;&#x7684;&#x5143;&#x7D20;&#x76F4;&#x63A5;&#x4F20;&#x7ED9;&#x6D88;&#x8D39;&#x8005;&#xFF0C;&#x4F46;&#x662F;&#x5982;&#x679C;&#x6CA1;&#x6709;&#x6D88;&#x8D39;&#x8005;&#x6D88;&#x8D39;&#x8BE5;&#x5143;&#x7D20;&#x5219;&#x7B49;&#x5F85;&#x6307;&#x5B9A;&#x7684;&#x65F6;&#x95F4;&#x518D;&#x8FD4;&#x56DE;&#xFF0C;&#x5982;&#x679C;&#x8D85;&#x65F6;&#x8FD8;&#x6CA1;&#x6D88;&#x8D39;&#x5143;&#x7D20;&#xFF0C;&#x5219;&#x8FD4;&#x56DE;false&#xFF0C;&#x5982;&#x679C;&#x5728;&#x8D85;&#x65F6;&#x65F6;&#x95F4;&#x5185;&#x6D88;&#x8D39;&#x4E86;&#x5143;&#x7D20;&#xFF0C;&#x5219;&#x8FD4;&#x56DE;true&#x3002;</p>
 <h3 id="LinkedBlockingDeque"><a href="#LinkedBlockingDeque" class="headerlink" title="LinkedBlockingDeque"></a>LinkedBlockingDeque</h3><p>LinkedBlockingDeque&#x662F;&#x4E00;&#x4E2A;&#x7531;&#x94FE;&#x8868;&#x7ED3;&#x6784;&#x7EC4;&#x6210;&#x7684;&#x53CC;&#x5411;&#x963B;&#x585E;&#x961F;&#x5217;&#x3002;&#x6240;&#x8C13;&#x53CC;&#x5411;&#x961F;&#x5217;&#x6307;&#x7684;&#x4F60;&#x53EF;&#x4EE5;&#x4ECE;&#x961F;&#x5217;&#x7684;&#x4E24;&#x7AEF;&#x63D2;&#x5165;&#x548C;&#x79FB;&#x51FA;&#x5143;&#x7D20;&#x3002;&#x53CC;&#x7AEF;&#x961F;&#x5217;&#x56E0;&#x4E3A;&#x591A;&#x4E86;&#x4E00;&#x4E2A;&#x64CD;&#x4F5C;&#x961F;&#x5217;&#x7684;&#x5165;&#x53E3;&#xFF0C;&#x5728;&#x591A;&#x7EBF;&#x7A0B;&#x540C;&#x65F6;&#x5165;&#x961F;&#x65F6;&#xFF0C;&#x4E5F;&#x5C31;&#x51CF;&#x5C11;&#x4E86;&#x4E00;&#x534A;&#x7684;&#x7ADE;&#x4E89;&#x3002;&#x76F8;&#x6BD4;&#x5176;&#x4ED6;&#x7684;&#x963B;&#x585E;&#x961F;&#x5217;&#xFF0C;LinkedBlockingDeque&#x591A;&#x4E86;addFirst&#xFF0C;addLast&#xFF0C;offerFirst&#xFF0C;offerLast&#xFF0C;peekFirst&#xFF0C;peekLast&#x7B49;&#x65B9;&#x6CD5;&#xFF0C;&#x4EE5;First&#x5355;&#x8BCD;&#x7ED3;&#x5C3E;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x8868;&#x793A;&#x63D2;&#x5165;&#xFF0C;&#x83B7;&#x53D6;&#xFF08;peek&#xFF09;&#x6216;&#x79FB;&#x9664;&#x53CC;&#x7AEF;&#x961F;&#x5217;&#x7684;&#x7B2C;&#x4E00;&#x4E2A;&#x5143;&#x7D20;&#x3002;&#x4EE5;Last&#x5355;&#x8BCD;&#x7ED3;&#x5C3E;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x8868;&#x793A;&#x63D2;&#x5165;&#xFF0C;&#x83B7;&#x53D6;&#x6216;&#x79FB;&#x9664;&#x53CC;&#x7AEF;&#x961F;&#x5217;&#x7684;&#x6700;&#x540E;&#x4E00;&#x4E2A;&#x5143;&#x7D20;&#x3002;&#x53E6;&#x5916;&#x63D2;&#x5165;&#x65B9;&#x6CD5;add&#x7B49;&#x540C;&#x4E8E;addLast&#xFF0C;&#x79FB;&#x9664;&#x65B9;&#x6CD5;remove&#x7B49;&#x6548;&#x4E8E;removeFirst&#x3002;&#x4F46;&#x662F;take&#x65B9;&#x6CD5;&#x5374;&#x7B49;&#x540C;&#x4E8E;takeFirst&#xFF0C;&#x4E0D;&#x77E5;&#x9053;&#x662F;&#x4E0D;&#x662F;Jdk&#x7684;bug&#xFF0C;&#x4F7F;&#x7528;&#x65F6;&#x8FD8;&#x662F;&#x7528;&#x5E26;&#x6709;First&#x548C;Last&#x540E;&#x7F00;&#x7684;&#x65B9;&#x6CD5;&#x66F4;&#x6E05;&#x695A;&#x3002;&#x5728;&#x521D;&#x59CB;&#x5316;LinkedBlockingDeque&#x65F6;&#x53EF;&#x4EE5;&#x521D;&#x59CB;&#x5316;&#x961F;&#x5217;&#x7684;&#x5BB9;&#x91CF;&#xFF0C;&#x7528;&#x6765;&#x9632;&#x6B62;&#x5176;&#x518D;&#x6269;&#x5BB9;&#x65F6;&#x8FC7;&#x6E21;&#x81A8;&#x80C0;&#x3002;&#x53E6;&#x5916;&#x53CC;&#x5411;&#x963B;&#x585E;&#x961F;&#x5217;&#x53EF;&#x4EE5;&#x8FD0;&#x7528;&#x5728;&#x201C;&#x5DE5;&#x4F5C;&#x7A83;&#x53D6;&#x201D;&#x6A21;&#x5F0F;&#x4E2D;&#x3002;</p>
 <p>&#x5173;&#x4E8E;LinkedBlockingDeque&#x7684;&#x5DE5;&#x4F5C;&#x7A83;&#x53D6;&#x793A;&#x4F8B;&#x53EF;&#x4EE5;&#x53C2;&#x8003;<a href="https://blog.csdn.net/hxpjava1/article/details/44245593" target="_blank" rel="noopener">&#x8FD9;&#x7BC7;&#x6587;&#x7AE0;</a></p>
-<h1 id="&#x793A;&#x4F8B;&#xFF1A;&#x518D;&#x770B;&#x53D1;&#x9001;&#x8005;-&#x63A5;&#x53D7;&#x8005;&#x95EE;&#x9898;"><a href="#&#x793A;&#x4F8B;&#xFF1A;&#x518D;&#x770B;&#x53D1;&#x9001;&#x8005;-&#x63A5;&#x53D7;&#x8005;&#x95EE;&#x9898;" class="headerlink" title="&#x793A;&#x4F8B;&#xFF1A;&#x518D;&#x770B;&#x53D1;&#x9001;&#x8005;-&#x63A5;&#x53D7;&#x8005;&#x95EE;&#x9898;"></a>&#x793A;&#x4F8B;&#xFF1A;&#x518D;&#x770B;&#x53D1;&#x9001;&#x8005;-&#x63A5;&#x53D7;&#x8005;&#x95EE;&#x9898;</h1><p>&#x5728;&#x4E4B;&#x524D;&#x4ECB;&#x7ECD;&#x7EBF;&#x7A0B;&#x72B6;&#x6001;&#x8F6C;&#x6362;&#x65B9;&#x6CD5;&#x7684;&#x6587;&#x7AE0;&#x4E2D;&#xFF0C;&#x7528;wait/notify&#x5199;&#x8FC7;&#x4E00;&#x4E2A;&#x53D1;&#x9001;&#x8005;-&#x63A5;&#x53D7;&#x8005;&#xFF08;&#x5176;&#x5B9E;&#x672C;&#x8D28;&#x5C31;&#x662F;&#x751F;&#x4EA7;&#x8005;&#x6D88;&#x8D39;&#x8005;&#x95EE;&#x9898;&#xFF09;&#x7684;&#x4F8B;&#x5B50;&#x3002;&#x8FD9;&#x6B21;&#x6211;&#x4EEC;&#x7528;BlokingQueue&#x6765;&#x5B9E;&#x73B0;&#x8FD9;&#x4E2A;&#x95EE;&#x9898;&#x3002;</p>
+<h1 id="&#x793A;&#x4F8B;&#xFF1A;&#x518D;&#x770B;&#x53D1;&#x9001;&#x8005;-&#x63A5;&#x53D7;&#x8005;&#x95EE;&#x9898;"><a href="#&#x793A;&#x4F8B;&#xFF1A;&#x518D;&#x770B;&#x53D1;&#x9001;&#x8005;-&#x63A5;&#x53D7;&#x8005;&#x95EE;&#x9898;" class="headerlink" title="&#x793A;&#x4F8B;&#xFF1A;&#x518D;&#x770B;&#x53D1;&#x9001;&#x8005;-&#x63A5;&#x53D7;&#x8005;&#x95EE;&#x9898;"></a>&#x793A;&#x4F8B;&#xFF1A;&#x518D;&#x770B;&#x53D1;&#x9001;&#x8005;-&#x63A5;&#x53D7;&#x8005;&#x95EE;&#x9898;</h1><p>&#x5728;&#x4E4B;&#x524D;2.&#x72B6;&#x6001;&#x8F6C;&#x6362;&#x65B9;&#x6CD5;&#x4E00;&#x7AE0;&#x4E2D;&#xFF0C;&#x7528;wait/notify&#x5199;&#x8FC7;&#x4E00;&#x4E2A;&#x53D1;&#x9001;&#x8005;-&#x63A5;&#x53D7;&#x8005;&#xFF08;&#x5176;&#x5B9E;&#x672C;&#x8D28;&#x5C31;&#x662F;&#x751F;&#x4EA7;&#x8005;&#x6D88;&#x8D39;&#x8005;&#x95EE;&#x9898;&#xFF09;&#x7684;&#x4F8B;&#x5B50;&#x3002;&#x8FD9;&#x6B21;&#x6211;&#x4EEC;&#x7528;BlokingQueue&#x6765;&#x5B9E;&#x73B0;&#x8FD9;&#x4E2A;&#x95EE;&#x9898;&#x3002;</p>
 <p>Data&#x7C7B;&#x6765;&#x5B9E;&#x73B0;&#x6570;&#x636E;&#x5305;&#x7684;&#x751F;&#x4EA7;&#x8005;&#x6D88;&#x8D39;&#x8005;&#x64CD;&#x4F5C;&#xFF1A;</p>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Data</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> BlockingQueue&lt;String&gt; queue;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Data</span><span class="params">(BlockingQueue queue)</span> </span>{</span><br><span class="line">        <span class="keyword">this</span>.queue = queue;</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">receive</span><span class="params">()</span> </span>{</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            String packet = queue.take();</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; receive: &quot;</span> + packet);</span><br><span class="line">            <span class="keyword">return</span> packet+ <span class="string">&quot; &lt;======= FROM &quot;</span> + Thread.currentThread().getName();</span><br><span class="line">        } <span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">            Thread.currentThread().interrupt();</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">send</span><span class="params">(String packet)</span> </span>{</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; send: &quot;</span> + packet);</span><br><span class="line">            queue.put(packet);</span><br><span class="line">        } <span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">            Thread.currentThread().interrupt();</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
 <p>&#x503C;&#x5F97;&#x6CE8;&#x610F;&#x7684;&#x662F;&#xFF0C;&#x4E4B;&#x524D;&#x6211;&#x4EEC;&#x4F7F;&#x7528;wait&#x65F6;&#xFF0C;&#x4F7F;&#x7528;synchronize&#x5305;&#x4F4F;&#x4E86;receive()&#x548C;send()&#x65B9;&#x6CD5;&#xFF0C;&#x8FD9;&#x5728;BlockingQueue&#x4E2D;&#x662F;&#x4E0D;&#x9700;&#x8981;&#x7684;&#xFF0C;&#x5426;&#x5219;&#x4F1A;&#x4EA7;&#x751F;&#x6B7B;&#x9501;&#x3002;</p>
@@ -496,7 +496,7 @@ height:30vh;
 <p>Receiver&#x7C7B;&#xFF1A;</p>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Receiver</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Data load;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> senderNum = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Receiver</span><span class="params">(Data load, <span class="keyword">int</span> consumerNum)</span> </span>{</span><br><span class="line">        <span class="keyword">this</span>.load = load;</span><br><span class="line">        <span class="keyword">this</span>.senderNum = consumerNum;</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Receiver</span><span class="params">(Data load)</span> </span>{</span><br><span class="line">        <span class="keyword">this</span>.load = load;</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{</span><br><span class="line">        <span class="keyword">while</span> (senderNum &gt;= <span class="number">0</span>) {</span><br><span class="line"></span><br><span class="line">            String receivedMessage = load.receive();</span><br><span class="line">            <span class="keyword">if</span> (<span class="string">&quot;End&quot;</span>.equals(receivedMessage)) senderNum--;</span><br><span class="line"></span><br><span class="line">            System.out.println(<span class="string">&quot;=======&gt; &quot;</span> + receivedMessage);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">try</span> {</span><br><span class="line">                Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">            } <span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">                Thread.currentThread().interrupt();</span><br><span class="line">                System.out.println(<span class="string">&quot;Thread Interrupted&quot;</span>);</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
 <p>&#x4E00;&#x76F4;&#x63A5;&#x53D7;&#x6570;&#x636E;&#x5305;&#x5E76;&#x8F93;&#x51FA;&#xFF0C;&#x76F4;&#x5230;&#x4ECE;&#x6240;&#x6709;&#x7EBF;&#x7A0B;&#x6536;&#x5230;&#x201C;End&#x201D;&#x6570;&#x636E;&#x5305;&#x3002;</p>
-<h2 id="LinkedBlockingDeque-1"><a href="#LinkedBlockingDeque-1" class="headerlink" title="LinkedBlockingDeque"></a>LinkedBlockingDeque</h2><p>&#x7528;LinkedBlockingDeque&#x5B9E;&#x73B0;&#x4E00;&#x4E2A;BlockingQueue&#xFF0C;LinkedBlockingDeque&#x662F;&#x521B;&#x5EFA;BlockingQueue&#x65F6;&#x6700;&#x7B80;&#x5355;&#xFF0C;&#x4E5F;&#x662F;&#x968F;&#x5E38;&#x7528;&#x7684;&#x65B9;&#x6CD5;&#x3002;</p>
+<h2 id="LinkedBlockingQueue-1"><a href="#LinkedBlockingQueue-1" class="headerlink" title="LinkedBlockingQueue"></a>LinkedBlockingQueue</h2><p>&#x7528;LinkedBlockingDeque&#x5B9E;&#x73B0;&#x4E00;&#x4E2A;BlockingQueue&#xFF0C;LinkedBlockingDeque&#x662F;&#x521B;&#x5EFA;BlockingQueue&#x65F6;&#x6700;&#x7B80;&#x5355;&#xFF0C;&#x4E5F;&#x662F;&#x6700;&#x5E38;&#x7528;&#x7684;&#x521B;&#x5EFA;BlockingQueue&#x65B9;&#x6CD5;&#x3002;</p>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">BlockingQueue&lt;String&gt; blockingQueue = <span class="keyword">new</span> LinkedBlockingDeque&lt;&gt;();</span><br><span class="line">Data data = <span class="keyword">new</span> Data(blockingQueue);</span><br><span class="line">Thread sender = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Sender(data), <span class="string">&quot;Sender Thread&quot;</span>);</span><br><span class="line">Thread receiver = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Receiver(data), <span class="string">&quot;Receiver Thread&quot;</span>);</span><br><span class="line"></span><br><span class="line">sender.start();</span><br><span class="line">receiver.start();</span><br></pre></td></tr></tbody></table></figure>
 <h2 id="ArrayBlockingQueue-1"><a href="#ArrayBlockingQueue-1" class="headerlink" title="ArrayBlockingQueue"></a>ArrayBlockingQueue</h2><p>&#x7528;ArrayBlockingQueue&#x5B9E;&#x73B0;&#x5927;&#x5C0F;&#x4E3A;100,&#x5E76;&#x4E00;&#x4E2A;&#x5177;&#x5907;&#x516C;&#x5E73;&#x9501;&#x7684;BlockingQueue&#xFF0C;&#x628A;&#x8FD9;&#x4E2A;BlockingQueue&#x4F20;&#x7ED9;&#x53D1;&#x9001;&#x8005;&#x7EBF;&#x7A0B;&#x548C;&#x63A5;&#x53D7;&#x8005;&#x7EBF;&#x7A0B;&#xFF1A;</p>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">BlockingQueue&lt;String&gt; blockingQueue = <span class="keyword">new</span> ArrayBlockingQueue&lt;&gt;(<span class="number">100</span>, <span class="keyword">true</span>);</span><br><span class="line">Data data = <span class="keyword">new</span> Data(blockingQueue);</span><br><span class="line">Thread sender = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Sender(data), <span class="string">&quot;Sender Thread&quot;</span>);</span><br><span class="line">Thread receiver = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Receiver(data), <span class="string">&quot;Receiver Thread&quot;</span>);</span><br><span class="line"></span><br><span class="line">sender.start();</span><br><span class="line">receiver.start();</span><br></pre></td></tr></tbody></table></figure>
@@ -546,16 +546,16 @@ height:30vh;
         <li class="next">
             
                 <div class="nextSlogan">Next Post</div>
-                <a href="/2018/11/04/20181104/" title="并发操作合集-7.并发容器：CopyOnWriteArrayList">
-                    <div class="nextTitle">并发操作合集-7.并发容器：CopyOnWriteArrayList</div>
+                <a href="/2018/11/04/20181104/" title="并发操作合集-8.并发容器：CopyOnWriteArrayList">
+                    <div class="nextTitle">并发操作合集-8.并发容器：CopyOnWriteArrayList</div>
                 </a>
             
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href="/2018/11/02/20181102-2/" title="并发操作合集-5.并发容器：ConcurrentHashMap">
-                    <div class="prevTitle">并发操作合集-5.并发容器：ConcurrentHashMap</div>
+                <a href="/2018/11/02/20181102-2/" title="并发操作合集-6.并发容器：ConcurrentHashMap">
+                    <div class="prevTitle">并发操作合集-6.并发容器：ConcurrentHashMap</div>
                 </a>
             
         </li>
@@ -682,7 +682,7 @@ top:30vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#BlockingQueue"><span class="toc-number">1.</span> <span class="toc-text">BlockingQueue</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java里的阻塞队列"><span class="toc-number">1.1.</span> <span class="toc-text">Java里的阻塞队列</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LinkedBlockingQueue"><span class="toc-number">1.1.1.</span> <span class="toc-text">LinkedBlockingQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ArrayBlockingQueue"><span class="toc-number">1.1.2.</span> <span class="toc-text">ArrayBlockingQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PriorityBlockingQueue"><span class="toc-number">1.1.3.</span> <span class="toc-text">PriorityBlockingQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SynchronousQueue"><span class="toc-number">1.1.4.</span> <span class="toc-text">SynchronousQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DelayQueue"><span class="toc-number">1.1.5.</span> <span class="toc-text">DelayQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LinkedTransferQueue"><span class="toc-number">1.1.6.</span> <span class="toc-text">LinkedTransferQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LinkedBlockingDeque"><span class="toc-number">1.1.7.</span> <span class="toc-text">LinkedBlockingDeque</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#示例：再看发送者-接受者问题"><span class="toc-number">2.</span> <span class="toc-text">示例：再看发送者-接受者问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#LinkedBlockingDeque-1"><span class="toc-number">2.1.</span> <span class="toc-text">LinkedBlockingDeque</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ArrayBlockingQueue-1"><span class="toc-number">2.2.</span> <span class="toc-text">ArrayBlockingQueue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PriorityBlockingQueue-1"><span class="toc-number">2.3.</span> <span class="toc-text">PriorityBlockingQueue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SynchronousQueue-1"><span class="toc-number">2.4.</span> <span class="toc-text">SynchronousQueue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DelayQueue-1"><span class="toc-number">2.5.</span> <span class="toc-text">DelayQueue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LinkedTransferQueue-1"><span class="toc-number">2.6.</span> <span class="toc-text">LinkedTransferQueue</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Reference"><span class="toc-number">3.</span> <span class="toc-text">Reference</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#BlockingQueue"><span class="toc-number">1.</span> <span class="toc-text">BlockingQueue</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java里的阻塞队列"><span class="toc-number">1.1.</span> <span class="toc-text">Java里的阻塞队列</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LinkedBlockingQueue"><span class="toc-number">1.1.1.</span> <span class="toc-text">LinkedBlockingQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ArrayBlockingQueue"><span class="toc-number">1.1.2.</span> <span class="toc-text">ArrayBlockingQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PriorityBlockingQueue"><span class="toc-number">1.1.3.</span> <span class="toc-text">PriorityBlockingQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SynchronousQueue"><span class="toc-number">1.1.4.</span> <span class="toc-text">SynchronousQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DelayQueue"><span class="toc-number">1.1.5.</span> <span class="toc-text">DelayQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LinkedTransferQueue"><span class="toc-number">1.1.6.</span> <span class="toc-text">LinkedTransferQueue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LinkedBlockingDeque"><span class="toc-number">1.1.7.</span> <span class="toc-text">LinkedBlockingDeque</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#示例：再看发送者-接受者问题"><span class="toc-number">2.</span> <span class="toc-text">示例：再看发送者-接受者问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#LinkedBlockingQueue-1"><span class="toc-number">2.1.</span> <span class="toc-text">LinkedBlockingQueue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ArrayBlockingQueue-1"><span class="toc-number">2.2.</span> <span class="toc-text">ArrayBlockingQueue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PriorityBlockingQueue-1"><span class="toc-number">2.3.</span> <span class="toc-text">PriorityBlockingQueue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SynchronousQueue-1"><span class="toc-number">2.4.</span> <span class="toc-text">SynchronousQueue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DelayQueue-1"><span class="toc-number">2.5.</span> <span class="toc-text">DelayQueue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LinkedTransferQueue-1"><span class="toc-number">2.6.</span> <span class="toc-text">LinkedTransferQueue</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Reference"><span class="toc-number">3.</span> <span class="toc-text">Reference</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -871,9 +871,18 @@ top:30vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 16
+        Total : 17
         </div>
         <!-- search  -->
         
@@ -893,32 +902,37 @@ top:30vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-4/">并发操作合集-10.ThreadLocal</a>
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-5/">🍤 并发操作合集-目录</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-3/">并发操作合集-9.Executor和线程池</a>
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-4/">并发操作合集-11.ThreadLocal</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-2/">并发操作合集-8.并发工具：Semaphore,CountDownLatch,CyclicBarrier</a>
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-3/">并发操作合集-10.Executor和线程池</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104/">并发操作合集-7.并发容器：CopyOnWriteArrayList</a>
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-2/">并发操作合集-9.并发工具：Semaphore,CountDownLatch,CyclicBarrier</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181102-3/">并发操作合集-6.并发容器：BlockingQueue</a>
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104/">并发操作合集-8.并发容器：CopyOnWriteArrayList</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102-2/">并发操作合集-5.并发容器：ConcurrentHashMap</a>
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181102-3/">并发操作合集-7.并发容器：BlockingQueue</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102-2/">并发操作合集-6.并发容器：ConcurrentHashMap</a>
         </li>
     
     
@@ -938,12 +952,12 @@ top:30vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     

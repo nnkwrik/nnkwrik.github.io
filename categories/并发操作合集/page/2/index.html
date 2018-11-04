@@ -361,15 +361,64 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2018/11/01/20181031/">
+            
+                <span>并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</span>
+        </a>
+        <div class="abstract-content">
+            
+&#x1F364; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;
+&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
+
+&#x8FD9;&#x7BC7;&#x6587;&#x7AE0;&#x4E2D;&#x4F1A;&#x8BE6;&#x7EC6;&#x4ECB;&#x7ECD;&#x90A3;&#x4E9B;&#x5207;&#x6362;&#x7EBF;&#x7A0B;&#x72B6;&#x6001;&#x7684;&#x5E38;&#x7528;&#x65B9;&#x6CD5;(wait,notify,sleep,join,yield)&#x3002;
+&#x7EBF;&#x7A0B;&#x7684;&#x72B6;&#x6001;&#x548C;&#x5E38;&#x7528;&#x65B9;&#x6CD5;&#x8FD8;&#x662F;&#x8FD9;&#x5F20;&#x56FE;&#x3002;&#x672C;&#x7AE0;&#x4E2D;&#x4ECB;&#x7ECD;&#x7684;&#x65B9;&#x6CD5;&#x4E0E;&#x7EBF;&#x7A0B;&#x72B6;&#x6001;&#x7684;&#x5173;&#x7CFB;&#x5982;&#x4E0B;&#x56FE;&#x6240;&#x793A;
+
+wait() &#x548C; notify() &#x65B9;&#x6CD5;&#x9996;&#x5148;&#xFF0C;&#x8FD9;&#x4E24;&#x4E2A;&#x65B9;&#x6CD5;&#x662F;&#x505A;&#x4EC0;&#x4E48;&#x7684;&#xFF1A;
+
+Object.wait() &#x2013; &#x6302;&#x8D77;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;
+Object.notify() &#x2013; &#x5524;&#x9192;&#x4E00;&#x4E2...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/01</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class="abstract-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2018/11/01/20181030-2/">
             
                 <span>并发操作合集-1.线程的生命周期</span>
         </a>
         <div class="abstract-content">
             
+&#x1F364; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;
 &#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
 
-&#x8FD9;&#x662F;&#x4E00;&#x4E2A;&#x5173;&#x4E8E;&#x5E76;&#x53D1;&#x7684;&#x7CFB;&#x5217;&#x3002;&#x4EE5;&#x5B9E;&#x6218;&#x4E3A;&#x9A71;&#x52A8;&#xFF0C;&#x4E86;&#x89E3;&#x5E76;&#x53D1;&#x7F16;&#x7A0B;&#x4E2D;&#x7684;&#x90A3;&#x4E9B;&#x9A9A;&#x64CD;&#x4F5C;&#x3002;&#x6587;&#x4E2D;&#x7684;&#x793A;&#x4F8B;&#x4EE3;&#x7801;&#x90FD;&#x662F;&#x4ECE;&#x7F51;&#x4E0A;&#x627E;&#x6765;&#x7684;&#xFF0C;&#x5982;&#x679C;&#x4F60;&#x5BF9;&#x5E76;&#x53D1;&#x7F16;&#x7A0B;&#x8FD8;&#x4E0D;&#x4E86;&#x89E3;&#xFF0C;&#x5E0C;&#x671B;&#x4F60;&#x80FD;&#x548C;&#x6211;&#x4E00;&#x6837;&#x6572;&#x4E00;&#x6572;&#x793A;&#x4F8B;&#x4E2D;&#x7684;&#x4EE3;&#x7801;&#x3002;&#x5982;&#x679C;&#x4F60;&#x5BF9;&#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x8DB3;&#x591F;&#x719F;&#x6089;&#xFF0C;&#x4E5F;&#x53EF;&#x4EE5;&#x628A;&#x8FD9;&#x4E2A;&#x7CFB;&#x5217;&#x5F53;&#x505A;&#x4E00;&#x672C;&#x5DE5;&#x5177;&#x4E66;&#xFF0C;&#x60F3;&#x4E0D;&#x8D77...
+&#x5728;&#x4ECB;&#x7ECD;&#x5E76;&#x53D1;&#x7684;&#x64CD;&#x4F5C;&#x4E4B;&#x524D;&#xFF0C;&#x5FC5;&#x9700;&#x5148;&#x7406;&#x89E3;&#x7EBF;&#x7A0B;&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;&#x3002;
+&#x7EBF;&#x7A0B;&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;&#x4E0B;&#x56FE;&#x662F;Java&#x4E2D;&#x7EBF;&#x7A0B;&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;&#xFF0C;&#x4EE5;&#x53CA;&#x5207;&#x6362;&#x72B6;&#x6001;&#x7684;&#x5E38;&#x7528;&#x65B9;&#x6CD5;&#x3002;java.lang.Thread&#x7C7B;&#x5305;&#x542B;&#x7684;&#x72B6;&#x6001;&#x679A;&#x4E3E;&#x5B9A;&#x4E49;&#x4E86;&#x8FD9;6&#x4E2A;&#x72B6;&#x6001;&#x3002;
+
+&#x4E0D;&#x7BA1;&#x5728;&#x4EFB;&#x4F55;&#x65F6;&#x5019;&#xFF0C;&#x7EBF;&#x7A0B;&#x4F1A;&#x662F;&#x4EE5;&#x4E0B;&#x72B6;&#x6001;&#x7684;&#x5176;&#x4E2D;&#x4E00;&#x4E2A;&#xFF1A;
+
+New&#xFF08;&#x65B0;&#x5EFA;&#x72B...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -661,9 +710,18 @@
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 16
+        Total : 17
         </div>
         <!-- search  -->
         
@@ -683,32 +741,37 @@
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-4/">并发操作合集-10.ThreadLocal</a>
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-5/">🍤 并发操作合集-目录</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-3/">并发操作合集-9.Executor和线程池</a>
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-4/">并发操作合集-11.ThreadLocal</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-2/">并发操作合集-8.并发工具：Semaphore,CountDownLatch,CyclicBarrier</a>
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-3/">并发操作合集-10.Executor和线程池</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104/">并发操作合集-7.并发容器：CopyOnWriteArrayList</a>
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-2/">并发操作合集-9.并发工具：Semaphore,CountDownLatch,CyclicBarrier</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181102-3/">并发操作合集-6.并发容器：BlockingQueue</a>
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104/">并发操作合集-8.并发容器：CopyOnWriteArrayList</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102-2/">并发操作合集-5.并发容器：ConcurrentHashMap</a>
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181102-3/">并发操作合集-7.并发容器：BlockingQueue</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102-2/">并发操作合集-6.并发容器：ConcurrentHashMap</a>
         </li>
     
     
@@ -728,12 +791,12 @@
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     
