@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="曽生">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="曽生">
+    
+    <meta name="keywords" content="nnkwrik,曽生,曾丽桦,野々川麗樺">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Java并发编程实战-第7章-取消与关闭 · 农场主的黑科技.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin="">
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin="">
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"输入关键字 :D","hits_empty":"没有找到相关信息 :(","hits_stats":"找到 ${hits} 个相关信息,耗时 ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'LXR3VBZBS6',
+                apiKey: '17d6d4ab4ba943bab3232eced0eea766',
+                indexName: 'index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">农场主的黑科技.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Java并发编程实战-第7章-取消与关闭</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href="/">农场主的黑科技.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:30vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/andrew-leu-1113236-unsplash.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Java并发编程实战-第7章-取消与关闭
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class="post-intro-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="《Java并发编程实战》">《Java并发编程实战》</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">6.4k</span>阅读时长: <span class="post-count reading-time">40 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2018/11/05</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>&#x672C;&#x7AE0;&#x5C06;&#x7ED9;&#x51FA;&#x5404;&#x79CD;&#x5B9E;&#x73B0;&#x53D6;&#x6D88;&#x548C;&#x4E2D;&#x65AD;&#x7684;&#x673A;&#x5236;&#xFF0C;&#x4EE5;&#x53CA;&#x5982;&#x4F55;&#x7F16;&#x5199;&#x4EFB;&#x52A1;&#x548C;&#x670D;&#x52A1;&#xFF0C;&#x4F7F;&#x5B83;&#x4EEC;&#x80FD;&#x5BF9;&#x53D6;&#x6D88;&#x8BF7;&#x6C42;&#x505A;&#x51FA;&#x54CD;&#x5E94;&#x3002;</p>
+<h1 id="&#x4EFB;&#x52A1;&#x53D6;&#x6D88;"><a href="#&#x4EFB;&#x52A1;&#x53D6;&#x6D88;" class="headerlink" title="&#x4EFB;&#x52A1;&#x53D6;&#x6D88;"></a>&#x4EFB;&#x52A1;&#x53D6;&#x6D88;</h1><p>&#x53EF;&#x53D6;&#x6D88;&#x7684;&#x64CD;&#x4F5C; &#xFF1A;&#x3000;&#x5916;&#x90E8;&#x4EE3;&#x7801;&#x80FD;&#x5728;&#x67D0;&#x4E2A;&#x64CD;&#x4F5C;&#x6B63;&#x5E38;&#x5B8C;&#x6210;&#x4E4B;&#x524D;&#x5C06;&#x5176;&#x7F6E;&#x5165;&#x201C;&#x5B8C;&#x6210;&#x201D;&#x72B6;&#x6001;</p>
+<p>&#x53D6;&#x6D88;&#x67D0;&#x4E2A;&#x64CD;&#x4F5C;&#x7684;&#x539F;&#x56E0;&#xFF1A;</p>
+<ul>
+<li>&#x70B9;&#x51FB;&#x67D0;&#x4E2A;&#x684C;&#x9762;&#x5E94;&#x7528;&#x4E2D;&#x7684;&#x53D6;&#x6D88;&#x6309;&#x94AE;&#x65F6;&#xFF1B; </li>
+<li>&#x67D0;&#x4E2A;&#x64CD;&#x4F5C;&#x8D85;&#x8FC7;&#x4E86;&#x4E00;&#x5B9A;&#x7684;&#x6267;&#x884C;&#x65F6;&#x95F4;&#x9650;&#x5236;&#x9700;&#x8981;&#x4E2D;&#x6B62;&#x65F6;&#xFF1B; </li>
+<li>&#x591A;&#x4E2A;&#x7EBF;&#x7A0B;&#x505A;&#x76F8;&#x540C;&#x7684;&#x4E8B;&#x60C5;&#xFF0C;&#x53EA;&#x8981;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x6210;&#x529F;&#x5176;&#x5B83;&#x7EBF;&#x7A0B;&#x90FD;&#x53EF;&#x4EE5;&#x53D6;&#x6D88;&#x65F6;&#xFF1B; </li>
+<li>&#x4E00;&#x7EC4;&#x7EBF;&#x7A0B;&#x4E2D;&#x7684;&#x4E00;&#x4E2A;&#x6216;&#x591A;&#x4E2A;&#x51FA;&#x73B0;&#x9519;&#x8BEF;&#x5BFC;&#x81F4;&#x6574;&#x7EC4;&#x90FD;&#x65E0;&#x6CD5;&#x7EE7;&#x7EED;&#x65F6;&#xFF1B; </li>
+<li>&#x5F53;&#x4E00;&#x4E2A;&#x5E94;&#x7528;&#x6216;&#x670D;&#x52A1;&#x9700;&#x8981;&#x505C;&#x6B62;&#x65F6;&#x3002;</li>
+</ul>
+<p>Java&#x4E2D;&#x6CA1;&#x6709;&#x4E00;&#x79CD;&#x5B89;&#x5168;&#x7684;&#x62A2;&#x5360;&#x5F0F;&#x65B9;&#x6CD5;&#x6765;&#x505C;&#x6B62;&#x7EBF;&#x7A0B;&#xFF0C;&#x53EA;&#x6709;&#x4E00;&#x4E9B;&#x534F;&#x4F5C;&#x5F0F;&#x7684;&#x673A;&#x5236;&#xFF0C;&#x4EE3;&#x7801;&#x90FD;&#x4F1A;&#x9075;&#x5FAA;&#x7684;&#x4E00;&#x79CD;&#x534F;&#x8BAE;&#x3002;</p>
+<p>&#x6BD4;&#x5982;&#xFF1A;</p>
+<blockquote>
+<p><strong>&#x201C;&#x5DF2;&#x8BF7;&#x6C42;&#x53D6;&#x6D88;&#x201D;&#x6807;&#x5FD7;</strong></p>
+<p>&#x4EFB;&#x52A1;&#x5C06;&#x5B9A;&#x671F;&#x5730;&#x67E5;&#x770B;&#x8FD9;&#x4E2A;&#x6807;&#x5FD7;&#x3002;&#x5982;&#x679C;&#x8BBE;&#x7F6E;&#x4E86;&#x8FD9;&#x4E2A;&#x6807;&#x5FD7;&#xFF0C;&#x90A3;&#x4E48;&#x4EFB;&#x52A1;&#x5C06;&#x63D0;&#x524D;&#x7ED3;&#x675F;&#x3002;</p>
+</blockquote>
+<p>&#x1F60A;PrimeGenerator&#x6301;&#x7EED;&#x5730;&#x679A;&#x4E3E;&#x7D20;&#x6570;&#xFF08;Prime&#xFF09;&#xFF0C;&#x76F4;&#x5230;cancelled&#x88AB;&#x8BBE;&#x7F6E;&#x3002;&#x4E3A;&#x4E86;&#x786E;&#x4FDD;&#x53EF;&#x9760;&#x6027;cancelled&#x88AB;&#x8BBE;&#x7F6E;&#x4E3A;volatile&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//        7-1      &#x4F7F;&#x7528;Volatile&#x7C7B;&#x578B;&#x7684;&#x57DF;&#x6765;&#x4FDD;&#x5B58;&#x53D6;&#x6D88;&#x72B6;&#x6001;  </span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PrimeGenerator</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>{</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> List&lt;BigInteger&gt; primes=</span><br><span class="line">            <span class="keyword">new</span> ArrayList&lt;BigInteger&gt;();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">boolean</span> cancelled;<span class="comment">//volatile&#x53D8;&#x91CF;&#x80FD;&#x786E;&#x4FDD;&#x53EF;&#x89C1;&#x6027; &#x7981;&#x6B62;&#x6307;&#x4EE4;&#x91CD;&#x6392;&#x5E8F;</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>{</span><br><span class="line">        BigInteger p=BigInteger.ONE;<span class="comment">//&#x5E38;&#x91CF;</span></span><br><span class="line">        <span class="keyword">while</span>(!cancelled){  <span class="comment">//&#x4EFB;&#x52A1;&#x5C06;&#x5B9A;&#x671F;&#x5730;&#x67E5;&#x770B;&#x8FD9;&#x4E2A;&#x6807;&#x5FD7;&#x3002;&#x5982;&#x679C;&#x8BBE;&#x7F6E;&#x4E86;&#x8FD9;&#x4E2A;&#x6807;&#x5FD7;&#xFF0C;&#x90A3;&#x4E48;&#x4EFB;&#x52A1;&#x5C06;&#x63D0;&#x524D;&#x7ED3;&#x675F;&#x3002;&#xFF08;&#x5373;&#x5982;&#x679C;cancelled&#x4E0D;&#x4E3A;true&#x5219;&#x4E00;&#x76F4;&#x8FD0;&#x884C;&#xFF09;</span></span><br><span class="line">            p=p.nextProbablePrime();<span class="comment">//&#x8FD4;&#x56DE;&#x4E00;&#x4E2A;&#x6BD4;&#x5F53;&#x524D;&#x5927;&#x7684;</span></span><br><span class="line">            <span class="keyword">synchronized</span> (<span class="keyword">this</span>) { <span class="comment">//&#x786E;&#x4FDD;&#x4E0D;&#x4F1A;&#x88AB;&#x6DFB;&#x52A0;&#x591A;&#x6B21;</span></span><br><span class="line">                primes.add(p);</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cancel</span><span class="params">()</span></span>{</span><br><span class="line">        cancelled=<span class="keyword">true</span>;      <span class="comment">//&#x5C06;&#x201C;&#x5DF2;&#x8BF7;&#x6C42;&#x53D6;&#x6D88;&#x6807;&#x5FD7;&#x201D;&#x53D6;&#x4E3A;true</span></span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> List&lt;BigInteger&gt; <span class="title">get</span><span class="params">()</span></span>{</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ArrayList&lt;BigInteger&gt;(primes);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E0A;&#x9762;&#x4EE3;&#x7801;&#x7684;&#x5BA2;&#x6237;&#x7AEF;&#x7A0B;&#x5E8F;&#xFF0C;&#x4E00;&#x4E2A;&#x4EC5;&#x8FD0;&#x884C;&#x4E00;&#x79D2;&#x7684;&#x7D20;&#x6570;&#x751F;&#x6210;&#x5668;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//            7-2      &#x4E00;&#x4E2A;&#x4EC5;&#x8FD0;&#x884C;&#x4E00;&#x79D2;&#x7684;&#x7D20;&#x6570;&#x751F;&#x6210;&#x5668;</span></span><br><span class="line">  <span class="function"><span class="keyword">static</span> List&lt;BigInteger&gt; <span class="title">aSecondOfPrimes</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>{</span><br><span class="line">        PrimeGenerator generator=<span class="keyword">new</span> PrimeGenerator();</span><br><span class="line">        <span class="keyword">new</span> Thread(generator).start();</span><br><span class="line">        <span class="keyword">try</span>{</span><br><span class="line">            SECONDS.sleep(<span class="number">1</span>); <span class="comment">//&#x5EF6;&#x8FDF;&#x4E00;&#x79D2;&#x624D;&#x6267;&#x884C;cancel</span></span><br><span class="line">        }<span class="keyword">finally</span>{</span><br><span class="line">            generator.cancel();</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">return</span> generator.get();</span><br><span class="line"></span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>cancel&#x65B9;&#x6CD5;&#x7531;finally&#x5757;&#x8C03;&#x7528;&#xFF0C;&#x786E;&#x4FDD;&#x5373;&#x4F7F;&#x5728;&#x8C03;&#x7528;sleep&#x65F6;&#x88AB;&#x4E2D;&#x65AD;&#x4E5F;&#x80FD;&#x53D6;&#x6D88;&#x7D20;&#x6570;&#x751F;&#x6210;&#x5668;&#x7684;&#x6267;&#x884C;&#x3002;</p>
+<h2 id="&#x4E2D;&#x65AD;"><a href="#&#x4E2D;&#x65AD;" class="headerlink" title="&#x4E2D;&#x65AD;"></a>&#x4E2D;&#x65AD;</h2><p>PrimeGenerator&#x7684;&#x95EE;&#x9898;&#xFF1A;&#x679C;&#x4F7F;&#x7528;&#x8FD9;&#x79CD;&#x65B9;&#x6CD5;&#x7684;&#x4EFB;&#x52A1;&#x8C03;&#x7528;&#x4E86;&#x4E00;&#x4E2A;&#x963B;&#x585E;&#x65B9;&#x6CD5;&#xFF0C;&#x4F8B;&#x5982;BlockingQueue.put&#xFF0C;&#x90A3;&#x4E48;&#x4EFB;&#x52A1;&#x53EF;&#x80FD;&#x6C38;&#x8FDC;&#x4E0D;&#x4F1A;&#x68C0;&#x67E5;&#x53D6;&#x6D88;&#x6807;&#x5FD7;&#xFF0C;&#x56E0;&#x6B64;&#x6C38;&#x8FDC;&#x4E0D;&#x4F1A;&#x7ED3;&#x675F;&#x3002;</p>
+<p>&#x1F627;&#x751F;&#x4EA7;&#x8005;&#x7EBF;&#x7A0B;&#x751F;&#x6210;&#x7D20;&#x6570;&#xFF0C;&#x5E76;&#x5C06;&#x5B83;&#x4EEC;&#x653E;&#x5165;&#x4E00;&#x4E2A;&#x963B;&#x585E;&#x961F;&#x5217;&#x3002;&#x5982;&#x679C;&#x751F;&#x6210;&#x8005;&#x7684;&#x901F;&#x5EA6;&#x8D85;&#x8FC7;&#x4E86;&#x6D88;&#x8D39;&#x8005;&#x7684;&#x5904;&#x7406;&#x901F;&#x5EA6;&#xFF0C; &#x961F;&#x5217;&#x5C06;&#x88AB;&#x586B;&#x6EE1;&#xFF0C;put&#x65B9;&#x6CD5;&#x4E5F;&#x4F1A;&#x963B;&#x585E;&#x3002;&#x56E0;&#x6B64;&#xFF0C;&#x751F;&#x4EA7;&#x8005;&#x5374;&#x6C38;&#x8FDC;&#x4E0D;&#x80FD;&#x68C0;&#x67E5;&#x8FD9;&#x4E2A;&#x6807;&#x5FD7;&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//             7-3    &#x4E0D;&#x53EF;&#x9760;&#x7684;&#x53D6;&#x6D88;&#x64CD;&#x4F5C;&#x5427;&#x751F;&#x6210;&#x8005;&#x7F6E;&#x4E8E;&#x963B;&#x585E;&#x7684;&#x64CD;&#x4F5C;&#x4E2D;&#xFF08;&#x4E0D;&#x8981;&#x8FD9;&#x4E48;&#x505A;&#xFF09;</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BrokenPrimeProducer</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>{</span><br><span class="line">       <span class="keyword">private</span> <span class="keyword">final</span> BlockingQueue&lt;BigInteger&gt; queue;</span><br><span class="line">       <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">boolean</span> cancelled=<span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="title">BrokenPrimeProducer</span><span class="params">(BlockingQueue&lt;BigInteger&gt; queue)</span> </span>{</span><br><span class="line">        <span class="keyword">this</span>.queue=queue;</span><br><span class="line">      }</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>{</span><br><span class="line">          <span class="keyword">try</span>{</span><br><span class="line">              BigInteger p=BigInteger.ONE;</span><br><span class="line">              <span class="keyword">while</span>(!cancelled){</span><br><span class="line">                  queue.put(p=p.nextProbablePrime());</span><br><span class="line">              }</span><br><span class="line">          }<span class="keyword">catch</span> (InterruptedException consumed) {</span><br><span class="line"></span><br><span class="line">        }</span><br><span class="line">      }</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">consumePrimes</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>{</span><br><span class="line">    BlockingQueue&lt;BigInteger&gt; primes=<span class="keyword">new</span> ArrayBlockingQueue&lt;&gt;(MAX_PRIORITY);</span><br><span class="line">    BrokenPrimeProducer producer=<span class="keyword">new</span> BrokenPrimeProducer(primes);</span><br><span class="line">    producer.start();</span><br><span class="line">    <span class="keyword">try</span>{</span><br><span class="line">        <span class="keyword">while</span>(needMorePrimes())              <span class="comment">//&#x5982;&#x679C;&#x9700;&#x8981;&#x7EE7;&#x7EED;&#x6D88;&#x8D39;</span></span><br><span class="line">            consume(primes.take());</span><br><span class="line">    }<span class="keyword">finally</span>{              </span><br><span class="line">        <span class="comment">//&#x5B83;&#x53EF;&#x4EE5;&#x8C03;&#x7528;cancel&#x65B9;&#x6CD5;&#x6765;&#x8BBE;&#x7F6E;cancelled&#x6807;&#x5FD7;&#xFF0C;&#x4F46;&#x6B64;&#x65F6;&#x751F;&#x4EA7;&#x8005;&#x5374;&#x6C38;&#x8FDC;&#x4E0D;&#x80FD;&#x68C0;&#x67E5;&#x8FD9;&#x4E2A;&#x6807;&#x5FD7;&#xFF0C;&#x56E0;&#x4E3A;&#x5B83;&#x65E0;&#x6CD5;&#x4ECE;&#x963B;&#x585E;&#x7684;put&#x65B9;&#x6CD5;&#x4E2D;&#x6062;&#x590D;&#x8FC7;&#x6765;&#xFF08;&#x56E0;&#x4E3A;&#x6D88;&#x8D39;&#x8005;&#x6B64;&#x65F6;&#x5DF2;&#x7ECF;&#x505C;&#x6B62;&#x4ECE;&#x961F;&#x5217;&#x4E2D;&#x53D6;&#x51FA;&#x7D20;&#x6570;&#xFF0C;&#x6240;&#x4EE5;put&#x65B9;&#x6CD5;&#x5C06;&#x4E00;&#x76F4;&#x4FDD;&#x6301;&#x963B;&#x585E;&#x72B6;&#x6001;&#x3002;&#xFF09;</span></span><br><span class="line">        producer.cancel();</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<blockquote>
+<p><strong>Thread&#x7684;&#x4E2D;&#x65AD;</strong><br>&#x963B;&#x585E;&#x5E93;&#x65B9;&#x6CD5;&#x5B9A;&#x671F;&#x68C0;&#x67E5;Thread&#x7684;&#x4E2D;&#x65AD;&#xFF0C;&#x5E76;&#x5728;&#x9002;&#x5F53;&#x65F6;&#x5019;&#x505C;&#x6B62;&#x5F53;&#x524D;&#x5DE5;&#x4F5C;</p>
+</blockquote>
+<p><strong>Thread&#x4E2D;&#x7684;&#x4E2D;&#x65AD;&#x65B9;&#x6CD5;</strong> &#xFF1A; &#x6BCF;&#x4E2A;&#x7EBF;&#x7A0B;&#x90FD;&#x6709;&#x4E00;&#x4E2A;boolean&#x7C7B;&#x578B;&#x7684;&#x4E2D;&#x65AD;&#x72B6;&#x6001;&#x3002;&#x5F53;&#x4E2D;&#x65AD;&#x7EBF;&#x7A0B;&#x65F6;&#xFF0C;&#x8FD9;&#x4E2A;&#x7EBF;&#x7A0B;&#x7684;&#x4E2D;&#x65AD;&#x72B6;&#x6001;&#x5C06;&#x88AB;&#x8BBE;&#x7F6E;&#x4E3A;true&#x3002;</p>
+<p>&#x5728;Thread&#x4E2D;&#x5305;&#x542B;&#x4E86;&#x4E2D;&#x65AD;&#x7EBF;&#x7A0B;&#x4EE5;&#x53CA;&#x67E5;&#x8BE2;&#x7EBF;&#x7A0B;&#x4E2D;&#x65AD;&#x72B6;&#x6001;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x5982;&#x4E0B;&#xFF1A;</p>
+<ul>
+<li>interrupt&#x65B9;&#x6CD5;&#x80FD;&#x4E2D;&#x65AD;&#x76EE;&#x6807;&#x7EBF;&#x7A0B; </li>
+<li>isInterrupt&#x65B9;&#x6CD5;&#x80FD;&#x8FD4;&#x56DE;&#x76EE;&#x6807;&#x7EBF;&#x7A0B;&#x7684;&#x4E2D;&#x65AD;&#x72B6;&#x6001; </li>
+<li>&#x9759;&#x6001;&#x7684;interrupted&#x65B9;&#x6CD5;&#x5C06;&#x6E05;&#x9664;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x7684;&#x4E2D;&#x65AD;&#x72B6;&#x6001;&#xFF0C;&#x5E76;&#x8FD4;&#x56DE;&#x5B83;&#x4E4B;&#x524D;&#x7684;&#x503C;&#xFF0C;&#x8FD9;&#x4E5F;&#x662F;&#x6E05;&#x9664;&#x4E2D;&#x65AD;&#x72B6;&#x6001;&#x7684;&#x552F;&#x4E00;&#x65B9;&#x6CD5;&#x3002;</li>
+</ul>
+<p>&#x963B;&#x585E;&#x5E93;&#x65B9;&#x6CD5;&#xFF0C;&#x5982;Thread.sleep&#x548C;Object.wait&#xFF0C;&#x5728;&#x53D1;&#x73B0;&#x4E2D;&#x65AD;&#x65F6;&#x63D0;&#x524D;&#x8FD4;&#x56DE;&#x3002;&#x5B83;&#x4EEC;&#x5728;&#x54CD;&#x5E94;&#x4E2D;&#x65AD;&#x65F6;&#x4F1A;&#xFF1A;&#x6E05;&#x9664;&#x4E2D;&#x65AD;&#x72B6;&#x6001;&#xFF0C;&#x629B;&#x51FA;InterruptedException</p>
+<p><strong>&#x8C03;&#x7528;Interrupt&#x5E76;&#x4E0D;&#x610F;&#x5473;&#x7740;&#x7ACB;&#x5373;&#x505C;&#x6B62;&#x76EE;&#x6807;&#x7EBF;&#x7A0B;&#x6B63;&#x5728;&#x8FDB;&#x884C;&#x7684;&#x5DE5;&#x4F5C;&#xFF0C;&#x800C;&#x53EA;&#x662F;&#x4F20;&#x9012;&#x4E86;&#x8BF7;&#x6C42;&#x4E2D;&#x65AD;&#x7684;&#x6D88;&#x606F;&#x3002;</strong></p>
+<p>&#x4E0A;&#x9762;&#x7684;BrokenPrimeProducer&#x7684;&#x89E3;&#x51B3;&#x65B9;&#x5F0F;&#xFF1A;&#x8FDB;&#x884C;&#x963B;&#x585E;&#x7684;BlockingQueue&#x53EF;&#x4EE5;&#x68C0;&#x6D4B;Thread&#x7684;interrupt&#xFF0C;&#x6240;&#x4EE5;&#x7528;interrupt&#x4EE3;&#x66FF;&#x81EA;&#x5B9A;&#x4E49;&#x7684;&#x4E2D;&#x65AD;&#x65B9;&#x5F0F;&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//       7-5 &#x901A;&#x8FC7;&#x4E2D;&#x65AD;&#x6765;&#x53D6;&#x6D88;</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PrimeProducer</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>{</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> BlockingQueue&lt;BigInteger&gt; queue;</span><br><span class="line"></span><br><span class="line">    PrimeProducer(BlockingQueue&lt;BigInteger&gt; queue) {</span><br><span class="line">        <span class="keyword">this</span>.queue = queue;</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{</span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            BigInteger p = BigInteger.ONE;</span><br><span class="line">            <span class="comment">//&#x5728;&#x6BCF;&#x6B21;&#x8FED;&#x4EE3;&#x5FAA;&#x73AF;&#x4E2D;&#xFF0C;&#x6709;&#x4E24;&#x4E2A;&#x4F4D;&#x7F6E;&#x53EF;&#x4EE5;&#x68C0;&#x6D4B;&#x51FA;&#x4E2D;&#x65AD;&#xFF1A;&#x5728;&#x963B;&#x585E;&#x7684;put&#x65B9;&#x6CD5;&#x4E2D;&#x8C03;&#x7528;&#xFF0C;&#x4EE5;&#x53CA;&#x5728;&#x5FAA;&#x73AF;&#x5F00;&#x59CB;&#x5904;&#x67E5;&#x8BE2;&#x4E2D;&#x65AD;&#x72B6;&#x6001;&#x3002;</span></span><br><span class="line">            <span class="keyword">while</span> (!Thread.currentThread().isInterrupted())</span><br><span class="line">                queue.put(p = p.nextProbablePrime());</span><br><span class="line">        } <span class="keyword">catch</span> (InterruptedException consumed) {</span><br><span class="line">            <span class="comment">/* &#x5141;&#x8BB8;&#x7EBF;&#x7A0B;&#x9000;&#x51FA; */</span></span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cancel</span><span class="params">()</span> </span>{</span><br><span class="line">        interrupt();</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="&#x4E2D;&#x65AD;&#x7B56;&#x7565;"><a href="#&#x4E2D;&#x65AD;&#x7B56;&#x7565;" class="headerlink" title="&#x4E2D;&#x65AD;&#x7B56;&#x7565;"></a>&#x4E2D;&#x65AD;&#x7B56;&#x7565;</h2><p>&#x4E2D;&#x65AD;&#x7B56;&#x7565;&#xFF1A;&#x5728;&#x53D1;&#x73B0;&#x4E2D;&#x65AD;&#x8BF7;&#x6C42;&#x65F6;&#x5E94;&#x8BE5;&#x505A;&#x54EA;&#x4E9B;&#x5DE5;&#x4F5C;</p>
+<p>&#x6700;&#x5408;&#x7406;&#x7684;&#x7EC8;&#x7AEF;&#x7B56;&#x7565;&#xFF1A;&#x5C3D;&#x5FEB;&#x9000;&#x51FA;&#xFF0C;&#x5E76;&#x628A;&#x4E2D;&#x65AD;&#x4FE1;&#x606F;&#x4F20;&#x9012;&#x7ED9;&#x8C03;&#x7528;&#x8005;&#xFF0C;&#x4ECE;&#x800C;&#x4F7F;&#x8C03;&#x7528;&#x6808;&#x4E2D;&#x7684;&#x4E0A;&#x5C42;&#x4EE3;&#x7801;&#x53EF;&#x4EE5;&#x91C7;&#x53D6;&#x8FDB;&#x4E00;&#x6B65;&#x7684;&#x64CD;&#x4F5C;&#x3002;</p>
+<p>&#x8FD9;&#x5C31;&#x662F;&#x4E3A;&#x4EC0;&#x4E48;&#x5927;&#x591A;&#x6570;&#x53EF;&#x963B;&#x585E;&#x7684;&#x5E93;&#x51FD;&#x6570;&#x90FD;&#x53EA;&#x662F;&#x629B;&#x51FA;InterruptedException&#x4F5C;&#x4E3A;&#x4E2D;&#x65AD;&#x54CD;&#x5E94;&#x3002;&#x5B83;&#x4EEC;&#x6C38;&#x8FDC;&#x4E0D;&#x4F1A;&#x5728;&#x67D0;&#x4E2A;&#x7531;&#x81EA;&#x5DF1;&#x62E5;&#x6709;&#x7684;&#x7EBF;&#x7A0B;&#x4E2D;&#x8FD0;&#x884C;&#xFF0C;&#x56E0;&#x6B64;&#x5B83;&#x4EEC;&#x4E3A;&#x4EFB;&#x52A1;&#x6216;&#x5E93;&#x4EE3;&#x7801;&#x5B9E;&#x73B0;&#x4E86;&#x8FD9;&#x4E2A;&#x6700;&#x5408;&#x7406;&#x7684;&#x53D6;&#x6D88;&#x7B56;&#x7565;&#x3002;&#x4F46;&#x5B83;&#x53EF;&#x4EE5;&#x63A8;&#x8FDF;&#x5904;&#x7406;&#x4E2D;&#x65AD;&#x8BF7;&#x6C42;&#xFF0C;&#x5E76;&#x76F4;&#x5230;&#x67D0;&#x4E2A;&#x66F4;&#x5408;&#x9002;&#x7684;&#x65F6;&#x523B;&#xFF0C;&#x5728;&#x629B;&#x51FA;InterruptedException&#x3002;</p>
+<h2 id="&#x54CD;&#x5E94;&#x4E2D;&#x65AD;"><a href="#&#x54CD;&#x5E94;&#x4E2D;&#x65AD;" class="headerlink" title="&#x54CD;&#x5E94;&#x4E2D;&#x65AD;"></a>&#x54CD;&#x5E94;&#x4E2D;&#x65AD;</h2><p>&#x6709;&#x4E24;&#x79CD;&#x5B9E;&#x7528;&#x7B56;&#x7565;&#x53EF;&#x7528;&#x4E8E;&#x5904;&#x7406;InterruptedException&#xFF1A; </p>
+<ul>
+<li><strong>&#x4F20;&#x9012;&#x5F02;&#x5E38;</strong>&#xFF08;&#x53EF;&#x80FD;&#x5728;&#x67D0;&#x4E2A;&#x7279;&#x5B9A;&#x4E8E;&#x4EFB;&#x52A1;&#x989D;&#x6E05;&#x9664;&#x64CD;&#x4F5C;&#x4E4B;&#x540E;&#xFF09;&#xFF0C;&#x4ECE;&#x800C;&#x4F7F;&#x4F60;&#x7684;&#x65B9;&#x6CD5;&#x4E5F;&#x79F0;&#x4E3A;&#x53EF;&#x4E2D;&#x65AD;&#x7684;&#x963B;&#x585E;&#x65B9;&#x6CD5;&#x3002;</li>
+<li><strong>&#x6062;&#x590D;&#x4E2D;&#x65AD;&#x72B6;&#x6001;</strong>&#xFF0C;&#x4ECE;&#x800C;&#x4F7F;&#x8C03;&#x7528;&#x6808;&#x4E0A;&#x7684;&#x4E0A;&#x5C42;&#x4EE3;&#x7801;&#x80FD;&#x591F;&#x5BF9;&#x5176;&#x8FDB;&#x884C;&#x5904;&#x7406;&#x3002;&#x4E5F;&#x5C31;&#x662F;catch InterruptedException</li>
+</ul>
+<p>&#x6BD4;&#x5982;&#xFF0C;&#x5F53;&#x4E00;&#x4E2A;&#x7531;ThreadPoolExecutor&#x62E5;&#x6709;&#x7684;&#x5DE5;&#x4F5C;&#x8005;&#x7EBF;&#x7A0B;&#x68C0;&#x6D4B;&#x5230;&#x4E2D;&#x65AD;&#x65F6;&#xFF0C;&#x5B83;&#x4F1A;&#x68C0;&#x6D4B;&#x7EBF;&#x7A0B;&#x6C60;&#x662F;&#x5426;&#x6B63;&#x5728;&#x5173;&#x95ED;&#x3002;&#x5982;&#x679C;&#x662F;&#xFF0C;&#x5B83;&#x4F1A;&#x5728;&#x7ED3;&#x675F;&#x4E4B;&#x524D;&#x6267;&#x884C;&#x4E00;&#x4E9B;&#x7EBF;&#x7A0B;&#x6C60;&#x6E05;&#x7406;&#x5DE5;&#x4F5C;&#xFF0C;&#x5426;&#x5219;&#x5B83;&#x53EF;&#x80FD;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x65B0;&#x7EBF;&#x7A0B;&#x5C06;&#x7EBF;&#x7A0B;&#x6C60;&#x6062;&#x590D;&#x5230;&#x5408;&#x7406;&#x7684;&#x89C4;&#x6A21;</p>
+<h2 id="&#x793A;&#x4F8B;&#xFF1A;&#x8BA1;&#x65F6;&#x8FD0;&#x884C;"><a href="#&#x793A;&#x4F8B;&#xFF1A;&#x8BA1;&#x65F6;&#x8FD0;&#x884C;" class="headerlink" title="&#x793A;&#x4F8B;&#xFF1A;&#x8BA1;&#x65F6;&#x8FD0;&#x884C;"></a>&#x793A;&#x4F8B;&#xFF1A;&#x8BA1;&#x65F6;&#x8FD0;&#x884C;</h2><p>&#x1F627;&#x5728;&#x6307;&#x5B9A;&#x65F6;&#x95F4;&#x5185;&#x8FD0;&#x884C;&#x4E00;&#x4E2A;Runnable&#xFF0C;&#x6307;&#x5B9A;&#x65F6;&#x95F4;&#x540E;&#x4E2D;&#x65AD;&#xFF0C;&#x8BE5;&#x5F02;&#x5E38;&#x4F1A;&#x88AB;timeRun1&#x7684;&#x8C03;&#x7528;&#x8005;&#x6355;&#x83B7;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//        7-8    &#x5728;&#x5916;&#x90E8;&#x7EBF;&#x7A0B;&#x4E2D;&#x5B89;&#x6392;&#x4E2D;&#x65AD;&#xFF08;&#x4E0D;&#x8981;&#x8FD9;&#x4E48;&#x505A;&#xFF09;</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TimedRun1</span> </span>{</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ScheduledExecutorService cancelExec = Executors.newScheduledThreadPool(<span class="number">1</span>);</span><br><span class="line">  <span class="comment">//r&#x662F;&#x4EFB;&#x52A1;</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">timedRun</span><span class="params">(Runnable r,</span></span></span><br><span class="line"><span class="function"><span class="params">                                <span class="keyword">long</span> timeout, TimeUnit unit)</span> </span>{</span><br><span class="line">        <span class="comment">//&#x8FD4;&#x56DE;&#x4E00;&#x4E2A;&#x5E76;&#x53D1;&#x6267;&#x884C;&#x7684;&#x7EBF;&#x7A0B;&#x7684;&#x5F15;&#x7528;</span></span><br><span class="line">        <span class="keyword">final</span> Thread taskThread = Thread.currentThread();</span><br><span class="line">        <span class="comment">//&#x5B83;&#x5728;&#x8C03;&#x7528;&#x7EBF;&#x7A0B;&#x4E2D;&#x8FD0;&#x884C;&#x4EFB;&#x52A1;&#xFF0C;&#x5E76;&#x5B89;&#x6392;&#x4E86;&#x4E00;&#x4E2A;&#x53D6;&#x6D88;&#x4EFB;&#x52A1;&#xFF0C;&#x5728;&#x8FD0;&#x884C;&#x6307;&#x5B9A;&#x7684;&#x65F6;&#x95F4;&#x95F4;&#x9694;&#x540E;&#x4E2D;&#x65AD;&#x5B83;&#x3002;</span></span><br><span class="line">        cancelExec.schedule(<span class="keyword">new</span> Runnable() {</span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{</span><br><span class="line">                taskThread.interrupt();</span><br><span class="line">            }</span><br><span class="line">        }, timeout, unit);</span><br><span class="line">        <span class="comment">//&#x8FD0;&#x884C;&#x4EFB;&#x52A1;</span></span><br><span class="line">        r.run();</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E0A;&#x9762;&#x7684;&#x7A0B;&#x5E8F;&#x6709;&#x54EA;&#x4E9B;&#x95EE;&#x9898;&#xFF0C;&#x4E3B;&#x8981;&#x662F;&#x7531;&#x4E8E;timedRun&#x4E0D;&#x4E86;&#x89E3;&#x6BCF;&#x4E2A;&#x53C2;&#x6570;Runnable&#x7684;&#x4E2D;&#x65AD;&#x7B56;&#x7565;&#xFF1A;</p>
+<ul>
+<li>&#x53EF;&#x80FD;&#x8FD9;&#x4E2A;Runnable&#x5728;&#x8D85;&#x65F6;&#x524D;&#x5C31;&#x5B8C;&#x6210;&#x4E86;&#xFF0C;&#x90A3;&#x4E48;&#x8FD9;&#x4E2A;&#x4E2D;&#x65AD;&#x5F02;&#x5E38;&#x5C06;&#x4F1A;&#x5728;&#x8C03;&#x7528;&#x8005;&#x4E4B;&#x540E;&#x7684;&#x7A0B;&#x5E8F;&#x4E2D;&#x624D;&#x629B;&#x51FA;&#x3002;</li>
+<li>&#x53EF;&#x80FD;&#x4EFB;&#x52A1;&#x4E0D;&#x54CD;&#x5E94;&#x4E2D;&#x65AD;&#xFF0C;timedRun&#x4F1A;&#x5728;&#x4EFB;&#x52A1;&#x7ED3;&#x675F;&#x65F6;&#x624D;&#x8FD4;&#x56DE;&#xFF0C;&#x6CA1;&#x6709;&#x8D77;&#x5230;&#x65F6;&#x95F4;&#x9650;&#x5236;&#x7684;&#x4F5C;&#x7528;&#x3002;</li>
+</ul>
+<p>&#x1F615; &#x4E0A;&#x9762;&#x95EE;&#x9898;&#x7684;&#x89E3;&#x51B3;&#x65B9;&#x6848;&#xFF1A;&#x6267;&#x884C;&#x4EFB;&#x52A1;&#x7684;&#x7EBF;&#x7A0B;&#x62E5;&#x6709;&#x81EA;&#x5DF1;&#x7684;&#x6267;&#x884C;&#x7B56;&#x7565;&#xFF0C;&#x5373;&#x4F7F;&#x4EFB;&#x52A1;&#x4E0D;&#x54CD;&#x5E94;&#x4E2D;&#x65AD;&#xFF0C;&#x9650;&#x65F6;&#x8FD0;&#x884C;&#x7684;&#x65B9;&#x6CD5;&#x4ECD;&#x7136;&#x80FD;&#x8FD4;&#x56DE;&#x5230;&#x5B83;&#x7684;&#x8C03;&#x7528;&#x8005;&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//           7-9  &#x5728;&#x4E13;&#x95E8;&#x7684;&#x7EBF;&#x7A0B;&#x4E2D;&#x4E2D;&#x65AD;&#x4EFB;&#x52A1;     </span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">timeRun2</span> </span>{</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ScheduledExecutorService cancelExec = newScheduledThreadPool(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">timedRun</span><span class="params">(<span class="keyword">final</span> Runnable r,</span></span></span><br><span class="line"><span class="function"><span class="params">                                <span class="keyword">long</span> timeout, TimeUnit unit)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> InterruptedException </span>{</span><br><span class="line">        <span class="class"><span class="keyword">class</span> <span class="title">RethrowableTask</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>{</span><br><span class="line">            <span class="keyword">private</span> <span class="keyword">volatile</span> Throwable t; <span class="comment">//&#x6240;&#x6709;error&#x548C;exception&#x7684;&#x8D85;&#x7C7B;</span></span><br><span class="line"></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{</span><br><span class="line">                <span class="keyword">try</span> {</span><br><span class="line">                    r.run();</span><br><span class="line">                } <span class="keyword">catch</span> (Throwable t) {</span><br><span class="line">                    <span class="keyword">this</span>.t = t;</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line"></span><br><span class="line">            <span class="function"><span class="keyword">void</span> <span class="title">rethrow</span><span class="params">()</span> </span>{</span><br><span class="line">                <span class="keyword">if</span> (t != <span class="keyword">null</span>)</span><br><span class="line">                    <span class="keyword">throw</span> LaunderThrowable.launderThrowable(t);</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line"><span class="comment">//&#x6267;&#x884C;&#x4EFB;&#x52A1;&#x7684;&#x7EBF;&#x7A0B;&#x62E5;&#x6709;&#x81EA;&#x5DF1;&#x7684;&#x6267;&#x884C;&#x7B56;&#x7565;&#xFF0C;&#x5373;&#x4F7F;&#x4EFB;&#x52A1;&#x4E0D;&#x54CD;&#x5E94;&#x4E2D;&#x65AD;&#xFF0C;&#x9650;&#x65F6;&#x8FD0;&#x884C;&#x7684;&#x65B9;&#x6CD5;&#x4ECD;&#x7136;&#x80FD;&#x8FD4;&#x56DE;&#x5230;&#x5B83;&#x7684;&#x8C03;&#x7528;&#x8005;&#x3002;</span></span><br><span class="line">        RethrowableTask task = <span class="keyword">new</span> RethrowableTask();</span><br><span class="line">        <span class="keyword">final</span> Thread taskThread = <span class="keyword">new</span> Thread(task);</span><br><span class="line">        taskThread.start();</span><br><span class="line">        cancelExec.schedule(<span class="keyword">new</span> Runnable() {</span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{</span><br><span class="line">                taskThread.interrupt();</span><br><span class="line">            }</span><br><span class="line">        }, timeout, unit);</span><br><span class="line">        taskThread.join(unit.toMillis(timeout));<span class="comment">//&#x7B49;&#x5F85;&#x4EFB;&#x52A1;&#x7EBF;&#x7A0B;&#x7684;&#x6D88;&#x4EA1;&#xFF0C;&#x5373;&#x7B49;&#x5B83;&#x8FD0;&#x884C;&#x5B8C;&#x6BD5;</span></span><br><span class="line">        <span class="comment">//&#x5728;join&#x8FD4;&#x56DE;&#x540E;&#xFF0C;&#x5B83;&#x5C06;&#x68C0;&#x67E5;&#x4EFB;&#x52A1;&#x4E2D;&#x662F;&#x5426;&#x6709;&#x5F02;&#x5E38;&#x629B;&#x51FA;&#xFF0C;&#x5982;&#x679C;&#x6709;&#x7684;&#x8BDD;&#xFF0C;&#x5219;&#x4F1A;&#x5728;&#x8C03;&#x7528;timedRun2&#x7684;&#x7EBF;&#x7A0B;&#x4E2D;&#x518D;&#x6B21;&#x629B;&#x51FA;&#x5E94;&#x8BE5;&#x5F02;&#x5E38;&#x3002;</span></span><br><span class="line">        task.rethrow();</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD9;&#x4E2A;&#x7A0B;&#x5E8F;&#x7684;&#x95EE;&#x9898;&#x662F;&#xFF0C;&#x5B83;&#x4F9D;&#x8D56;&#x4E8E;&#x4E00;&#x4E2A;&#x9650;&#x65F6;&#x7684;join<br>join&#x7684;&#x4E0D;&#x8DB3;&#xFF1A;&#x65E0;&#x6CD5;&#x77E5;&#x9053;&#x6267;&#x884C;&#x63A7;&#x5236;&#x662F;&#x56E0;&#x4E3A;&#x7EBF;&#x7A0B;&#x6B63;&#x5E38;&#x9000;&#x51FA;&#x8FD8;&#x662F;&#x56E0;&#x4E3A;join&#x8D85;&#x65F6;&#x800C;&#x8FD4;&#x56DE;&#x3002;</p>
+<h2 id="&#x901A;&#x8FC7;Future&#x6765;&#x5B9E;&#x73B0;&#x53D6;&#x6D88;"><a href="#&#x901A;&#x8FC7;Future&#x6765;&#x5B9E;&#x73B0;&#x53D6;&#x6D88;" class="headerlink" title="&#x901A;&#x8FC7;Future&#x6765;&#x5B9E;&#x73B0;&#x53D6;&#x6D88;"></a>&#x901A;&#x8FC7;Future&#x6765;&#x5B9E;&#x73B0;&#x53D6;&#x6D88;</h2><p>&#x5148;&#x8BF4;&#x4E00;&#x4E0B;Future&#x5E26;&#x6709;&#x7684;cancel&#x65B9;&#x6CD5;&#xFF0C;&#x8BE5;&#x65B9;&#x6CD5;&#x5E26;&#x6709;&#x4E00;&#x4E2A;boolean&#x7C7B;&#x578B;&#x7684;&#x53C2;&#x6570;mayInterruptIfRunning&#xFF0C;&#x8868;&#x793A;&#x53D6;&#x6D88;&#x64CD;&#x4F5C;&#x662F;&#x5426;&#x6210;&#x529F;&#x3002;</p>
+<p>mayInterruptIfRunning&#x53C2;&#x6570;&#xFF1A;true&#x8868;&#x793A;&#x7EBF;&#x7A0B;&#x80FD;&#x88AB;&#x4E2D;&#x65AD;&#xFF0C;false&#x5219;&#x8868;&#x793A;&#x4E0D;&#x80FD;&#x3002;</p>
+<p>&#x4EC0;&#x4E48;&#x65F6;&#x5019;&#x53EF;&#x4EE5;&#x628A;cancel&#x7684;&#x53C2;&#x6570;&#x6307;&#x5B9A;&#x4E3A;true&#xFF1F;&#x5982;&#x679C;&#x662F;&#x5728;&#x6807;&#x51C6;&#x7684;Executor&#x4E2D;&#x521B;&#x5EFA;&#xFF0C;&#x5E76;&#x4E14;&#x4F60;&#x6253;&#x7B97;&#x7528;Future&#x6765;&#x53D6;&#x6D88;&#xFF0C;&#x5219;&#x53EF;&#x4EE5;&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//          7-10     &#x901A;&#x8FC7;Future&#x6765;&#x53D6;&#x6D88;&#x4EFB;&#x52A1;</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TimedRun</span> </span>{</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ExecutorService taskExec = Executors.newCachedThreadPool();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">timedRun</span><span class="params">(Runnable r,</span></span></span><br><span class="line"><span class="function"><span class="params">                                <span class="keyword">long</span> timeout, TimeUnit unit)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> InterruptedException </span>{</span><br><span class="line">        Future&lt;?&gt; task = taskExec.submit(r);</span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            task.get(timeout, unit);<span class="comment">//&#x5728;&#x9650;&#x65F6;&#x5185;&#x53D6;&#x5F97;&#x7ED3;&#x679C;&#xFF0C;&#x5982;&#x679C;&#x8981;&#x7B49;&#x5F85;&#x5219;&#x7B49;&#x5F85;</span></span><br><span class="line">        } <span class="keyword">catch</span> (TimeoutException e) {</span><br><span class="line">            <span class="comment">// &#x63A5;&#x4E0B;&#x6765;&#x4EFB;&#x52A1;&#x4F1A;&#x88AB;&#x53D6;&#x6D88;</span></span><br><span class="line">        } <span class="keyword">catch</span> (ExecutionException e) {</span><br><span class="line">            <span class="comment">// &#x5982;&#x679C;&#x5728;&#x4EFB;&#x52A1;&#x4E2D;&#x629B;&#x51FA;&#x4E86;&#x5F02;&#x5E38;&#xFF0C;&#x90A3;&#x4E48;&#x91CD;&#x65B0;&#x629B;&#x51FA;&#x8BE5;&#x5F02;&#x5E38;</span></span><br><span class="line">            <span class="keyword">throw</span> launderThrowable(e.getCause());</span><br><span class="line">        } <span class="keyword">finally</span> {</span><br><span class="line">            <span class="comment">// &#x5982;&#x679C;&#x4EFB;&#x52A1;&#x5DF2;&#x7ECF;&#x7ED3;&#x675F;&#xFF0C;&#x90A3;&#x4E48;&#x6267;&#x884C;&#x53D6;&#x6D88;&#x64CD;&#x4F5C;&#x4E5F;&#x4E0D;&#x4F1A;&#x6709;&#x4EFB;&#x4F55;&#x5F71;&#x54CD;</span></span><br><span class="line">            task.cancel(<span class="keyword">true</span>); <span class="comment">// &#x5982;&#x679C;&#x4EFB;&#x52A1;&#x6B63;&#x5728;&#x8FDB;&#x884C;&#xFF0C;&#x90A3;&#x4E48;&#x5C06;&#x88AB;&#x4E2D;&#x65AD;</span></span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="&#x5904;&#x7406;&#x4E0D;&#x53EF;&#x4E2D;&#x65AD;&#x7684;&#x963B;&#x585E;"><a href="#&#x5904;&#x7406;&#x4E0D;&#x53EF;&#x4E2D;&#x65AD;&#x7684;&#x963B;&#x585E;" class="headerlink" title="&#x5904;&#x7406;&#x4E0D;&#x53EF;&#x4E2D;&#x65AD;&#x7684;&#x963B;&#x585E;"></a>&#x5904;&#x7406;&#x4E0D;&#x53EF;&#x4E2D;&#x65AD;&#x7684;&#x963B;&#x585E;</h2><p>&#x4E0D;&#x662F;&#x6240;&#x6709;Java&#x4E2D;&#x7684;&#x963B;&#x585E;&#x673A;&#x5236;&#x90FD;&#x4F1A;&#x76F4;&#x63A5;&#x54CD;&#x5E94;InterruptException&#xFF0C;&#x5982;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x7531;&#x4E8E;&#x6267;&#x884C;&#x540C;&#x6B65;&#x7684;Socket I/O&#x6216;&#x8005;&#x7B49;&#x5F85;&#x83B7;&#x5F97;&#x5185;&#x7F6E;&#x9501;&#x800C;&#x963B;&#x585E;&#x3002;&#x4F46;&#x4ED6;&#x4EEC;&#x4E5F;&#x6709;&#x7C7B;&#x4F3C;InterruptException&#x7684;&#x673A;&#x5236;&#xFF1A;</p>
+<ul>
+<li><strong>Java.io&#x5305;&#x4E2D;&#x7684;&#x540C;&#x6B65;Socket I/O</strong><br>&#x5728;&#x670D;&#x52A1;&#x5668;&#x5E94;&#x7528;&#x7A0B;&#x5E8F;&#x4E2D;&#xFF0C;&#x6700;&#x5E38;&#x89C1;&#x7684;&#x963B;&#x585E;I/O&#x5F62;&#x5F0F;&#x5C31;&#x662F;&#x5BF9;&#x5957;&#x63A5;&#x5B57;&#x8FDB;&#x884C;&#x8BFB;&#x53D6;&#x548C;&#x5199;&#x5165;&#x3002;&#x867D;&#x7136;InputStream&#x548C;OutputStream&#x4E2D;&#x7684;read&#x548C;write&#x7B49;&#x65B9;&#x6CD5;&#x4E0D;&#x4F1A;&#x54CD;&#x5E94;&#x4E2D;&#x65AD;&#xFF0C;&#x4F46;&#x901A;&#x8FC7;&#x5173;&#x95ED;&#x5E95;&#x5C42;&#x7684;socket&#xFF08;&#x5957;&#x63A5;&#x5B57;&#xFF09;&#xFF0C;&#x53EF;&#x4EE5;&#x4F7F;&#x5F97;&#x7531;&#x4E8E;&#x6267;&#x884C;read&#x548C;write&#x7B49;&#x65B9;&#x6CD5;&#x800C;&#x88AB;&#x963B;&#x585E;&#x7684;&#x7EBF;&#x7A0B;&#x629B;&#x51FA;&#x4E00;&#x4E2A;SocketException&#x3002;</li>
+<li><strong>Java.io&#x5305;&#x4E2D;&#x7684;&#x540C;&#x6B65;I/O</strong><br>&#x5F53;&#x4E2D;&#x65AD;&#x4E00;&#x4E2A;&#x6B63;&#x5728;InterruptibleChannel&#x4E0A;&#x7B49;&#x5F85;&#x7684;&#x7EBF;&#x7A0B;&#x65F6;&#xFF0C;&#x5C06;&#x629B;&#x51FA;ClosedByInterruptException&#x5E76;&#x5173;&#x95ED;&#x94FE;&#x8DEF;&#xFF08;channel&#xFF09;&#xFF08;&#x8FD9;&#x4F1A;&#x4F7F;&#x5F97;&#x5176;&#x4ED6;&#x5728;&#x8FD9;&#x6761;&#x94FE;&#x8DEF;&#x4E0A;&#x963B;&#x585E;&#x7684;&#x7EBF;&#x7A0B;&#x540C;&#x6837;&#x629B;&#x51FA;ClosedByInterruptException&#xFF09;&#x3002;&#x5F53;&#x5173;&#x95ED;&#x4E00;&#x4E2A;InterruptibleChannel&#x65F6;&#xFF0C;&#x5C06;&#x5BFC;&#x81F4;&#x6240;&#x6709;&#x5728;&#x94FE;&#x8DEF;&#x64CD;&#x4F5C;&#x4E0A;&#x963B;&#x585E;&#x7684;&#x7EBF;&#x7A0B;&#x90FD;&#x629B;&#x51FA;AsynchronousCloseException&#x3002;&#x5927;&#x591A;&#x6570;&#x6807;&#x51C6;&#x7684;Channel&#x90FD;&#x5B9E;&#x73B0;(implements)&#x4E86;InterruptibleChannel&#x3002;</li>
+<li><strong>Selector&#x7684;&#x5F02;&#x6B65;I/O</strong><br>&#x5982;&#x679C;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x5728;&#x8C03;&#x7528;Selector.select&#x65B9;&#x6CD5;&#xFF08;&#x5728;java.nio.channels&#x4E2D;&#xFF09;&#x65F6;&#x963B;&#x585E;&#x4E86;&#xFF0C;&#x90A3;&#x4E48;&#x8C03;&#x7528;close&#x548C;wakeup&#x65B9;&#x6CD5;&#x4F1A;&#x4F7F;&#x7EBF;&#x7A0B;&#x629B;&#x51FA;ClosedByInterruptException&#x5E76;&#x63D0;&#x524D;&#x8FD4;&#x56DE;&#x3002;</li>
+<li><strong>&#x83B7;&#x53D6;&#x67D0;&#x4E2A;&#x9501;</strong><br>&#x5982;&#x679C;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x7531;&#x4E8E;&#x7B49;&#x5F85;&#x67D0;&#x4E2A;&#x5185;&#x7F6E;&#x9501;&#x800C;&#x963B;&#x585E;&#xFF0C;&#x90A3;&#x4E48;&#x5C06;&#x65E0;&#x6CD5;&#x54CD;&#x5E94;&#x4E2D;&#x65AD;&#xFF0C;&#x56E0;&#x4E3A;&#x7EBF;&#x7A0B;&#x8BA4;&#x4E3A;&#x5B83;&#x80AF;&#x5B9A;&#x4F1A;&#x5F97;&#x5230;&#x9501;&#xFF0C;&#x6240;&#x6709;&#x5C06;&#x4E0D;&#x4F1A;&#x7406;&#x4F1A;&#x4E2D;&#x65AD;&#x8BF7;&#x6C42;&#x3002;&#x4F46;&#x662F;&#xFF0C;&#x5728;Lock&#x7C7B;&#x63D0;&#x4F9B;&#x4E86;lockInterruptibly&#x65B9;&#x6CD5;&#xFF0C;&#x8BE5;&#x65B9;&#x6CD5;&#x5141;&#x8BB8;&#x5728;&#x7B49;&#x5F85;&#x4E00;&#x4E2A;&#x9501;&#x7684;&#x540C;&#x65F6;&#x4ECD;&#x80FD;&#x54CD;&#x5E94;&#x4E2D;&#x65AD;&#x3002;</li>
+</ul>
+<p>&#x8BA9;&#x4E00;&#x4E2A;Socket&#x65E2;&#x80FD;&#x5904;&#x7406;&#x6807;&#x51C6;&#x7684;&#x4E2D;&#x65AD;&#xFF0C;&#x4E5F;&#x80FD;&#x5173;&#x95ED;&#x5E95;&#x5C42;&#x7684;&#x5957;&#x63A5;&#x5B57;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//               7-11 &#x901A;&#x8FC7;&#x6539;&#x5199;interrupt&#x65B9;&#x6CD5;&#x5C06;&#x975E;&#x6807;&#x51C6;&#x7684;&#x53D6;&#x6D88;&#x64CD;&#x4F5C;&#x5C01;&#x88C5;&#x5728;Thread&#x4E2D;</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReaderThread</span> <span class="keyword">extends</span> <span class="title">Thread</span></span>{</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> BUFSZ = <span class="number">512</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Socket socket;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> InputStream in;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ReaderThread</span><span class="params">(Socket socket)</span> <span class="keyword">throws</span> IOException</span>{</span><br><span class="line">        <span class="keyword">this</span>.socket=socket;</span><br><span class="line">        <span class="keyword">this</span>.in=socket.getInputStream();</span><br><span class="line">    }</span><br><span class="line">    <span class="comment">//&#x6539;&#x5199;&#x4E86;interrupt&#x65B9;&#x6CD5;&#xFF0C;&#x4F7F;&#x5176;&#x65E2;&#x80FD;&#x5904;&#x7406;&#x6807;&#x51C6;&#x7684;&#x4E2D;&#x65AD;&#xFF0C;&#x4E5F;&#x80FD;&#x5173;&#x95ED;&#x5E95;&#x5C42;&#x7684;&#x5957;&#x63A5;&#x5B57;</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">interrupt</span><span class="params">()</span></span>{</span><br><span class="line">        <span class="keyword">try</span>{</span><br><span class="line">            socket.close();</span><br><span class="line">        }<span class="keyword">catch</span> (IOException ignored) {      </span><br><span class="line">        }<span class="keyword">finally</span>{</span><br><span class="line">            <span class="comment">//&#x8C03;&#x7528;&#x7EE7;&#x627F;&#x7684;Thread&#x4E2D;&#x7684;&#x65B9;&#x6CD5;&#x5904;&#x7406;&#x6807;&#x51C6;&#x7684;&#x4E2D;&#x65AD;</span></span><br><span class="line">            <span class="keyword">super</span>.interrupt();</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>{</span><br><span class="line">        <span class="keyword">try</span>{</span><br><span class="line">            <span class="keyword">byte</span>[] buf=<span class="keyword">new</span> <span class="keyword">byte</span>[BUFSZ];</span><br><span class="line">            <span class="keyword">while</span>(<span class="keyword">true</span>){       <span class="comment">//&#x7528;&#x540C;&#x6B65;&#x7684;&#x65B9;&#x5F0F;&#x4ECE;&#x8BE5;&#x5957;&#x63A5;&#x5B57;&#x4E2D;&#x8BFB;&#x53D6;&#x6570;&#x636E;</span></span><br><span class="line">                <span class="keyword">int</span> count=in.read(buf);</span><br><span class="line">                <span class="keyword">if</span>(count&lt;<span class="number">0</span>)</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span>(count&gt;<span class="number">0</span>)</span><br><span class="line">                    processBuffer(buf,count); <span class="comment">//&#x5E76;&#x5C06;&#x63A5;&#x6536;&#x5230;&#x7684;&#x6570;&#x636E;&#x4F20;&#x9012;&#x7ED9;processBuffer</span></span><br><span class="line">            }</span><br><span class="line">        }<span class="keyword">catch</span> (IOException e) {</span><br><span class="line">            <span class="comment">// &#x5141;&#x8BB8;&#x7EBF;&#x7A0B;&#x9000;&#x51FA;       </span></span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x65E0;&#x8BBA;ReaderThread&#x7EBF;&#x7A0B;&#x662F;&#x5728;read&#x65B9;&#x6CD5;&#x4E2D;&#x963B;&#x585E;&#x8FD8;&#x662F;&#x5728;&#x67D0;&#x4E2A;&#x53EF;&#x4E2D;&#x65AD;&#x7684;&#x963B;&#x585E;&#x65B9;&#x6CD5;&#x4E2D;&#x963B;&#x585E;&#xFF0C;&#x90FD;&#x53EF;&#x4EE5;&#x88AB;&#x4E2D;&#x65AD;&#x5E76;&#x505C;&#x6B62;&#x6267;&#x884C;&#x5F53;&#x524D;&#x7684;&#x5DE5;&#x4F5C;&#x3002;</p>
+<h2 id="&#x91C7;&#x7528;newTaskFor&#x6765;&#x5C01;&#x88C5;&#x975E;&#x6807;&#x51C6;&#x7684;&#x53D6;&#x6D88;"><a href="#&#x91C7;&#x7528;newTaskFor&#x6765;&#x5C01;&#x88C5;&#x975E;&#x6807;&#x51C6;&#x7684;&#x53D6;&#x6D88;" class="headerlink" title="&#x91C7;&#x7528;newTaskFor&#x6765;&#x5C01;&#x88C5;&#x975E;&#x6807;&#x51C6;&#x7684;&#x53D6;&#x6D88;"></a>&#x91C7;&#x7528;newTaskFor&#x6765;&#x5C01;&#x88C5;&#x975E;&#x6807;&#x51C6;&#x7684;&#x53D6;&#x6D88;</h2><p>newTaskFor&#xFF1A;ThreadPoolExecutor&#x4E2D;&#x7684;&#x4E00;&#x4E2A;&#x5DE5;&#x5382;&#x65B9;&#x6CD5;&#xFF0C;&#x5B83;&#x5C06;&#x521B;&#x5EFA;Future&#x6765;&#x4EE3;&#x8868;&#x4EFB;&#x52A1;&#x3002;newTaskFor&#x8FD8;&#x80FD;&#x8FD4;&#x56DE;&#x4E00;&#x4E2A;RunnableFuture&#x63A5;&#x53E3;&#xFF0C;&#x8BE5;&#x63A5;&#x53E3;&#x7EE7;&#x627F;&#xFF08;&#x6269;&#x5C55;&#xFF09;&#x4E86;Future&#x548C;Runnable&#xFF08;&#x5E76;&#x7531;FutureTask&#x5B9E;&#x73B0;&#xFF09;&#x3002;</p>
+<p>&#x6539;&#x5199;Future.cancel&#x4E5F;&#x53EF;&#x4EE5;&#x5B9E;&#x73B0;&#x548C;&#x4E0A;&#x9762;&#x4EE3;&#x7801;&#x76F8;&#x540C;&#x7684;&#x529F;&#x80FD;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//   7-12     &#x901A;&#x8FC7;newTaskFor&#x5C06;&#x975E;&#x6807;&#x51C6;&#x7684;&#x53D6;&#x6D88;&#x64CD;&#x4F5C;&#x5C01;&#x88C5;&#x5728;&#x4E00;&#x4E2A;&#x4EFB;&#x52A1;&#x4E2D;</span></span><br><span class="line"><span class="comment">//CancellableTask&#x5B9A;&#x4E49;&#x4E86;&#x4E00;&#x4E2A;CancellableTask&#x63A5;&#x53E3;&#xFF0C;&#x8BE5;&#x63A5;&#x53E3;&#x6269;&#x5C55;&#x4E86;Callable&#xFF0C;&#x5E76;&#x589E;&#x52A0;&#x4E86;&#x4E00;&#x4E2A;cancel&#x65B9;&#x6CD5;&#x548C;newTask&#x65B9;&#x6CD5;&#x6765;&#x6784;&#x9020;RunnableFuture&#x3002;</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">CancellableTask</span>&lt;<span class="title">T</span>&gt; <span class="keyword">extends</span> <span class="title">Callable</span>&lt;<span class="title">T</span>&gt; </span>{</span><br><span class="line">       <span class="function"><span class="keyword">void</span> <span class="title">cancel</span><span class="params">()</span></span>;</span><br><span class="line">       <span class="function">RunnableFuture&lt;T&gt; <span class="title">newTask</span><span class="params">()</span></span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//   7-12     &#x901A;&#x8FC7;newTaskFor&#x5C06;&#x975E;&#x6807;&#x51C6;&#x7684;&#x53D6;&#x6D88;&#x64CD;&#x4F5C;&#x5C01;&#x88C5;&#x5728;&#x4E00;&#x4E2A;&#x4EFB;&#x52A1;&#x4E2D;</span></span><br><span class="line"><span class="comment">//CancellingExecutor&#x7EE7;&#x627F;&#x4E86;THReadPoolExecutor&#xFF0C;&#x5E76;&#x901A;&#x8FC7;&#x6539;&#x5199;newTaskFor&#x4F7F;&#x5F97;CancellableTask&#x53EF;&#x4EE5;&#x521B;&#x5EFA;&#x81EA;&#x5DF1;&#x7684;Future</span></span><br><span class="line"><span class="meta">@ThreadSafe</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CancellingExecutor</span> <span class="keyword">extends</span> <span class="title">ThreadPoolExecutor</span> </span>{</span><br><span class="line">	...</span><br><span class="line">    <span class="keyword">protected</span> &lt;T&gt; <span class="function">RunnableFuture&lt;T&gt; <span class="title">newTaskFor</span><span class="params">(Callable&lt;T&gt; callable)</span> </span>{</span><br><span class="line">        <span class="keyword">if</span> (callable <span class="keyword">instanceof</span> CancellableTask)</span><br><span class="line">            <span class="keyword">return</span> ((CancellableTask&lt;T&gt;) callable).newTask();</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">super</span>.newTaskFor(callable);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//            7-12 &#x901A;&#x8FC7;newTaskFor&#x5C06;&#x975E;&#x6807;&#x51C6;&#x7684;&#x53D6;&#x6D88;&#x64CD;&#x4F5C;&#x5C01;&#x88C5;&#x5728;&#x4E00;&#x4E2A;&#x4EFB;&#x52A1;&#x4E2D;</span></span><br><span class="line"><span class="comment">//           SocketUsingTask&#x5B9E;&#x73B0;&#x4E86;CancellableTask</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">SocketUsingTask</span> &lt;<span class="title">T</span>&gt; <span class="keyword">implements</span> <span class="title">CancellableTask</span>&lt;<span class="title">T</span>&gt; </span>{</span><br><span class="line">     <span class="keyword">private</span> Socket socket;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">setSocket</span><span class="params">(Socket s)</span> </span>{</span><br><span class="line">        socket = s;</span><br><span class="line">    }</span><br><span class="line">   <span class="comment">//&#x5B9A;&#x4E49;&#x4E86;Future.cancel&#x6765;&#x5173;&#x95ED;&#x5957;&#x63A5;&#x5B57;</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">cancel</span><span class="params">()</span> </span>{</span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            <span class="keyword">if</span> (socket != <span class="keyword">null</span>)</span><br><span class="line">                socket.close();</span><br><span class="line">        } <span class="keyword">catch</span> (IOException ignored) {</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">   <span class="comment">//&#x5982;&#x679C;SocketUsingTask&#x901A;&#x8FC7;&#x5176;&#x81EA;&#x5DF1;&#x7684;Future&#x6765;&#x53D6;&#x6D88;&#xFF0C;&#x90A3;&#x4E48;&#x5E95;&#x5C42;&#x7684;&#x5957;&#x63A5;&#x5B57;&#x5C06;&#x88AB;&#x5173;&#x95ED;&#x5E76;&#x4E14;&#x7EBF;&#x7A0B;&#x5C06;&#x88AB;&#x4E2D;&#x65AD;</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> RunnableFuture&lt;T&gt; <span class="title">newTask</span><span class="params">()</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> FutureTask&lt;T&gt;(<span class="keyword">this</span>) {  <span class="comment">//Creates a FutureTask that will, upon running&#xFF08;&#x6B63;&#x5728;&#x8FD0;&#x884C;&#xFF09;, execute the given Callable.</span></span><br><span class="line">            <span class="meta">@SuppressWarnings</span>(<span class="string">&quot;finally&quot;</span>)</span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">cancel</span><span class="params">(<span class="keyword">boolean</span> mayInterruptIfRunning)</span> </span>{</span><br><span class="line">                <span class="keyword">try</span> {</span><br><span class="line">                    SocketUsingTask.<span class="keyword">this</span>.cancel();</span><br><span class="line">                } <span class="keyword">finally</span> {  <span class="comment">//&#x8C03;&#x7528;super.cancel</span></span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">super</span>.cancel(mayInterruptIfRunning);</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line">        };</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h1 id="&#x505C;&#x6B62;&#x57FA;&#x4E8E;&#x7EBF;&#x7A0B;&#x7684;&#x670D;&#x52A1;"><a href="#&#x505C;&#x6B62;&#x57FA;&#x4E8E;&#x7EBF;&#x7A0B;&#x7684;&#x670D;&#x52A1;" class="headerlink" title="&#x505C;&#x6B62;&#x57FA;&#x4E8E;&#x7EBF;&#x7A0B;&#x7684;&#x670D;&#x52A1;"></a>&#x505C;&#x6B62;&#x57FA;&#x4E8E;&#x7EBF;&#x7A0B;&#x7684;&#x670D;&#x52A1;</h1><p>&#x670D;&#x52A1;&#x5E94;&#x8BE5;&#x63D0;&#x4F9B;&#x751F;&#x547D;&#x5468;&#x671F;&#x65B9;&#x6CD5;&#x6765;&#x5173;&#x95ED;&#x5B83;&#x81EA;&#x5DF1;&#x4EE5;&#x53CA;&#x5B83;&#x6240;&#x62E5;&#x6709;&#x7684;&#x7EBF;&#x7A0B;&#xFF0C;&#x6BD4;&#x5982;ExecutorServi&#x63D0;&#x4F9B;&#x4E86;shutdown&#x548C;shutdownNow&#x7B49;&#x65B9;&#x6CD5;&#x3002;</p>
+<h2 id="&#x793A;&#x4F8B;&#xFF1A;&#x65E5;&#x5FD7;&#x670D;&#x52A1;"><a href="#&#x793A;&#x4F8B;&#xFF1A;&#x65E5;&#x5FD7;&#x670D;&#x52A1;" class="headerlink" title="&#x793A;&#x4F8B;&#xFF1A;&#x65E5;&#x5FD7;&#x670D;&#x52A1;"></a>&#x793A;&#x4F8B;&#xFF1A;&#x65E5;&#x5FD7;&#x670D;&#x52A1;</h2><p>&#x1F615; &#x65E5;&#x5FD7;&#x64CD;&#x4F5C;&#x5728;&#x5355;&#x72EC;&#x7684;&#x65E5;&#x5FD7;&#x7EBF;&#x7A0B;&#x4E2D;&#x6267;&#x884C;&#x3002;&#x4EA7;&#x751F;&#x65E5;&#x5FD7;&#x6D88;&#x606F;&#x7684;&#x7EBF;&#x7A0B;&#x5E76;&#x4E0D;&#x4F1A;&#x5C06;&#x6D88;&#x606F;&#x76F4;&#x63A5;&#x5199;&#x5165;&#x8F93;&#x51FA;&#x6D41;&#xFF0C;&#x800C;&#x662F;&#x7531;LogWriter&#x901A;&#x8FC7;BlockingQueue&#x5C06;&#x6D88;&#x606F;&#x63D0;&#x4EA4;&#x7ED9;&#x65E5;&#x5FD7;&#x7EBF;&#x7A0B;&#xFF0C;&#x7531;&#x65E5;&#x5FD7;&#x7EBF;&#x7A0B;&#x5199;&#x5165;&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//         7-13 &#x4E0D;&#x652F;&#x6301;&#x5173;&#x95ED;&#x7684;&#x751F;&#x4EA7;&#x8005;-&#x6D88;&#x8D39;&#x8005;&#x65E5;&#x5FD7;&#x670D;&#x52A1;&#xFF08;&#x4E0D;&#x597D;&#xFF09;</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LogWriter</span> </span>{</span><br><span class="line">      <span class="keyword">private</span> <span class="keyword">final</span> BlockingQueue&lt;String&gt; queue;</span><br><span class="line">      <span class="keyword">private</span> <span class="keyword">final</span> LoggerThread logger; <span class="comment">//logger(&#x8BB0;&#x5F55;&#x5668;)</span></span><br><span class="line">      <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> CAPACITY = <span class="number">1000</span>;</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="title">LogWriter</span><span class="params">(Writer writer)</span></span>{</span><br><span class="line">          <span class="keyword">this</span>.queue=<span class="keyword">new</span> LinkedBlockingQueue&lt;&gt;(CAPACITY);</span><br><span class="line">          <span class="keyword">this</span>.logger=<span class="keyword">new</span> LoggerThread(writer);</span><br><span class="line">      }</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span></span>{ <span class="comment">//&#x542F;&#x52A8;&#x7EBF;&#x7A0B;</span></span><br><span class="line">          logger.start();</span><br><span class="line">      }</span><br><span class="line">      <span class="comment">//&#x5145;&#x5F53;&#x751F;&#x4EA7;&#x8005;</span></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">log</span><span class="params">(String msg)</span><span class="keyword">throws</span> InterruptedException</span>{</span><br><span class="line">          queue.put(msg);</span><br><span class="line">      }</span><br><span class="line">      <span class="comment">//&#x4EA7;&#x751F;&#x65E5;&#x5FD7;&#x6D88;&#x606F;&#x7684;&#x7EBF;&#x7A0B;&#x5E76;&#x4E0D;&#x4F1A;&#x5C06;&#x6D88;&#x606F;&#x76F4;&#x63A5;&#x5199;&#x5165;&#x8F93;&#x51FA;&#x6D41;&#xFF0C;&#x800C;&#x662F;&#x7531;LogWriter&#x901A;&#x8FC7;BlockingQueue&#x5C06;&#x6D88;&#x606F;&#x63D0;&#x4EA4;&#x7ED9;&#x65E5;&#x5FD7;&#x7EBF;&#x7A0B;&#xFF0C;&#x7531;&#x65E5;&#x5FD7;&#x7EBF;&#x7A0B;&#x5199;&#x5165;&#x3002;</span></span><br><span class="line">      <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">LoggerThread</span> <span class="keyword">extends</span> <span class="title">Thread</span></span>{   <span class="comment">//&#x65E5;&#x5FD7;&#x7EBF;&#x7A0B;</span></span><br><span class="line">          <span class="keyword">private</span> <span class="keyword">final</span> PrintWriter writer;  <span class="comment">//PrintWriter&#x662F;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;</span></span><br><span class="line"></span><br><span class="line">          <span class="function"><span class="keyword">public</span> <span class="title">LoggerThread</span><span class="params">(Writer writer)</span> </span>{</span><br><span class="line">              <span class="keyword">this</span>.writer = <span class="keyword">new</span> PrintWriter(writer, <span class="keyword">true</span>); <span class="comment">// true&#x53C2;&#x6570;&#x4EE3;&#x8868;&#x4E86;autoflush</span></span><br><span class="line">          }</span><br><span class="line"></span><br><span class="line">          <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>{</span><br><span class="line">              <span class="keyword">try</span>{</span><br><span class="line">                  <span class="keyword">while</span>(<span class="keyword">true</span>)</span><br><span class="line">                      writer.println(queue.take());</span><br><span class="line">              }<span class="keyword">catch</span> (InterruptedException ignored) {	<span class="comment">//&#x53EF;&#x4EE5;&#x505A;&#x4E9B;&#x4EC0;&#x4E48;..&#x4F46;&#x662F;..</span></span><br><span class="line">              }<span class="keyword">finally</span>{</span><br><span class="line">                writer.close();</span><br><span class="line">              }</span><br><span class="line">          }</span><br><span class="line">      }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5982;&#x679C;&#x5C06;&#x65E5;&#x5FD7;&#x7EBF;&#x7A0B;&#x4FEE;&#x6539;&#x4E3A;&#x5F53;&#x6355;&#x83B7;&#x5230;InterruptedException&#x65F6;&#x9000;&#x51FA;&#xFF0C;&#x90A3;&#x4E48;&#x53EA;&#x9700;&#x4E2D;&#x65AD;&#x65E5;&#x5FD7;&#x7EBF;&#x7A0B;&#x5C31;&#x80FD;&#x505C;&#x6B62;&#x670D;&#x52A1;&#x3002;&#x4F46;&#x662F;&#xFF0C;1.&#x4F1A;&#x4E22;&#x5931;&#x90A3;&#x4E9B;&#x6B63;&#x5728;&#x7B49;&#x5F85;&#x88AB;&#x5199;&#x5165;&#x5230;&#x65E5;&#x5FD7;&#x7684;&#x4FE1;&#x606F;&#xFF0C;2.&#x5176;&#x4ED6;&#x7EBF;&#x7A0B;&#x5C06;&#x5728;&#x8C03;&#x7528;log&#x65F6;&#x88AB;&#x963B;&#x585E;&#xFF0C;&#x56E0;&#x4E3A;&#x65E5;&#x5FD7;&#x6D88;&#x606F;&#x961F;&#x5217;&#x662F;&#x6EE1;&#x7684;(&#x65E5;&#x5FD7;&#x7EBF;&#x7A0B;&#x505C;&#x6B62;&#x4E86;take)</p>
+<p>&#x1F615; &#x53E6;&#x4E00;&#x79CD;&#x5173;&#x95ED;&#x65B9;&#x6CD5;&#xFF1A;&#x8BBE;&#x7F6E;&#x67D0;&#x4E2A;&#x201C;&#x5DF2;&#x8BF7;&#x6C42;&#x5173;&#x95ED;&#x201D;&#x6807;&#x5FD7;(&#x4E0E;&#x524D;&#x9762;&#x7684;&#x5DF2;&#x8BF7;&#x6C42;&#x53D6;&#x6D88;&#x6807;&#x5FD7;&#x7C7B;&#x4F3C;)&#xFF0C;&#x907F;&#x514D;&#x8FDB;&#x4E00;&#x6B65;&#x63D0;&#x4EA4;&#x65E5;&#x5FD7;&#x4FE1;&#x606F;&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//          7-14    &#x901A;&#x8FC7;&#x4E00;&#x79CD;&#x4E0D;&#x53EF;&#x9760;&#x7684;&#x65B9;&#x5F0F;&#x4E3A;&#x65E5;&#x5FD7;&#x589E;&#x52A0;&#x5173;&#x95ED;&#x652F;&#x6301;</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">log</span><span class="params">(String msg)</span> <span class="keyword">throws</span> InterruptedException </span>{</span><br><span class="line">     <span class="keyword">if</span> (!shutdownRequested)    <span class="comment">//&#x5B58;&#x5728;&#x7ADE;&#x6001;&#x6761;&#x4EF6;,&#x56E0;&#x4E3A;&#x5B83;&#x662F;&#x201C;&#x5148;&#x5224;&#x65AD;&#x518D;&#x8FD0;&#x884C;&#x201D;</span></span><br><span class="line">         <span class="comment">//&#x68C0;&#x67E5;&#x7684;&#x65F6;&#x5019;&#x8FD8;&#x672A;&#x505C;&#x6B62;&#xFF0C;&#x800C;put&#x7684;&#x65F6;&#x5019;&#x505C;&#x6B62;&#x4E86;&#xFF0C;&#x8FD9;&#x4E2A;&#x65F6;&#x5019;&#x5C06;&#x4F1A;&#x963B;&#x585E;</span></span><br><span class="line">          queue.put(msg);</span><br><span class="line">     <span class="keyword">else</span>                       <span class="comment">//&#x5426;&#x5219;&#x629B;&#x51FA;&#x5F02;&#x5E38;</span></span><br><span class="line">           <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">&quot;logger is shut down&quot;</span>);</span><br><span class="line">     }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x1F60A; &#x901A;&#x8FC7;&#x539F;&#x5B50;&#x65B9;&#x5F0F;&#x6765;&#x68C0;&#x67E5;&#x5173;&#x95ED;&#x8BF7;&#x6C42;&#xFF0C;&#x5E76;&#x4E14;&#x6709;&#x6761;&#x4EF6;&#x5730;&#x9012;&#x589E;&#x4E00;&#x4E2A;&#x8BA1;&#x6570;&#x5668;&#x6765;&#x201C;&#x4FDD;&#x6301;&#x201D;&#x63D0;&#x4EA4;&#x4FE1;&#x606F;&#x7684;&#x6743;&#x5229;&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//           7-15  &#x5411;LogWriter&#x6DFB;&#x52A0;&#x53EF;&#x9760;&#x7684;&#x53D6;&#x6D88;&#x64CD;&#x4F5C;</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LogService</span> </span>{</span><br><span class="line">     <span class="keyword">private</span> <span class="keyword">final</span> BlockingQueue&lt;String&gt; queue;</span><br><span class="line">     <span class="keyword">private</span> <span class="keyword">final</span> LoggerThread loggerThread;</span><br><span class="line">     <span class="keyword">private</span> <span class="keyword">final</span> PrintWriter  writer;</span><br><span class="line">     <span class="keyword">private</span> <span class="keyword">boolean</span> isShutdown;</span><br><span class="line">     <span class="keyword">private</span> <span class="keyword">int</span> reservations;  <span class="comment">//&#x4FDD;&#x7559;,&#x8BBE;&#x7F6E;&#x4E00;&#x4E2A;&#x8BA1;&#x6570;&#x5668;&#x6765;&#x8BB0;&#x5F55;&#x6709;&#x591A;&#x5C11;&#x4E2A;&#x4EFB;&#x52A1;&#x201C;&#x4FDD;&#x6301;&#x201D;&#x63D0;&#x4EA4;&#x4FE1;&#x606F;&#x7684;&#x6743;&#x5229;</span></span><br><span class="line"></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="title">LogService</span><span class="params">(Writer writer)</span> </span>{</span><br><span class="line">         <span class="keyword">this</span>.queue = <span class="keyword">new</span> LinkedBlockingQueue&lt;String&gt;();</span><br><span class="line">         <span class="keyword">this</span>.loggerThread = <span class="keyword">new</span> LoggerThread();</span><br><span class="line">         <span class="keyword">this</span>.writer = <span class="keyword">new</span> PrintWriter(writer);</span><br><span class="line">     }</span><br><span class="line"></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span></span>{</span><br><span class="line">         loggerThread.start();</span><br><span class="line">     }</span><br><span class="line"></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">stop</span><span class="params">()</span></span>{</span><br><span class="line">         <span class="keyword">synchronized</span> (<span class="keyword">this</span>) {   <span class="comment">//&#x907F;&#x514D;&#x5728;&#x672A;&#x8BBE;&#x7F6E;&#x7684;&#x65F6;&#x5019;&#x6709;&#x4EFB;&#x52A1;&#x5F00;&#x59CB;&#xFF0C;&#x5728;&#x8BBE;&#x7F6E;&#x540E;&#x4EFB;&#x52A1;&#x56E0;&#x4E3A;&#x505C;&#x6B62;&#x4E86;&#x963B;&#x585E;</span></span><br><span class="line">            isShutdown=<span class="keyword">true</span>;</span><br><span class="line">        }</span><br><span class="line">         loggerThread.interrupt();  <span class="comment">//&#x65E5;&#x5FD7;&#x7EBF;&#x7A0B;&#x4E2D;&#x65AD;</span></span><br><span class="line">     }</span><br><span class="line"></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">log</span><span class="params">(String msg)</span><span class="keyword">throws</span> InterruptedException</span>{</span><br><span class="line">         <span class="comment">//&#x907F;&#x514D;&#x68C0;&#x67E5;&#x7684;&#x65F6;&#x5019;&#x8FD8;&#x672A;&#x505C;&#x6B62;&#xFF0C;&#x800C;put&#x7684;&#x65F6;&#x5019;&#x505C;&#x6B62;&#x4E86;&#xFF0C;&#x8FD9;&#x4E2A;&#x65F6;&#x5019;&#x5C06;&#x4F1A;&#x963B;&#x585E;</span></span><br><span class="line">         <span class="keyword">synchronized</span> (<span class="keyword">this</span>) {        <span class="comment">//&#x901A;&#x8FC7;&#x539F;&#x5B50;&#x64CD;&#x4F5C;&#x6765;&#x68C0;&#x67E5;&#x5173;&#x95ED;&#x8BF7;&#x6C42;</span></span><br><span class="line">            <span class="keyword">if</span>(isShutdown)</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="comment">/*...*/</span>);</span><br><span class="line">            ++reservations;  <span class="comment">//&#x9012;&#x589E;&#x4E00;&#x4E2A;&#x8BA1;&#x6570;&#x5668;&#x6765;&#x201C;&#x4FDD;&#x6301;&#x201D;&#x63D0;&#x4EA4;&#x4FE1;&#x606F;&#x7684;&#x6743;&#x5229;</span></span><br><span class="line">        }</span><br><span class="line">         queue.put(msg);</span><br><span class="line">     }</span><br><span class="line"></span><br><span class="line">     <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">LoggerThread</span> <span class="keyword">extends</span> <span class="title">Thread</span></span>{</span><br><span class="line">         <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>{</span><br><span class="line">             <span class="keyword">try</span>{</span><br><span class="line">                 <span class="keyword">while</span>(<span class="keyword">true</span>){</span><br><span class="line">                     <span class="keyword">try</span>{     <span class="comment">//&#x7528;&#x7684;&#x90FD;&#x662F;LogService&#x7684;&#x5185;&#x7F6E;&#x9501;</span></span><br><span class="line">                         <span class="keyword">synchronized</span> (LogService.<span class="keyword">this</span>) { <span class="comment">//&#x901A;&#x8FC7;&#x539F;&#x5B50;&#x64CD;&#x4F5C;&#x6765;&#x68C0;&#x67E5;&#x5173;&#x95ED;&#x8BF7;&#x6C42;&#x548C;&#x62E5;&#x6709;&#x63D0;&#x4EA4;&#x4FE1;&#x606F;&#x6743;&#x5229;&#x7684;&#x4EFB;&#x52A1;&#x7684;&#x6570;&#x91CF;</span></span><br><span class="line">                            <span class="keyword">if</span>(isShutdown&amp;&amp;reservations==<span class="number">0</span>)</span><br><span class="line">                                <span class="keyword">break</span>;</span><br><span class="line">                        }</span><br><span class="line">                         String msg=queue.take();</span><br><span class="line">                         <span class="keyword">synchronized</span> (LogService.<span class="keyword">this</span>) {<span class="comment">//&#x8FD9;&#x662F;&#x4E00;&#x4E2A;&#x590D;&#x5408;&#x64CD;&#x4F5C;&#xFF0C;&#x9700;&#x8981;&#x4E0A;&#x9501;</span></span><br><span class="line">                            --reservations;               </span><br><span class="line">                        }</span><br><span class="line">                         writer.println(msg);</span><br><span class="line">                     }<span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">                        <span class="comment">// &#x91CD;&#x8BD5;</span></span><br><span class="line">                    }</span><br><span class="line">                 }</span><br><span class="line">             }<span class="keyword">finally</span>{</span><br><span class="line">                 writer.close();</span><br><span class="line">             }</span><br><span class="line">         }</span><br><span class="line">     }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="&#x5173;&#x95ED;ExecutorService"><a href="#&#x5173;&#x95ED;ExecutorService" class="headerlink" title="&#x5173;&#x95ED;ExecutorService"></a>&#x5173;&#x95ED;ExecutorService</h2><p>ExecutorService&#x63D0;&#x4F9B;&#x4E86;&#x4E24;&#x79CD;&#x5173;&#x95ED;&#x65B9;&#x6CD5;&#xFF1A;1.shutdown&#x6B63;&#x5E38;&#x5173;&#x95ED;&#x3002;2.shutdownNow&#x5F3A;&#x884C;&#x5173;&#x95ED;&#xFF0C;&#x9996;&#x5148;&#x5173;&#x95ED;&#x5F53;&#x524D;&#x6B63;&#x5728;&#x6267;&#x884C;&#x7684;&#x4EFB;&#x52A1;&#xFF0C;&#x7136;&#x540E;&#x8FD4;&#x56DE;&#x6240;&#x6709;&#x5C1A;&#x672A;&#x542F;&#x52A8;&#x7684;&#x4EFB;&#x52A1;&#x6E05;&#x5355;&#x3002;</p>
+<p>&#x4F7F;&#x7528;ExecutorService&#x7684;&#x65E5;&#x5FD7;&#x670D;&#x52A1;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//        7-16  &#x4F7F;&#x7528;ExecutorService&#x7684;&#x65E5;&#x5FD7;&#x670D;&#x52A1;</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LogService</span> </span>{</span><br><span class="line">    <span class="comment">//&#x5C06;&#x7BA1;&#x7406;&#x7EBF;&#x7A0B;&#x7684;&#x5DE5;&#x4F5C;&#x59D4;&#x6258;&#x7ED9;&#x4E00;&#x4E2A;ExecutorService,&#x800C;&#x4E0D;&#x662F;&#x81EA;&#x884C;&#x7BA1;&#x7406;</span></span><br><span class="line">     <span class="keyword">private</span> <span class="keyword">final</span> ExecutorService exec=newSingleThreadExecutor();</span><br><span class="line">     <span class="keyword">private</span> <span class="keyword">final</span> PrintWriter writer;</span><br><span class="line">     <span class="comment">//...</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span></span>{</span><br><span class="line"></span><br><span class="line">     }</span><br><span class="line"></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">stop</span><span class="params">()</span><span class="keyword">throws</span> InterruptedException</span>{</span><br><span class="line">         <span class="keyword">try</span>{</span><br><span class="line">             exec.shutdown();</span><br><span class="line">             <span class="comment">//&#x518D;&#x63A5;&#x53D7;&#x5230;shutdown&#x8BF7;&#x6C42;&#x540E;&#x4F1A;&#x7B49;&#x5F85;&#x4EFB;&#x52A1;&#x5B8C;&#x6210;&#x6216;&#x8D85;&#x65F6;, &#x6216;&#x8005;&#x5E76;&#x53D1;&#x7EBF;&#x7A0B;&#x88AB;&#x4E2D;&#x65AD;</span></span><br><span class="line">             exec.awaitTermination(TIMEOUT, UNIT)&#xFF1B;</span><br><span class="line">         }<span class="keyword">finally</span> {</span><br><span class="line">            writer.close();</span><br><span class="line">        }</span><br><span class="line">     }</span><br><span class="line"></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">log</span><span class="params">(String msg)</span></span>{</span><br><span class="line">         <span class="keyword">try</span>{</span><br><span class="line">             exec.execute(<span class="keyword">new</span> WriteTask(msg));</span><br><span class="line">         }<span class="keyword">catch</span> (RejectedExecutionException ignored) {</span><br><span class="line">            <span class="comment">// <span class="doctag">TODO:</span> handle exception</span></span><br><span class="line">        }</span><br><span class="line">     }   </span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="&#x201C;&#x6BD2;&#x4E38;&#x201D;&#x5BF9;&#x8C61;"><a href="#&#x201C;&#x6BD2;&#x4E38;&#x201D;&#x5BF9;&#x8C61;" class="headerlink" title="&#x201C;&#x6BD2;&#x4E38;&#x201D;&#x5BF9;&#x8C61;"></a>&#x201C;&#x6BD2;&#x4E38;&#x201D;&#x5BF9;&#x8C61;</h2><p>&#x201C;&#x6BD2;&#x4E38;&#x201D;&#xFF1A;&#x201C;&#x5F53;&#x5F97;&#x5230;&#x8FD9;&#x4E2A;&#x5BF9;&#x8C61;&#x65F6;&#xFF0C;&#x7ACB;&#x5373;&#x505C;&#x6B62;&#x201D;&#x3002; &#x5728;FIFO&#x961F;&#x5217;&#x4E2D;&#x4F7F;&#x7528;</p>
+<p>&#x4E00;&#x4E2A;&#x751F;&#x4EA7;&#x8005;&#x548C;&#x4E00;&#x4E2A;&#x6D88;&#x8D39;&#x8005;&#x7684;&#x684C;&#x9762;&#x641C;&#x7D22;&#x793A;&#x4F8B;&#xFF0C;&#x901A;&#x8FC7;&#x201C;&#x6BD2;&#x4E38;&#x201D;&#x5BF9;&#x8C61;&#x6765;&#x5173;&#x95ED;&#x670D;&#x52A1;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//          7-17    &#x901A;&#x8FC7;&#x6BD2;&#x4E38;&#x5BF9;&#x8C61;&#x6765;&#x5173;&#x95ED;&#x670D;&#x52A1;</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">IndexingService</span> </span>{</span><br><span class="line">     <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> CAPACITY = <span class="number">1000</span>;  <span class="comment">//capacitry&#x5BB9;&#x91CF;</span></span><br><span class="line">     <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span>  File POSION=<span class="keyword">new</span> File(<span class="string">&quot;&quot;</span>);</span><br><span class="line">     <span class="keyword">private</span> <span class="keyword">final</span> CrawlerThread producer=<span class="keyword">new</span> CrawlerThread();</span><br><span class="line">     <span class="keyword">private</span> <span class="keyword">final</span> IndexerThread consumer=<span class="keyword">new</span> IndexerThread();</span><br><span class="line">     <span class="keyword">private</span> <span class="keyword">final</span> BlockingQueue&lt;File&gt; queue;</span><br><span class="line">     <span class="keyword">private</span> <span class="keyword">final</span> FileFilter fileFilter;</span><br><span class="line">     <span class="keyword">private</span> <span class="keyword">final</span> File root;</span><br><span class="line"></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="title">IndexingService</span><span class="params">(File root, <span class="keyword">final</span> FileFilter fileFilter)</span> </span>{</span><br><span class="line">         <span class="keyword">this</span>.root = root;</span><br><span class="line">         <span class="keyword">this</span>.queue = <span class="keyword">new</span> LinkedBlockingQueue&lt;File&gt;(CAPACITY);</span><br><span class="line">         <span class="keyword">this</span>.fileFilter = <span class="keyword">new</span> FileFilter() {</span><br><span class="line">             <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">accept</span><span class="params">(File f)</span> </span>{ <span class="comment">//&#x6D4B;&#x8BD5;&#x8BE5;&#x8DEF;&#x5F84;&#x540D;&#x79F0;&#x8BE5;&#x4E0D;&#x8BE5;&#x88AB;&#x52A0;&#x5165;&#x5230;&#x8DEF;&#x5F84;&#x540D;&#x79F0;&#x5217;&#x8868;&#x4E2D;</span></span><br><span class="line">                 <span class="keyword">return</span> f.isDirectory() || fileFilter.accept(f);</span><br><span class="line">             }</span><br><span class="line">         };</span><br><span class="line">     }</span><br><span class="line"></span><br><span class="line">     <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">alreadyIndexed</span><span class="params">(File f)</span> </span>{</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">     }</span><br><span class="line"></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span></span>{</span><br><span class="line">         producer.start();</span><br><span class="line">         consumer.start();</span><br><span class="line">     }</span><br><span class="line"></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">stop</span><span class="params">()</span> </span>{   <span class="comment">//&#x505C;&#x6B62;&#x751F;&#x4EA7;</span></span><br><span class="line">         producer.interrupt();</span><br><span class="line">     }</span><br><span class="line"></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">awaitTermination</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>{</span><br><span class="line">         consumer.join();  <span class="comment">//&#x7B49;&#x5F85;&#x524D;&#x9762;&#x6267;&#x884C;&#x7684;&#x7EBF;&#x7A0B;&#x6D88;&#x4EA1;&#x540E;&#x518D;&#x6267;&#x884C;</span></span><br><span class="line">     }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//           7-18  IndexingService&#x7684;&#x751F;&#x4EA7;&#x8005;&#x7EBF;&#x7A0B;</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CrawlerThread</span> <span class="keyword">extends</span> <span class="title">Thread</span></span>{</span><br><span class="line">         <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>{</span><br><span class="line">             <span class="keyword">try</span>{</span><br><span class="line">                 crawl(root);</span><br><span class="line">             }<span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">                <span class="comment">// &#x53D1;&#x751F;&#x5F02;&#x5E38;</span></span><br><span class="line">            }<span class="keyword">finally</span>{                               <span class="comment">//&#x63D0;&#x4EA4;&#x6BD2;&#x4E38;&#x5BF9;&#x8C61;&#x540E;&#xFF0C;&#x5C06;&#x4E0D;&#x518D;&#x63D0;&#x4EA4;&#x4EFB;&#x4F55;&#x5DE5;&#x4F5C;</span></span><br><span class="line">                <span class="keyword">while</span>(<span class="keyword">true</span>){</span><br><span class="line">                    <span class="keyword">try</span>{</span><br><span class="line">                        queue.put(POSION);</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    }<span class="keyword">catch</span> (InterruptedException e) {</span><br><span class="line">                        <span class="comment">//&#x91CD;&#x65B0;&#x5C1D;&#x8BD5;</span></span><br><span class="line">                    }</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line">         }</span><br><span class="line">         <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">crawl</span><span class="params">(File root)</span> <span class="keyword">throws</span> InterruptedException </span>{</span><br><span class="line">             File[] entries = root.listFiles(fileFilter); <span class="comment">//&#x8FD4;&#x56DE;&#x7B26;&#x5408;&#x8FC7;&#x6EE4;&#x5668;&#x7684;&#x6587;&#x4EF6;&#x7684;&#x7EDD;&#x5BF9;&#x8DEF;&#x5F84;</span></span><br><span class="line">             <span class="keyword">if</span> (entries != <span class="keyword">null</span>) {</span><br><span class="line">                 <span class="keyword">for</span> (File entry : entries) {</span><br><span class="line">                     <span class="keyword">if</span> (entry.isDirectory())   <span class="comment">//&#x5982;&#x679C;&#x662F;&#x6587;&#x4EF6;&#x5939;&#x5219;&#x9012;&#x5F52;</span></span><br><span class="line">                         crawl(entry);</span><br><span class="line">                     <span class="keyword">else</span> <span class="keyword">if</span> (!alreadyIndexed(entry))    <span class="comment">//&#x5982;&#x679C;&#x8FD8;&#x6CA1;&#x7ED9;&#x6587;&#x4EF6;&#x7F16;&#x7D22;&#x5F15;&#x5B8C;&#x6210;,&#x5219;&#x653E;&#x5165;&#x963B;&#x585E;&#x961F;&#x5217;&#x4E2D;</span></span><br><span class="line">                         queue.put(entry);</span><br><span class="line">                 }</span><br><span class="line">             }</span><br><span class="line">         }</span><br><span class="line">     }</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//           7-19  IndexingService&#x7684;&#x6D88;&#x8D39;&#x8005;&#x7EBF;&#x7A0B;</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">IndexerThread</span> <span class="keyword">extends</span> <span class="title">Thread</span></span>{</span><br><span class="line">         <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>{           <span class="comment">//&#x5728;&#x6BD2;&#x4E38;&#x5BF9;&#x8C61;&#x63D0;&#x4EA4;&#x524D;&#x7684;&#x6240;&#x6709;&#x5DE5;&#x4F5C;&#x90FD;&#x88AB;&#x88AB;&#x5904;&#x7406;</span></span><br><span class="line">             <span class="keyword">try</span>{</span><br><span class="line">                 <span class="keyword">while</span>(<span class="keyword">true</span>){</span><br><span class="line">                     File file=queue.take();</span><br><span class="line">                     <span class="keyword">if</span>(file==POSION)</span><br><span class="line">                         <span class="keyword">break</span>;</span><br><span class="line">                     <span class="keyword">else</span></span><br><span class="line">                         indexFile(file);</span><br><span class="line">                 }</span><br><span class="line">             }<span class="keyword">catch</span> (InterruptedException comsumed) {</span><br><span class="line">            }    </span><br><span class="line">         }</span><br><span class="line">         <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">indexFile</span><span class="params">(File file)</span> </span>{</span><br><span class="line">             <span class="comment">/*...*/</span></span><br><span class="line">         };</span><br><span class="line">     }</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="&#x793A;&#x4F8B;&#xFF1A;&#x53EA;&#x6267;&#x884C;&#x4E00;&#x6B21;&#x7684;&#x670D;&#x52A1;"><a href="#&#x793A;&#x4F8B;&#xFF1A;&#x53EA;&#x6267;&#x884C;&#x4E00;&#x6B21;&#x7684;&#x670D;&#x52A1;" class="headerlink" title="&#x793A;&#x4F8B;&#xFF1A;&#x53EA;&#x6267;&#x884C;&#x4E00;&#x6B21;&#x7684;&#x670D;&#x52A1;"></a>&#x793A;&#x4F8B;&#xFF1A;&#x53EA;&#x6267;&#x884C;&#x4E00;&#x6B21;&#x7684;&#x670D;&#x52A1;</h2><p>checkMail&#x65B9;&#x6CD5;&#x80FD;&#x5728;&#x591A;&#x53F0;&#x4E3B;&#x673A;&#x4E0A;&#x5E76;&#x884C;&#x5730;&#x68C0;&#x67E5;&#x65B0;&#x90AE;&#x4EF6;&#x3002;&#x5B83;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x79C1;&#x6709;&#x7684;Executor&#xFF0C;&#x5E76;&#x5411;&#x6BCF;&#x53F0;&#x4E3B;&#x673A;&#x63D0;&#x4EA4;&#x4E00;&#x4E2A;&#x4EFB;&#x52A1;&#x3002;&#x7136;&#x540E;&#xFF0C;&#x5F53;&#x6240;&#x6709;&#x90AE;&#x4EF6;&#x68C0;&#x67E5;&#x4EFB;&#x52A1;&#x90FD;&#x6267;&#x884C;&#x5B8C;&#x6BD5;&#x540E;&#xFF0C;&#x5173;&#x95ED;Executor&#x5E76;&#x7B49;&#x5F85;&#x7ED3;&#x675F;&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CheckForMail</span> </span>{</span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">checkMail</span><span class="params">(Set&lt;String&gt; hosts,<span class="keyword">long</span> timeout,TimeUnit unit)</span><span class="keyword">throws</span> InterruptedException</span>{</span><br><span class="line">          ExecutorService exec=Executors.newCachedThreadPool();</span><br><span class="line">          <span class="comment">//&#x4E4B;&#x6240;&#x4EE5;&#x7528;AtomicBoolean&#x4EE3;&#x66FF;volatile&#xFF0C;&#x662F;&#x56E0;&#x4E3A;&#x80FD;&#x4ECE;&#x5185;&#x90E8;&#x7684;Runnable&#x4E2D;&#x8BBF;&#x95EE;hasNewMail&#x6807;&#x5FD7;&#xFF0C;&#x56E0;&#x6B64;&#x5B83;&#x5FC5;&#x987B;&#x662F;final&#x7C7B;&#x578B;&#x4EE5;&#x514D;&#x4FEE;&#x6539;</span></span><br><span class="line">          <span class="keyword">final</span> AtomicBoolean hasNewMail=<span class="keyword">new</span> AtomicBoolean(<span class="keyword">false</span>);<span class="comment">//&#x521D;&#x59CB;&#x503C;&#x4E3A;false</span></span><br><span class="line">          <span class="keyword">try</span>{</span><br><span class="line">              <span class="keyword">for</span>(<span class="keyword">final</span> String host:hosts)</span><br><span class="line">                  exec.execute(<span class="keyword">new</span> Runnable(){ <span class="comment">//Executes the given command at some time in the future</span></span><br><span class="line">                      <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>{</span><br><span class="line">                          <span class="keyword">if</span>(checkMail(host))</span><br><span class="line">                              hasNewMail.set(<span class="keyword">true</span>);</span><br><span class="line">                      }</span><br><span class="line">                  });</span><br><span class="line">          }<span class="keyword">finally</span> {</span><br><span class="line">            exec.shutdown();</span><br><span class="line">            exec.awaitTermination(timeout, unit);</span><br><span class="line">        }</span><br><span class="line">          <span class="keyword">return</span> hasNewMail.get();</span><br><span class="line">      }</span><br><span class="line">      <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">checkMail</span><span class="params">(String host)</span> </span>{</span><br><span class="line">          <span class="comment">//&#x68C0;&#x67E5;&#x90AE;&#x4EF6;</span></span><br><span class="line">          <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">      }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="shutdownNow&#x7684;&#x5C40;&#x9650;&#x6027;"><a href="#shutdownNow&#x7684;&#x5C40;&#x9650;&#x6027;" class="headerlink" title="shutdownNow&#x7684;&#x5C40;&#x9650;&#x6027;"></a>shutdownNow&#x7684;&#x5C40;&#x9650;&#x6027;</h2><p>&#x4F7F;&#x7528;shutdownNow&#x65F6;&#xFF0C;&#x867D;&#x7136;&#x4ED6;&#x4F1A;&#x8FD4;&#x56DE;&#x5DF2;&#x63D0;&#x4EA4;&#x4F46;&#x5C1A;&#x672A;&#x5F00;&#x59CB;&#x7684;&#x4EFB;&#x52A1;&#xFF0C;&#x4F46;&#x6211;&#x4EEC;&#x65E0;&#x6CD5;&#x5728;&#x5173;&#x95ED;&#x4E2D;&#x77E5;&#x9053;&#x6B63;&#x5728;&#x6267;&#x884C;&#x7684;&#x4EFB;&#x52A1;&#x7684;&#x72B6;&#x6001;</p>
+<p>&#x8BB0;&#x5F55;&#x54EA;&#x4E9B;&#x4EFB;&#x52A1;&#x662F;&#x5728;&#x5173;&#x95ED;&#x540E;&#x53D6;&#x6D88;&#x7684;&#xFF1A;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//          7-21   &#x5728;ExecutorService&#x4E2D;&#x8DDF;&#x8E2A;&#x5728;&#x5173;&#x95ED;&#x4E4B;&#x540E;&#x53D6;&#x6D88;&#x7684;&#x4EFB;&#x52A1;</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TrackingExecutor</span> <span class="keyword">extends</span> <span class="title">AbstractExecutorService</span></span>{</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ExecutorService exec;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Set&lt;Runnable&gt; tasksCancelledAtShutdown=</span><br><span class="line">            Collections.synchronizedSet(<span class="keyword">new</span> HashSet&lt;Runnable&gt;());   <span class="comment">//&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;Set&#x6765;&#x8BB0;&#x5F55;&#x90A3;&#x4E9B;&#x4EFB;&#x52A1;&#x662F;&#x5173;&#x95ED;&#x540E;&#x53D6;&#x6D88;&#x7684;</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> List&lt;Runnable&gt; <span class="title">getCancelledTasks</span><span class="params">()</span></span>{	<span class="comment">//&#x5BA2;&#x6237;&#x7AEF;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;&#x8FD9;&#x4E2A;&#x65B9;&#x6CD5;&#x77E5;&#x9053;&#xFF0C;&#x54EA;&#x4E9B;&#x4EFB;&#x52A1;&#x662F;&#x5728;&#x5173;&#x95ED;&#x540E;&#x53D6;&#x6D88;&#x7684;</span></span><br><span class="line">        <span class="keyword">if</span>(!exec.isShutdown())</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException();</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ArrayList&lt;Runnable&gt;(tasksCancelledAtShutdown);</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(<span class="keyword">final</span> Runnable runnable)</span></span>{</span><br><span class="line">        exec.execute(<span class="keyword">new</span> Runnable(){</span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>{</span><br><span class="line">                <span class="keyword">try</span>{</span><br><span class="line">                    runnable.run();</span><br><span class="line">                }<span class="keyword">finally</span>{           <span class="comment">//&#x5982;&#x679C;&#x5DF2;&#x7ECF;ExecutorService&#x5173;&#x95ED;&#x4E86;&#x5E76;&#x4E14;&#x4EFB;&#x52A1;&#x88AB;&#x4E2D;&#x65AD;&#xFF08;&#x53D6;&#x6D88;&#xFF09;&#xFF0C;&#x6DFB;&#x52A0;&#x5230;Set&#x4E2D;</span></span><br><span class="line">                    <span class="keyword">if</span>(isShutdown()&amp;&amp;Thread.currentThread().isInterrupted())</span><br><span class="line">                        tasksCancelledAtShutdown.add(runnable);</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line">        });</span><br><span class="line">    }</span><br><span class="line">    <span class="comment">// &#x5C06;ExecutorService&#x7684;&#x5176;&#x4ED6;&#x65B9;&#x6CD5;&#x59D4;&#x6258;&#x7ED9;exec</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>TrackingExecutor&#x7684;&#x5BA2;&#x6237;&#x7AEF;&#x7A0B;&#x5E8F;&#x3002;</p>
+<p>&#x5F53;&#x722C;&#x866B;&#x7A0B;&#x5E8F;&#x5FC5;&#x987B;&#x5173;&#x95ED;&#x65F6;&#xFF0C;&#x6211;&#x4EEC;&#x901A;&#x5E38;&#x5E0C;&#x671B;&#x4FDD;&#x5B58;&#x5B83;&#x7684;&#x72B6;&#x6001;&#xFF0C;&#x4EE5;&#x4FBF;&#x7A0D;&#x540E;&#x91CD;&#x65B0;&#x542F;&#x52A8;&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//       7-22    &#x4F7F;&#x7528;TrackingExecutorService&#x6765;&#x4FDD;&#x5B58;&#x672A;&#x5B8C;&#x6210;&#x7684;&#x4EFB;&#x52A1;&#x5DF2;&#x5907;&#x540E;&#x7EED;&#x6267;&#x884C;</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">WebCrawler</span> </span>{</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> TrackingExecutor exec;        </span><br><span class="line">    <span class="meta">@GuardedBy</span>(<span class="string">&quot;this&quot;</span>) <span class="keyword">private</span> <span class="keyword">final</span> Set&lt;URL&gt; urlsToCrawl = <span class="keyword">new</span> HashSet&lt;URL&gt;(); <span class="comment">//&#x5B58;&#x653E;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ConcurrentMap&lt;URL, Boolean&gt; seen = <span class="keyword">new</span> ConcurrentHashMap&lt;URL, Boolean&gt;();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> TIMEOUT = <span class="number">500</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> TimeUnit UNIT = MILLISECONDS;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">WebCrawler</span><span class="params">(URL startUrl)</span> </span>{</span><br><span class="line">        urlsToCrawl.add(startUrl);</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>{</span><br><span class="line">        exec = <span class="keyword">new</span> TrackingExecutor(Executors.newCachedThreadPool()); <span class="comment">//&#x521B;&#x5EFA;&#x53EF;&#x83B7;&#x5F97;&#x5728;&#x5173;&#x95ED;&#x540E;&#x88AB;&#x53D6;&#x6D88;&#x7684;&#x4EFB;&#x52A1;&#x7684;TrackingExecutor</span></span><br><span class="line">        <span class="keyword">for</span> (URL url : urlsToCrawl) submitCrawlTask(url);  <span class="comment">//&#x5C06;urlsToCrawl&#x4E2D;&#x7684;url&#x52A0;&#x5165;&#x6267;&#x884C;&#x961F;&#x5217;</span></span><br><span class="line">        urlsToCrawl.clear();    <span class="comment">//&#x6E05;&#x7A7A;</span></span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">stop</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>{</span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            saveUncrawled(exec.shutdownNow());                   <span class="comment">//shutdownNow&#x9996;&#x5148;&#x5173;&#x95ED;&#x5F53;&#x524D;&#x6B63;&#x5728;&#x6267;&#x884C;&#x7684;&#x4EFB;&#x52A1;&#xFF0C;&#x7136;&#x540E;&#x8FD4;&#x56DE;&#x6240;&#x6709;&#x5C1A;&#x672A;&#x542F;&#x52A8;&#x7684;&#x4EFB;&#x52A1;&#x6E05;&#x5355;&#x3002;</span></span><br><span class="line">            <span class="keyword">if</span> (exec.awaitTermination(TIMEOUT, UNIT))</span><br><span class="line">                saveUncrawled(exec.getCancelledTasks());      <span class="comment">//&#x8FD4;&#x56DE;&#x5728;&#x5173;&#x95ED;&#x540E;&#x88AB;&#x53D6;&#x6D88;&#x7684;&#x4EFB;&#x52A1;&#x5E76;&#x4FDD;&#x5B58;</span></span><br><span class="line">        } <span class="keyword">finally</span> {</span><br><span class="line">            exec = <span class="keyword">null</span>;          </span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> List&lt;URL&gt; <span class="title">processPage</span><span class="params">(URL url)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">saveUncrawled</span><span class="params">(List&lt;Runnable&gt; uncrawled)</span> </span>{  <span class="comment">//&#x4FDD;&#x5B58;&#x5DF2;&#x5728;&#x4EFB;&#x52A1;&#x6E05;&#x5355;&#x4E2D;&#x4F46;&#x5C1A;&#x672A;&#x6267;&#x884C;&#x7684;&#x4EFB;&#x52A1;</span></span><br><span class="line">        <span class="keyword">for</span> (Runnable task : uncrawled)</span><br><span class="line">            urlsToCrawl.add(((CrawlTask) task).getPage());</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">submitCrawlTask</span><span class="params">(URL u)</span> </span>{       <span class="comment">//&#x52A0;&#x5165;&#x6267;&#x884C;&#x961F;&#x5217;</span></span><br><span class="line">        exec.execute(<span class="keyword">new</span> CrawlTask(u));         </span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">CrawlTask</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>{</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> URL url;</span><br><span class="line"></span><br><span class="line">        CrawlTask(URL url) {</span><br><span class="line">            <span class="keyword">this</span>.url = url;</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">int</span> count = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">boolean</span> <span class="title">alreadyCrawled</span><span class="params">()</span> </span>{        <span class="comment">//&#x8868;&#x793A;&#x8BE5;url&#x5DF2;&#x7ECF;&#x88AB;&#x722C;&#x8FC7;,putIfAbsent&#x5305;&#x542B;&#x4E86;&#x5224;&#x65AD;&#x7684;&#xFF0C;&#x662F;&#x539F;&#x5B50;&#x64CD;&#x4F5C;</span></span><br><span class="line">            <span class="keyword">return</span> seen.putIfAbsent(url, <span class="keyword">true</span>) != <span class="keyword">null</span>;</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">markUncrawled</span><span class="params">()</span> </span>{   <span class="comment">//&#x79FB;&#x9664;</span></span><br><span class="line">            seen.remove(url);</span><br><span class="line">            System.out.printf(<span class="string">&quot;marking %s uncrawled%n&quot;</span>, url);</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{</span><br><span class="line">            <span class="keyword">for</span> (URL link : processPage(url)) {    </span><br><span class="line">                <span class="keyword">if</span> (Thread.currentThread().isInterrupted())  <span class="comment">//&#x5982;&#x679C;&#x5DF2;&#x7ECF;&#x88AB;&#x4E2D;&#x65AD;&#x5C31;&#x4E0D;&#x505A;&#x64CD;&#x4F5C;</span></span><br><span class="line">                    <span class="keyword">return</span>;</span><br><span class="line">                submitCrawlTask(link);        <span class="comment">//&#x5982;&#x679C;&#x672A;&#x4E2D;&#x65AD;&#x5219;&#x9012;&#x5F52;&#xFF0C;&#x4E00;&#x76F4;&#x5F80;exec&#x4E2D;&#x6DFB;&#x52A0;&#x4EFB;&#x52A1;</span></span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> URL <span class="title">getPage</span><span class="params">()</span> </span>{   <span class="comment">//&#x8FD4;&#x56DE;url</span></span><br><span class="line">            <span class="keyword">return</span> url;</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h1 id="&#x5904;&#x7406;&#x975E;&#x6B63;&#x5E38;&#x7684;&#x7EBF;&#x7A0B;&#x7EC8;&#x6B62;"><a href="#&#x5904;&#x7406;&#x975E;&#x6B63;&#x5E38;&#x7684;&#x7EBF;&#x7A0B;&#x7EC8;&#x6B62;" class="headerlink" title="&#x5904;&#x7406;&#x975E;&#x6B63;&#x5E38;&#x7684;&#x7EBF;&#x7A0B;&#x7EC8;&#x6B62;"></a>&#x5904;&#x7406;&#x975E;&#x6B63;&#x5E38;&#x7684;&#x7EBF;&#x7A0B;&#x7EC8;&#x6B62;</h1><p>&#x6700;&#x4E3B;&#x8981;&#x539F;&#x56E0;&#x5C31;&#x662F;RuntimeException&#x3002;</p>
+<p>&#x4E0B;&#x9762;&#x4EE3;&#x7801;&#x4E2D;&#xFF0C;&#x5982;&#x679C;&#x4EFB;&#x52A1;&#x629B;&#x51FA;&#x4E86;&#x4E00;&#x4E2A;&#x8FD0;&#x884C;&#x65F6;&#x5F02;&#x5E38;&#xFF0C;&#x90A3;&#x4E48;&#x5B83;&#x5C06;&#x4F7F;&#x7EBF;&#x7A0B;&#x7EC8;&#x7ED3;&#x3002;ThreadPoolExecutor&#x4E5F;&#x4F7F;&#x7528;&#x4E86;&#x8FD9;&#x79CD;&#x6280;&#x672F;&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//       &#x5178;&#x578B;&#x7684;&#x7EBF;&#x7A0B;&#x6C60;&#x5DE5;&#x4F5C;&#x8005;&#x7EBF;&#x7A0B;&#x7ED3;&#x6784;</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{</span><br><span class="line">    Throwable thrown = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        <span class="keyword">while</span> (!isInterrupted())   <span class="comment">//&#x672A;&#x4E2D;&#x65AD;</span></span><br><span class="line">           runTask(getTaskFromWorkQueue());</span><br><span class="line">    } <span class="keyword">catch</span> (Throwable e) {      <span class="comment">//&#x68C0;&#x67E5;&#x5230;&#x5F02;&#x5E38;</span></span><br><span class="line">        thrown = e;</span><br><span class="line">    } <span class="keyword">finally</span> {            <span class="comment">//&#x7EBF;&#x7A0B;&#x7EC8;&#x7ED3;</span></span><br><span class="line">       threadExited(<span class="keyword">this</span>, thrown);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="&#x672A;&#x6355;&#x83B7;&#x5F02;&#x5E38;&#x7684;&#x5904;&#x7406;"><a href="#&#x672A;&#x6355;&#x83B7;&#x5F02;&#x5E38;&#x7684;&#x5904;&#x7406;" class="headerlink" title="&#x672A;&#x6355;&#x83B7;&#x5F02;&#x5E38;&#x7684;&#x5904;&#x7406;"></a>&#x672A;&#x6355;&#x83B7;&#x5F02;&#x5E38;&#x7684;&#x5904;&#x7406;</h2><p>&#x9664;&#x4E86;&#x4E0A;&#x4E00;&#x79CD;&#x79CD;&#x4E3B;&#x52A8;&#x65B9;&#x6CD5;&#x6765;&#x89E3;&#x51B3;&#x8FD0;&#x884C;&#x65F6;&#x5F02;&#x5E38;&#xFF0C;&#x5728;Thread API &#x4E2D;&#x540C;&#x6837;&#x63D0;&#x4F9B;&#x4E86;UncaughtExceptionHandler&#xFF0C;&#x5B83;&#x80FD;&#x68C0;&#x6D4B;&#x51FA;&#x67D0;&#x4E2A;&#x7EBF;&#x7A0B;&#x7531;&#x4E8E;&#x672A;&#x6355;&#x83B7;&#x7684;&#x5F02;&#x5E38;&#x800C;&#x7EC8;&#x7ED3;&#x7684;&#x60C5;&#x51B5;&#x3002;&#x8FD9;&#x4E24;&#x79CD;&#x65B9;&#x6CD5;&#x662F;&#x4E92;&#x8865;&#x7684;&#xFF0C;&#x901A;&#x8FC7;&#x5C06;&#x4E24;&#x8005;&#x7ED3;&#x5408;&#x5728;&#x4E00;&#x8D77;&#xFF0C;&#x5C31;&#x80FD;&#x6709;&#x6548;&#x5730;&#x9632;&#x6B62;<strong>&#x7EBF;&#x7A0B;&#x6CC4;&#x6F0F;</strong>&#x95EE;&#x9898;&#x3002;</p>
+<p>&#x5F53;&#x7EBF;&#x7A0B;&#x7531;&#x4E8E;&#x672A;&#x6355;&#x83B7;&#x5F02;&#x5E38;&#x800C;&#x9000;&#x51FA;&#x65F6;&#xFF0C;JVM&#x4F1A;&#x5427;&#x8FD9;&#x4E2A;&#x4E8B;&#x4EF6;&#x62A5;&#x544A;&#x7ED9;&#x5E94;&#x7528;&#x7A0B;&#x5E8F;&#x63D0;&#x7684;UncaughtExceptionHandler&#x5F02;&#x5E38;&#x5904;&#x7406;&#x5668;&#x3002;&#x5982;&#x679C;&#x6CA1;&#x6709;&#x63D0;&#x4F9B;&#x4EFB;&#x4F55;&#x5F02;&#x5E38;&#x5904;&#x7406;&#x5668;&#xFF0C;&#x90A3;&#x4E48;&#x9ED8;&#x8BA4;&#x7684;&#x884C;&#x4E3A;&#x662F;&#x5C06;&#x6808;&#x8FFD;&#x8E2A;&#x4FE1;&#x606F;&#x8F93;&#x51FA;&#x5230;System.err&#x3002;</p>
+<p>&#x6216;&#x8005;&#x50CF;&#x4E0B;&#x9762;&#x7A0B;&#x5E8F;&#x8FD9;&#x6837;&#xFF0C;&#x5199;&#x5165;&#x65E5;&#x5FD7;&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//      7-25  &#x5C06;&#x5F02;&#x5E38;&#x5199;&#x5165;&#x65E5;&#x5FD7;&#x7684;UncaughtExceptionHandler</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UEHLogger</span> <span class="keyword">implements</span> <span class="title">Thread</span>.<span class="title">UncaughtExceptionHandler</span> </span>{</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">uncaughtException</span><span class="params">(Thread t, Throwable e)</span> </span>{</span><br><span class="line">        Logger logger = Logger.getAnonymousLogger();  <span class="comment">//&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x533F;&#x540D;&#x7684;&#x65E5;&#x5FD7;</span></span><br><span class="line">        logger.log(Level.SEVERE, <span class="string">&quot;Thread terminated with exception: &quot;</span> + t.getName(), e);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="https://book.douban.com/subject/10484692/" target="_blank" rel="noopener">Java&#x5E76;&#x53D1;&#x7F16;&#x7A0B;&#x5B9E;&#x6218;</a></p>
+<p><a href="http://jcip.net/listings.html" target="_blank" rel="noopener">&#x6E90;&#x4EE3;&#x7801;</a></p>
+<p><a href="https://blog.csdn.net/ahaha413525642/article/details/76815299" target="_blank" rel="noopener">Java&#x5E76;&#x53D1;&#x7F16;&#x7A0B;&#x5B9E;&#x6218;&#xFF08;&#x5B66;&#x4E60;&#x7B14;&#x8BB0;&#x516D; &#x7B2C;&#x4E03;&#x7AE0; &#x53D6;&#x6D88;&#x4E0E;&#x5173;&#x95ED; &#x4E0A;&#xFF09;</a></p>
+<p><a href="https://blog.csdn.net/ahaha413525642/article/details/76879439" target="_blank" rel="noopener">Java&#x5E76;&#x53D1;&#x7F16;&#x7A0B;&#x5B9E;&#x6218;&#xFF08;&#x5B66;&#x4E60;&#x7B14;&#x8BB0;&#x516D; &#x7B2C;&#x4E03;&#x7AE0; &#x53D6;&#x6D88;&#x4E0E;&#x5173;&#x95ED; &#x4E0B;&#xFF09;</a></p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>原文作者：<a href="http://nnkwrik.github.io">曽生</a>
+            </p><p>原文链接：<a href="http://nnkwrik.github.io/2018/11/05/20181105/">http://nnkwrik.github.io/2018/11/05/20181105/</a>
+            </p><p>发表日期：<a href="http://nnkwrik.github.io/2018/11/05/20181105/">November 5th 2018, 9:22:17 am</a>
+            </p><p>更新日期：<a href="http://nnkwrik.github.io/2018/11/05/20181105/">November 6th 2018, 1:32:08 pm</a>
+            </p><p>版权声明：本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2018/11/04/20181104-5/" title="🍤 并发操作合集-目录">
+                    <div class="prevTitle">🍤 并发操作合集-目录</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MDUwMy8xNzAzMA==">
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:nnkwrik@gmail.com" class="iconfont-archer email" title="email"></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/nnkwrik" class="iconfont-archer github" target="_blank" title="github"></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title="wechat">
+                  
+                  <img class="profile-qr" src="/assets/qr.png">
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:30vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#任务取消"><span class="toc-number">1.</span> <span class="toc-text">任务取消</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#中断"><span class="toc-number">1.1.</span> <span class="toc-text">中断</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#中断策略"><span class="toc-number">1.2.</span> <span class="toc-text">中断策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#响应中断"><span class="toc-number">1.3.</span> <span class="toc-text">响应中断</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#示例：计时运行"><span class="toc-number">1.4.</span> <span class="toc-text">示例：计时运行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#通过Future来实现取消"><span class="toc-number">1.5.</span> <span class="toc-text">通过Future来实现取消</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#处理不可中断的阻塞"><span class="toc-number">1.6.</span> <span class="toc-text">处理不可中断的阻塞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#采用newTaskFor来封装非标准的取消"><span class="toc-number">1.7.</span> <span class="toc-text">采用newTaskFor来封装非标准的取消</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#停止基于线程的服务"><span class="toc-number">2.</span> <span class="toc-text">停止基于线程的服务</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#示例：日志服务"><span class="toc-number">2.1.</span> <span class="toc-text">示例：日志服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#关闭ExecutorService"><span class="toc-number">2.2.</span> <span class="toc-text">关闭ExecutorService</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#“毒丸”对象"><span class="toc-number">2.3.</span> <span class="toc-text">“毒丸”对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#示例：只执行一次的服务"><span class="toc-number">2.4.</span> <span class="toc-text">示例：只执行一次的服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#shutdownNow的局限性"><span class="toc-number">2.5.</span> <span class="toc-text">shutdownNow的局限性</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#处理非正常的线程终止"><span class="toc-number">3.</span> <span class="toc-text">处理非正常的线程终止</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#未捕获异常的处理"><span class="toc-number">3.1.</span> <span class="toc-text">未捕获异常的处理</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Reference"><span class="toc-number">4.</span> <span class="toc-text">Reference</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 18
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/05</span><a class="archive-post-title" href="/2018/11/05/20181105/">Java并发编程实战-第7章-取消与关闭</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-5/">🍤 并发操作合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-4/">并发操作合集-11.ThreadLocal</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-3/">并发操作合集-10.Executor和线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-2/">并发操作合集-9.并发工具：Semaphore,CountDownLatch,CyclicBarrier</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104/">并发操作合集-8.并发容器：CopyOnWriteArrayList</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181102-3/">并发操作合集-7.并发容器：BlockingQueue</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102-2/">并发操作合集-6.并发容器：ConcurrentHashMap</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102/">并发操作合集-5.原子变量和volatile</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181030-2/">并发操作合集-1.线程的生命周期</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span><a class="archive-post-title" href="/2018/10/30/20181030/">Java并发编程实战-第6章-任务执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/29</span><a class="archive-post-title" href="/2018/10/29/20181029/">Java并发编程实战-第5章-基础构建模块</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href="/2018/10/28/20181028/">Java并发编程实战-第4章-对象的组合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span><a class="archive-post-title" href="/2018/10/27/20181027/">Java并发编程实战-第3章-对象的共享</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/25</span><a class="archive-post-title" href="/2018/10/25/20181025/">Java并发编程实战-第2章-线程安全性</a>
+        </li>
+    
+    </ul></div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发操作合集"><span class="iconfont-archer">&#xe606;</span>并发操作合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br>
+    1、请确保node版本大于6.2<br>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
+    
+        <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "曽生"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
