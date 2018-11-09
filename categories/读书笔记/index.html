@@ -361,17 +361,130 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2018/11/09/20181109/">
+            
+                <span>深入理解Java虚拟机-第1章-走近Java</span>
+        </a>
+        <div class="abstract-content">
+            Java发展史
+
+1991年4月绿色计划：开发一种能够在各种消费性电子产品(如机顶盒、冰箱、收音机等)上运行的程序架构。Java语言的前身:Oak
+
+1995年5月23日Oak语言改名为Java“Write Once,Run Anywhere”
+
+1996年1月23日JDK1.0：
+
+纯解释执行的Java虚拟机实现(Sun Classic VM)
+Applet、AWT等
+
+
+1997年2月19日
+ JDK1.1 : 
+
+JAR文件格式、JDBC、JavaBeans、RMI
+内部类，反射
+
+
+1998年12月4日JDK 1.2：
+
+拆成3个体系 ： j2se,j2ee,j2me
+内置JIT（Just In Time）编译器
+EJB,JavaPlafin-in,JavaIDL,Swing
+strictfp关键字，Collections
+
+
+1999年4月27日HotSpot虚拟机发布，之后的Sun JDK的默认虚拟机
+
+2000年5月8日JDK1.3
+
+改进1.2中的库类（数学运算，TimerApi等）
+
+
+2002年2月13日jDK1.4
+
+正则，异常链，NIO，日志，XML解析  
+
+
+2004年9月30日
+JDK1.5
+
+自动装箱，泛型，注解，枚举，foreach
+改进JMM，java.util.concurrent并发包
+
+
+2006年12月11日JDK1.6
+
+改名为Java SE 6、Java EE 6、Java ME 6
+对动态语言（js）的支持
+对jvm做改进：锁，同步，垃圾收集，类加载等的算法  
+
+
+2009年2月19日-2010年9月9日JDK1.7 
+
+JVM发展史Sun Classic/Exact VM
+
+Sun Classic
+1996 . 第一款商用Java虚拟机
+使用纯解释器的方法执行代码
+外挂JIT编译器:  sunwjit,解释器和编译器不能配合工作，如果使用编译器执行，那么编译器就得对每行代码进行编译,包括不会用到的
+
+
+Exact VM虚拟机：Classic的扩展编译器和解释器混合工作.能准确的管理内存。通过分辨出类型,GC能分辨对象是否还可能被使用（Classic VM基于handler的对象查找方式）
+
+Sun HosSpot VM
+
+SunJDK和OpenJDK中所带的虚拟机
+继承了之前两款的优点（内存管理）和比exa...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/09</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class="abstract-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="JVM">JVM</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="《深入理解Java虚拟机》">《深入理解Java虚拟机》</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2018/11/05/20181105/">
             
                 <span>Java并发编程实战-第7章-取消与关闭</span>
         </a>
         <div class="abstract-content">
-            &#x672C;&#x7AE0;&#x5C06;&#x7ED9;&#x51FA;&#x5404;&#x79CD;&#x5B9E;&#x73B0;&#x53D6;&#x6D88;&#x548C;&#x4E2D;&#x65AD;&#x7684;&#x673A;&#x5236;&#xFF0C;&#x4EE5;&#x53CA;&#x5982;&#x4F55;&#x7F16;&#x5199;&#x4EFB;&#x52A1;&#x548C;&#x670D;&#x52A1;&#xFF0C;&#x4F7F;&#x5B83;&#x4EEC;&#x80FD;&#x5BF9;&#x53D6;&#x6D88;&#x8BF7;&#x6C42;&#x505A;&#x51FA;&#x54CD;&#x5E94;&#x3002;
-&#x4EFB;&#x52A1;&#x53D6;&#x6D88;&#x53EF;&#x53D6;&#x6D88;&#x7684;&#x64CD;&#x4F5C; &#xFF1A;&#x3000;&#x5916;&#x90E8;&#x4EE3;&#x7801;&#x80FD;&#x5728;&#x67D0;&#x4E2A;&#x64CD;&#x4F5C;&#x6B63;&#x5E38;&#x5B8C;&#x6210;&#x4E4B;&#x524D;&#x5C06;&#x5176;&#x7F6E;&#x5165;&#x201C;&#x5B8C;&#x6210;&#x201D;&#x72B6;&#x6001;
-&#x53D6;&#x6D88;&#x67D0;&#x4E2A;&#x64CD;&#x4F5C;&#x7684;&#x539F;&#x56E0;&#xFF1A;
+            本章将给出各种实现取消和中断的机制，以及如何编写任务和服务，使它们能对取消请求做出响应。
+任务取消可取消的操作 ：　外部代码能在某个操作正常完成之前将其置入“完成”状态
+取消某个操作的原因：
 
-&#x70B9;&#x51FB;&#x67D0;&#x4E2A;&#x684C;&#x9762;&#x5E94;&#x7528;&#x4E2D;&#x7684;&#x53D6;&#x6D88;&#x6309;&#x94AE;&#x65F6;&#xFF1B; 
-&#x67D0;&#x4E2A;&#x64CD;&#x4F5C;&#x8D85;&#x8FC7;&#x4E86;&#x4E00;&#x5B9A;&#x7684;&#x6267;&#x884C;&#x65F6;&#x95F4;&#x9650;&#x523...
+点击某个桌面应用中的取消按钮时； 
+某个操作超过了一定的执行时间限制需要中止时； 
+多个线程做相同的事情，只要一个线程成功其它线程都可以取消时； 
+一组线程中的一个或多个出现错误导致整组都无法继续时； 
+当一个应用或服务需要停止时。
+
+Java中没有一种安全的抢占式方法来停止线程，只有一些协作式的机制，代码都会遵循的一种协议。
+比如：
+
+“已请求取消”标志
+任务将定期地查看这个标志。如果设置了这个标志，那么任务将提前结束。
+
+😊PrimeGenerator持续地枚举素数（Prime），直到cancelled被设置。为了确保可靠性cancelled被设置为volatile。
+123456789101112131415161718192021222324//        7-1      使用Volatile类型的域来保存取消状态  public class PrimeGenerator implements Runnable&#123;    private final List&lt;BigInteger&gt; primes=            new ArrayList&lt;BigInteger&gt;();    private volatile boolean cancelled;//volatile变量能确保可见性 禁止指令重排序    public void run()&#123;        BigInteger p=BigInteger.ONE;//常量        while(!cancelled)&#123;  //任务将定期地查看这个标志。如果设置了这个标志，那么任务将提前结束。（即如果cancelled不为true则一直运行）            p=p.nextProbablePrime();//返回一个比当前大的            synchronized (this) &#123; //确保不会被添加多次                primes.add(p);            &#125;        &#1...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -404,9 +517,16 @@
                 <span>Java并发编程实战-第6章-任务执行</span>
         </a>
         <div class="abstract-content">
-            &#x4EC0;&#x4E48;&#x662F;&#x4EFB;&#x52A1;&#xFF1F;&#x4EFB;&#x52A1;&#x5C31;&#x662F;&#x5DE5;&#x4F5C;&#x5355;&#x5143;&#xFF0C;&#x6211;&#x4EEC;&#x628A;&#x5E94;&#x7528;&#x4E2D;&#x7684;&#x5DE5;&#x4F5C;&#x5206;&#x6210;&#x591A;&#x4E2A;&#x4EFB;&#x52A1;&#xFF0C;&#x4ECE;&#x800C;&#x8FDB;&#x884C;&#x4E8B;&#x52A1;&#x64CD;&#x4F5C;&#x548C;&#x5E76;&#x884C;&#x5DE5;&#x4F5C;&#x3002;
-&#x5728;&#x7EBF;&#x7A0B;&#x4E2D;&#x6267;&#x884C;&#x4EFB;&#x52A1;&#x9996;&#x5148;&#x4EFB;&#x52A1;&#x4E4B;&#x95F4;&#x5FC5;&#x987B;&#x662F;&#x76F8;&#x4E92;&#x72EC;&#x7ACB;&#x7684;&#xFF1A;&#x4EFB;&#x52A1;&#x5E76;&#x4E0D;&#x4F9D;&#x8D56;&#x4E8E;&#x5176;&#x4ED6;&#x4EFB;&#x52A1;&#x7684;&#x72B6;&#x6001;&#xFF0C;&#x7ED3;&#x679C;&#x6216;&#x8FB9;&#x754C;&#x6548;&#x5E94;&#x3002; 
-&#x4E32;&#x884C;&#x5730;&#x6267;&#x884C;&#x4EFB;&#x52A1;&#x6709;&#x591A;&#x79CD;&#x8C03;&#x5EA6;&#x4EFB;&#x52A1;&#x7684;&#x7B56;&#x7565;&#xFF0C;&#x800C;&#x5176;&#x4E2D;&#x4E00;&#x4E9B;&#x7B56;&#x7565;&#x80FD;&#x591F;&#x66F4;&#x597D;&#x5730;&#x5229;&#x7528;&#x6F5C;&#...
+            什么是任务？任务就是工作单元，我们把应用中的工作分成多个任务，从而进行事务操作和并行工作。
+在线程中执行任务首先任务之间必须是相互独立的：任务并不依赖于其他任务的状态，结果或边界效应。 
+串行地执行任务有多种调度任务的策略，而其中一些策略能够更好地利用潜在并发性。
+策略1 ： 在单个线程中串行地执行各项任务，也就是按顺序一个个执行。
+😕 串行Web服务器
+12345678910//         6-1  串行的Web服务器（并不好）public class SingleThreadWebServer &#123;    public static void main(String[] args) throws IOException &#123;        ServerSocket socket = new ServerSocket(80);        while (true) &#123;      //处理多个请求            Socket connection = socket.accept();//通过80端口接收到HTTP请求            handleRequest(connection); //处理请求        &#125;    &#125;&#125;
+上面的服务器程序中，一次只能处理一个请求，性能非常差。当等待时间过长时，客户端会认为服务器没有响应，而且服务器cpu资源利用非常低。对于服务器而言这种串行执行的方式无疑是不合适的。
+显示地为任务创建线程策略2 ： 通过为每个请求创建一个新的线程来提供服务，从而实现更高的响应性。
+😧 为每个请求启动一个新的线程
+123456789101112131415//     6-2   在Web服务器中为每个请求启动一个新的线程（不要这么做）public class ThreadPerTaskWebServer &#123;    public static void main(String[] args) throws IOException &#123;        ServerSocket socket = new ServerSocket(80);        while (true) &#123;  //多个请求            final S...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -439,9 +559,21 @@
                 <span>Java并发编程实战-第5章-基础构建模块</span>
         </a>
         <div class="abstract-content">
-            &#x672C;&#x7AE0;&#x4E2D;&#x8BB2;&#x4ECB;&#x7ECD;&#x5728;Java5&#x548C;6&#x4E2D;&#x5F15;&#x5165;&#x7684;&#x4E00;&#x4E9B;&#x6784;&#x5EFA;&#x5E76;&#x53D1;&#x6A21;&#x5757;&#xFF0C;&#x4EE5;&#x53CA;&#x5982;&#x4F55;&#x7528;&#x8FD9;&#x4E9B;&#x6A21;&#x5757;&#x6765;&#x8FDB;&#x884C;&#x5F00;&#x53D1;&#x3002;
-&#x540C;&#x6B65;&#x5BB9;&#x5668;&#x7C7B;&#x540C;&#x6B65;&#x5BB9;&#x5668;&#x7C7B;&#x5305;&#x62EC;Vector&#x548C;Hashtable&#x3001;&#x8FD9;&#x4E9B;&#x7C7B;&#x5B9E;&#x73B0;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x65B9;&#x5F0F;&#x662F;&#xFF1A;&#x5C06;&#x5B83;&#x4EEC;&#x7684;&#x72B6;&#x6001;&#x5C01;&#x88C5;&#x8D77;&#x6765;&#xFF0C;&#x5E76;&#x5BF9;&#x6BCF;&#x4E2A;&#x516C;&#x6709;&#x65B9;&#x6CD5;&#x90FD;&#x8FDB;&#x884C;&#x540C;&#x6B65;&#xFF0C;&#x4F7F;&#x5F97;&#x6BCF;&#x6B21;&#x53EA;&#x6709;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x80FD;&#x8BBF;&#x95EE;&#x5BB9;&#x5668;&#x7684;&#x72B6;&#x6001;&#x3002;
-&#x540C;&#x6B65;&#x5BB9;&#x5668;&#x7C7B;&#x7684;&#x95EE;&#x9898;&#x5E38;&#x89C1;&#x7684;&#x590D;&#x5408;&#x64C...
+            本章中讲介绍在Java5和6中引入的一些构建并发模块，以及如何用这些模块来进行开发。
+同步容器类同步容器类包括Vector和Hashtable、这些类实现线程安全的方式是：将它们的状态封装起来，并对每个公有方法都进行同步，使得每次只有一个线程能访问容器的状态。
+同步容器类的问题常见的复合操作包括：
+
+迭代（反复访问元素，知道遍历容器中所有元素）
+跳转（根据指定顺序找到当前元素的下个元素）
+条件运算：例如“若没有则添加”。在同步容器类中，这些复合操作在没有客户端加锁的情况下仍然是线程安全的，但当其他线程并发地修改容器时，它们可能会表现出意料之外的行为。
+
+:confused:
+123456789//           5-1    Vector上可能导致混乱结果的复合操作public static Object getLast(Vector list) &#123;    int lastIndex = list.size() - 1;    return list.get(lastIndex);&#125;public static void deleteLast(Vector list) &#123;     int lastIndex = list.size() - 1;     list.remove(lastIndex);&#125;
+上面是Vector中定义的两个方法，它们都会执行“先检查再运行”操作，每个方法首先都获得数组的大小，然后通过结果来获取或删除最后一个元素。
+如果线程A在包含10个元素的Vector上调用removeLast，同时线程B调用getLast，这个时候就会出现下面的情况，并抛出ArrayIndexOutOfBoundsException。
+
+:blush: 把上面的程序改成客户端加锁，通过list自身的锁来保护他，使getLast和deleteLast成为原子操作
+12345678910111213//              5-2    在使用客户端加锁的Vector上的复合操作public static Object getLast(Vector list) &#123;        synchronized (list) &#123;         //获得容器类的锁，从客户端得到        int las...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -474,12 +606,28 @@
                 <span>Java并发编程实战-第4章-对象的组合</span>
         </a>
         <div class="abstract-content">
-            &#x5728;&#x672C;&#x7AE0;&#x4E2D;&#x6D89;&#x53CA;&#x7684;&#x7EC4;&#x5408;&#x6A21;&#x5F0F;&#x4E2D;&#xFF0C;&#x5C06;&#x4F1A;&#x628A;&#x4E00;&#x4E9B;&#x73B0;&#x6709;&#x7684;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7EC4;&#x4EF6;&#x7EC4;&#x5408;&#x6210;&#x66F4;&#x5927;&#x7684;&#x7A0B;&#x5E8F;&#xFF0C;&#x4ECE;&#x800C;&#x5B9E;&#x73B0;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x3002;
-&#x8BBE;&#x8BA1;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x7C7B;&#x6211;&#x4EEC;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;&#x5C01;&#x88C5;&#x6765;&#x786E;&#x4FDD;&#x7A0B;&#x5E8F;&#x662F;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x3002;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x7C7B;&#x7684;&#x8BBE;&#x8BA1;&#x8FC7;&#x7A0B;&#xFF1A;
+            在本章中涉及的组合模式中，将会把一些现有的线程安全组件组合成更大的程序，从而实现线程安全。
+设计线程安全的类我们可以通过封装来确保程序是线程安全的。线程安全的类的设计过程：
 
-&#x627E;&#x51FA;&#x6784;&#x6210;&#x5BF9;&#x8C61;&#x72B6;&#x6001;&#x7684;&#x6240;&#x6709;&#x5C5E;&#x6027;
-&#x627E;&#x51FA;&#x7EA6;&#x675F;&#x8FD9;&#x4E9B;&#x5C5E;&#x6027;&#x7684;&#x4E0D;&#x53D8;&#x6027;&#x6761;&#x4EF6;
-&#x5EFA;&#x7ACB;&#x8FD9;&#x4E9B;&#x5C5E;&#x6027;&#x7684;&#x5E76;&#x53D1;&#x8BBF;&#x95EE;&#x7B56;...
+找出构成对象状态的所有属性
+找出约束这些属性的不变性条件
+建立这些属性的并发访问策略（同步策略）
+
+比如我们想要设计出下面这样的线程安全的程序，需要什么样的过程？
+1234567891011121314@ThreadSafepublic final class Counter &#123;    @GuardedBy("this") private long value = 0;    public synchronized long getValue() &#123;        return value;    &#125;    public synchronized long increment() &#123;        if (value == Long.MAX_VALUE)            throw new IllegalStateException("counter overflow");        return ++value;    &#125;&#125;
+首先，一目了然的是：
+设计步骤1 : 只有value属性
+第三步的同步策略(Synchronized Policy)定义了如何在不违背对象不变条件或后验条件的情况下对其状态的访问操作进行协同。为了规定同步策略，我们需要先找出对象的不变条件或后验条件等同步需求。
+收集同步需求
+不可变条件 ： 用于来判断状态是否有效。设计步骤2.1 ： value属性是long类型，所以他的状态必需是Long.MIN_VALUE到Long.MAX_VALUE，并且在目前的代码中value属性不能是负值。
+
+后验条件：来判断状态迁移是否是有效。
+也就是说，当下一个状态需要依赖当前状态时，这个操作就必须是一个复合操作（读取-修改-写入）。
+设计步骤2.2 ： 如果Counter的当前值为17，那么下一个有效状态只能是18。必须是复合操作
+
+先验条件 ： 某些对象的方法中还包含一些基于状态的先验条件。比如不能从空队列中移除元素，这种就是依赖状态的操作。
+
+状态的所有权 ： 一个对象的状态将是对象图中所有对象包含的域的一个...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -512,8 +660,14 @@
                 <span>Java并发编程实战-第3章-对象的共享</span>
         </a>
         <div class="abstract-content">
-            &#x5728;&#x4E0A;&#x4E00;&#x7AE0;&#x4E2D;&#x4ECB;&#x7ECD;&#x4E86;&#x5982;&#x4F55;&#x901A;&#x8FC7;&#x540C;&#x6B65;&#x6765;&#x907F;&#x514D;&#x591A;&#x4E2A;&#x7EBF;&#x7A0B;&#x5728;&#x540C;&#x4E00;&#x65F6;&#x95F4;&#x8BBF;&#x95EE;&#x76F8;&#x540C;&#x6570;&#x636E;&#xFF0C;&#x5728;&#x8FD9;&#x4E00;&#x7AE0;&#x4E2D;&#x5C06;&#x4ECB;&#x7ECD;&#x5982;&#x4F55;&#x5171;&#x4EAB;&#x548C;&#x53D1;&#x5E03;&#x5BF9;&#x8C61;&#xFF0C;&#x4ECE;&#x800C;&#x80FD;&#x5B89;&#x5168;&#x5730;&#x88AB;&#x591A;&#x4E2A;&#x7EBF;&#x7A0B;&#x540C;&#x65F6;&#x8BBF;&#x95EE;&#x3002;
-&#x53EF;&#x89C1;&#x6027;&#x4EC0;&#x4E48;&#x662F;&#x5185;&#x5B58;&#x53EF;&#x89C1;&#x6027;&#xFF1F;&#x53EF;&#x89C1;&#x6027;&#x5C31;&#x662F;&#x503C;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x4FEE;&#x6539;&#x4E86;&#x5BF9;&#x8C61;&#x72B6;&#x6001;&#x4E4B;&#x540E;&#xFF0C;&#x5176;&#x4ED6;&#x7EBF;&#x7A0B;&#x80FD;&#x591F;&#x770B;&#x5230;&#x53D1;&#x751F;&#x7684;&#x72B6;&#x6001;&#x53D8;&#x5316;&#x3002;&#x7136;&#x800C;&#xFF0C;&#x901A;&#x5E38;&#x65E0;&#x6CD5;&#x786E;&#x5B9A;&#x8...
+            在上一章中介绍了如何通过同步来避免多个线程在同一时间访问相同数据，在这一章中将介绍如何共享和发布对象，从而能安全地被多个线程同时访问。
+可见性什么是内存可见性？可见性就是值一个线程修改了对象状态之后，其他线程能够看到发生的状态变化。然而，通常无法确定读操作的线程能适时地看见其他线程写入的值，所以需要同步。
+:anguished: 在没有同步情况下的共享变量
+123456789101112131415161718public class NoVisibility &#123;    private static boolean ready;    private static int number;    private static class ReaderThread extends Thread &#123;        public void run() &#123;            while (!ready)                Thread.yield();            System.out.println(number);        &#125;    &#125;    public static void main(String[] args) &#123;        new ReaderThread().start();        number = 42;        ready = true;    &#125;&#125;
+在上面的代码中，看起来会输出42，但很可能会输出0，甚至无法终止。因为无法保证main写入的值对于读线程来说是可见的。输出0的状况被称为重排序，可能在读程序眼中，number和ready的写入程序甚至可能是相反的。因为在没有同步的情况下，编译器等会对执行顺序进行调整。
+失效数据失效数据是指，当读线程去读某个数据的时候，可能读到的是一个已经过期的旧值。在糟糕的情况下，可能读到的两个值中，一个是新的值但另一个是过期的值。
+:confused: 非线程安全的getter,setter
+123456@NotThreadSafepublic class MutableInteger &#123;    private int value;    public int get() &#1...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -546,11 +700,28 @@
                 <span>Java并发编程实战-第2章-线程安全性</span>
         </a>
         <div class="abstract-content">
-            &#x7F16;&#x5199;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x4EE3;&#x7801; &#x5C31;&#x662F;&#x5BF9;&#x5171;&#x4EAB;&#x7684;&#x548C;&#x53EF;&#x53D8;&#x7684;&#x72B6;&#x6001;&#x8BBF;&#x95EE;&#x64CD;&#x4F5C;&#x8FDB;&#x884C;&#x7BA1;&#x7406;&#x3002;&#x90A3;&#x4E48;&#x4EC0;&#x4E48;&#x662F;&#x72B6;&#x6001;&#xFF1F;
-&#x72B6;&#x6001;&#x662F;&#x6307;&#x5B58;&#x50A8;&#x5728;&#x72B6;&#x6001;&#x53D8;&#x91CF;&#x603B;&#x7684;&#x6570;&#x636E;&#x3002;&#x6BD4;&#x5982;&#x67D0;&#x4E2A;HashMap&#x7684;&#x72B6;&#x6001;&#xFF0C;&#x4E0D;&#x4EC5;&#x662F;HashMap&#x672C;&#x8EAB;,&#x4E5F;&#x5305;&#x62EC;&#x5B58;&#x50A8;&#x7684;Map.Entry&#x5BF9;&#x8C61;&#x3002;&#x5BF9;&#x5916;&#x90E8;&#x6709;&#x5F71;&#x54CD;&#x7684;&#x6570;&#x636E;&#x90FD;&#x80FD;&#x79F0;&#x4E3A;&#x662F;&#x72B6;&#x6001;&#x3002;
+            编写线程安全的代码 就是对共享的和可变的状态访问操作进行管理。那么什么是状态？
+状态是指存储在状态变量总的数据。比如某个HashMap的状态，不仅是HashMap本身,也包括存储的Map.Entry对象。对外部有影响的数据都能称为是状态。
 
-&#x5171;&#x4EAB;&#x7684; : &#x53EF;&#x4EE5;&#x88AB;&#x591A;&#x4E2A;&#x7EBF;&#x7A0B;&#x540C;&#x65F6;&#x8BBF;&#x95EE;&#x7684;&#x53D8;&#x91CF;
-&#x53EF;&#x53D8;&#x7684; : &#x53D8;&#x91CF;&#x7684;&#x503C;&#x5728;&#x751F;&#x547D;&#...
+共享的 : 可以被多个线程同时访问的变量
+可变的 : 变量的值在生命周期内可以发生变化
+
+如果一个对象会被多个线程同时访问，那么他就需要是线程安全的，因此需要采用同步机制来协同对象可变状态的访问。如果不能协同，那么就有可能产生不该出现的结果。
+
+防止发生线程不安全的状况 : 1. 不在线程之间共享该状态变量 2. 将状态变量修改为不可变的变量 3. 在访问状态变量时使用同步
+
+另外，程序的封装性越好，就越容易实现程序的线程安全性，且更容易维护。
+什么是线程安全性
+线程安全性 : 当多个线程访问某个类使,这个类始终都能表现出正确的行为,那么就称这个类为线程安全的
+
+
+无状态的对象一定是线程安全的.
+
+:blush: 一个无状态的Servlet
+123456789@ThreadSafepublic class StatelessFactorizer extends GenericServlet implements Servlet &#123;    public void service(ServletRequest req, ServletResponse resp) &#123;        BigInteger i = extractFromRequest(req);        BigInteger[] factors = factor(i);        encodeIntoResponse(resp, factors);    &#125;&#125;
+在这个Servlet中，不包含任何变量，也不包含其他类的变量。计算过程中的临时状态都存于局部变量中，并且只能由当前线程访问。所以访问Servlet的线程不会影响到另一个同时访问Servlet的计算结果。因为他们没有共享状态。
+原子性:anguished: 一个线程不安全的Hit Counter程序
+123456789101112131415@NotThreadSafepublic class UnsafeCountingFactorizer extends ...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -862,9 +1033,26 @@
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 18
+        Total : 19
         </div>
         <!-- search  -->
         
@@ -881,6 +1069,11 @@
     
     <div class="archive-year"> 2018 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109/">深入理解Java虚拟机-第1章-走近Java</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -982,6 +1175,10 @@
         <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
     
         <span class="sidebar-tag-name" data-tags="并发操作合集"><span class="iconfont-archer">&#xe606;</span>并发操作合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM"><span class="iconfont-archer">&#xe606;</span>JVM</span>
+    
+        <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
     
         <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     

@@ -291,7 +291,7 @@ height:30vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>字数统计: <span class="post-count word-count">1k</span>阅读时长: <span class="post-count reading-time">6 min</span></span>
+                        <span>字数统计: <span class="post-count word-count">884</span>阅读时长: <span class="post-count reading-time">3 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -416,49 +416,31 @@ height:30vh;
             <main class="main post-page">
     <article class="article-entry">
         <blockquote>
-<p>&#x1F364; <a href="">&#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;</a></p>
-<p>&#x1F355; <a href="https://github.com/nnkwrik/learn-java-concurrency" target="_blank" rel="noopener">&#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;</a></p>
+<p>🍤 <a href="">并发操作合集系列 目录</a></p>
+<p>🍕 <a href="https://github.com/nnkwrik/learn-java-concurrency" target="_blank" rel="noopener">并发操作合集系列 源代码</a></p>
 </blockquote>
-<p>&#x8FD9;&#x4E00;&#x7BC7;&#x6587;&#x7AE0;&#x4E5F;&#x4F1A;&#x4ECB;&#x7ECD;&#x4E00;&#x4E2A;&#x5E76;&#x53D1;&#x5BB9;&#x5668;&#xFF0C;CopyOnWriteArrayList&#x3002;</p>
-<h1 id="CopyOnWriteArrayList"><a href="#CopyOnWriteArrayList" class="headerlink" title="CopyOnWriteArrayList"></a>CopyOnWriteArrayList</h1><p>Copy-On-Write&#x7B80;&#x79F0;COW&#xFF0C;&#x662F;&#x4E00;&#x79CD;&#x7528;&#x4E8E;&#x7A0B;&#x5E8F;&#x8BBE;&#x8BA1;&#x4E2D;&#x7684;&#x4F18;&#x5316;&#x7B56;&#x7565;&#x3002;&#x5176;&#x57FA;&#x672C;&#x601D;&#x8DEF;&#x662F;&#xFF0C;&#x4ECE;&#x4E00;&#x5F00;&#x59CB;&#x5927;&#x5BB6;&#x90FD;&#x5728;&#x5171;&#x4EAB;&#x540C;&#x4E00;&#x4E2A;&#x5185;&#x5BB9;&#xFF0C;&#x5F53;&#x67D0;&#x4E2A;&#x4EBA;&#x60F3;&#x8981;&#x4FEE;&#x6539;&#x8FD9;&#x4E2A;&#x5185;&#x5BB9;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x624D;&#x4F1A;&#x771F;&#x6B63;&#x628A;&#x5185;&#x5BB9;Copy&#x51FA;&#x53BB;&#x5F62;&#x6210;&#x4E00;&#x4E2A;&#x65B0;&#x7684;&#x5185;&#x5BB9;&#x7136;&#x540E;&#x518D;&#x6539;&#xFF0C;&#x8FD9;&#x662F;&#x4E00;&#x79CD;&#x5EF6;&#x65F6;&#x61D2;&#x60F0;&#x7B56;&#x7565;&#x3002;&#x4ECE;JDK1.5&#x5F00;&#x59CB;Java&#x5E76;&#x53D1;&#x5305;&#x91CC;&#x63D0;&#x4F9B;&#x4E86;&#x4E24;&#x4E2A;&#x4F7F;&#x7528;CopyOnWrite&#x673A;&#x5236;&#x5B9E;&#x73B0;&#x7684;&#x5E76;&#x53D1;&#x5BB9;&#x5668;,&#x5B83;&#x4EEC;&#x662F;CopyOnWriteArrayList&#x548C;CopyOnWriteArraySet&#x3002;CopyOnWrite&#x5BB9;&#x5668;&#x975E;&#x5E38;&#x6709;&#x7528;&#xFF0C;&#x53EF;&#x4EE5;&#x5728;&#x975E;&#x5E38;&#x591A;&#x7684;&#x5E76;&#x53D1;&#x573A;&#x666F;&#x4E2D;&#x4F7F;&#x7528;&#x5230;&#x3002;</p>
-<h2 id="&#x4EC0;&#x4E48;&#x662F;CopyOnWrite&#x5BB9;&#x5668;"><a href="#&#x4EC0;&#x4E48;&#x662F;CopyOnWrite&#x5BB9;&#x5668;" class="headerlink" title="&#x4EC0;&#x4E48;&#x662F;CopyOnWrite&#x5BB9;&#x5668;"></a>&#x4EC0;&#x4E48;&#x662F;CopyOnWrite&#x5BB9;&#x5668;</h2><p>CopyOnWrite&#x5BB9;&#x5668;&#x5373;&#x5199;&#x65F6;&#x590D;&#x5236;&#x7684;&#x5BB9;&#x5668;&#x3002;&#x901A;&#x4FD7;&#x7684;&#x7406;&#x89E3;&#x662F;&#x5F53;&#x6211;&#x4EEC;&#x5F80;&#x4E00;&#x4E2A;&#x5BB9;&#x5668;&#x6DFB;&#x52A0;&#x5143;&#x7D20;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x4E0D;&#x76F4;&#x63A5;&#x5F80;&#x5F53;&#x524D;&#x5BB9;&#x5668;&#x6DFB;&#x52A0;&#xFF0C;&#x800C;&#x662F;&#x5148;&#x5C06;&#x5F53;&#x524D;&#x5BB9;&#x5668;&#x8FDB;&#x884C;Copy&#xFF0C;&#x590D;&#x5236;&#x51FA;&#x4E00;&#x4E2A;&#x65B0;&#x7684;&#x5BB9;&#x5668;&#xFF0C;&#x7136;&#x540E;&#x65B0;&#x7684;&#x5BB9;&#x5668;&#x91CC;&#x6DFB;&#x52A0;&#x5143;&#x7D20;&#xFF0C;&#x6DFB;&#x52A0;&#x5B8C;&#x5143;&#x7D20;&#x4E4B;&#x540E;&#xFF0C;&#x518D;&#x5C06;&#x539F;&#x5BB9;&#x5668;&#x7684;&#x5F15;&#x7528;&#x6307;&#x5411;&#x65B0;&#x7684;&#x5BB9;&#x5668;&#x3002;</p>
-<p>&#x8FD9;&#x6837;&#x505A;&#x7684;&#x597D;&#x5904;&#x662F;&#x6211;&#x4EEC;&#x53EF;&#x4EE5;&#x5BF9;CopyOnWrite&#x5BB9;&#x5668;&#x8FDB;&#x884C;&#x5E76;&#x53D1;&#x7684;&#x8BFB;&#xFF0C;&#x800C;&#x4E0D;&#x9700;&#x8981;&#x52A0;&#x9501;&#xFF0C;&#x56E0;&#x4E3A;&#x5F53;&#x524D;&#x5BB9;&#x5668;&#x4E0D;&#x4F1A;&#x6DFB;&#x52A0;&#x4EFB;&#x4F55;&#x5143;&#x7D20;&#x3002;&#x6240;&#x4EE5;CopyOnWrite&#x5BB9;&#x5668;&#x4E5F;&#x662F;&#x4E00;&#x79CD;&#x8BFB;&#x5199;&#x5206;&#x79BB;&#x7684;&#x601D;&#x60F3;&#xFF0C;&#x8BFB;&#x548C;&#x5199;&#x4E0D;&#x540C;&#x7684;&#x5BB9;&#x5668;&#x3002;</p>
-<h2 id="CopyOnWrite&#x7684;&#x5E94;&#x7528;&#x573A;&#x666F;"><a href="#CopyOnWrite&#x7684;&#x5E94;&#x7528;&#x573A;&#x666F;" class="headerlink" title="CopyOnWrite&#x7684;&#x5E94;&#x7528;&#x573A;&#x666F;"></a>CopyOnWrite&#x7684;&#x5E94;&#x7528;&#x573A;&#x666F;</h2><p>CopyOnWrite&#x5E76;&#x53D1;&#x5BB9;&#x5668;&#x7528;&#x4E8E;&#x8BFB;&#x591A;&#x5199;&#x5C11;&#x7684;&#x5E76;&#x53D1;&#x573A;&#x666F;&#x3002;&#x6BD4;&#x5982;&#x767D;&#x540D;&#x5355;&#xFF0C;&#x9ED1;&#x540D;&#x5355;&#xFF0C;&#x5546;&#x54C1;&#x7C7B;&#x76EE;&#x7684;&#x8BBF;&#x95EE;&#x548C;&#x66F4;&#x65B0;&#x3002;&#x6B64;&#x65F6;&#x9700;&#x8981;&#x6CE8;&#x610F;&#x7684;&#x662F;&#xFF1A;</p>
+<p>这一篇文章也会介绍一个并发容器，CopyOnWriteArrayList。</p>
+<h1 id="CopyOnWriteArrayList"><a href="#CopyOnWriteArrayList" class="headerlink" title="CopyOnWriteArrayList"></a>CopyOnWriteArrayList</h1><p>Copy-On-Write简称COW，是一种用于程序设计中的优化策略。其基本思路是，从一开始大家都在共享同一个内容，当某个人想要修改这个内容的时候，才会真正把内容Copy出去形成一个新的内容然后再改，这是一种延时懒惰策略。从JDK1.5开始Java并发包里提供了两个使用CopyOnWrite机制实现的并发容器,它们是CopyOnWriteArrayList和CopyOnWriteArraySet。CopyOnWrite容器非常有用，可以在非常多的并发场景中使用到。</p>
+<h2 id="什么是CopyOnWrite容器"><a href="#什么是CopyOnWrite容器" class="headerlink" title="什么是CopyOnWrite容器"></a>什么是CopyOnWrite容器</h2><p>CopyOnWrite容器即写时复制的容器。通俗的理解是当我们往一个容器添加元素的时候，不直接往当前容器添加，而是先将当前容器进行Copy，复制出一个新的容器，然后新的容器里添加元素，添加完元素之后，再将原容器的引用指向新的容器。</p>
+<p>这样做的好处是我们可以对CopyOnWrite容器进行并发的读，而不需要加锁，因为当前容器不会添加任何元素。所以CopyOnWrite容器也是一种读写分离的思想，读和写不同的容器。</p>
+<h2 id="CopyOnWrite的应用场景"><a href="#CopyOnWrite的应用场景" class="headerlink" title="CopyOnWrite的应用场景"></a>CopyOnWrite的应用场景</h2><p>CopyOnWrite并发容器用于读多写少的并发场景。比如白名单，黑名单，商品类目的访问和更新。此时需要注意的是：</p>
 <ol>
-<li>&#x51CF;&#x5C11;&#x6269;&#x5BB9;&#x5F00;&#x9500;&#x3002;&#x6839;&#x636E;&#x5B9E;&#x9645;&#x9700;&#x8981;&#xFF0C;&#x521D;&#x59CB;&#x5316;CopyOnWriteMap&#x7684;&#x5927;&#x5C0F;&#xFF0C;&#x907F;&#x514D;&#x5199;&#x65F6;CopyOnWriteMap&#x6269;&#x5BB9;&#x7684;&#x5F00;&#x9500;&#x3002;</li>
-<li>&#x4F7F;&#x7528;&#x6279;&#x91CF;&#x6DFB;&#x52A0;&#x3002;&#x56E0;&#x4E3A;&#x6BCF;&#x6B21;&#x6DFB;&#x52A0;&#xFF0C;&#x5BB9;&#x5668;&#x6BCF;&#x6B21;&#x90FD;&#x4F1A;&#x8FDB;&#x884C;&#x590D;&#x5236;&#xFF0C;&#x6240;&#x4EE5;&#x51CF;&#x5C11;&#x6DFB;&#x52A0;&#x6B21;&#x6570;&#xFF0C;&#x53EF;&#x4EE5;&#x51CF;&#x5C11;&#x5BB9;&#x5668;&#x7684;&#x590D;&#x5236;&#x6B21;&#x6570;&#x3002;&#x5982;&#x4F7F;&#x7528;&#x4E0A;&#x9762;&#x4EE3;&#x7801;&#x91CC;&#x7684;addBlackList&#x65B9;&#x6CD5;&#x3002;</li>
+<li>减少扩容开销。根据实际需要，初始化CopyOnWriteMap的大小，避免写时CopyOnWriteMap扩容的开销。</li>
+<li>使用批量添加。因为每次添加，容器每次都会进行复制，所以减少添加次数，可以减少容器的复制次数。如使用上面代码里的addBlackList方法。</li>
 </ol>
-<h2 id="CopyOnWrite&#x7684;&#x7F3A;&#x70B9;"><a href="#CopyOnWrite&#x7684;&#x7F3A;&#x70B9;" class="headerlink" title="CopyOnWrite&#x7684;&#x7F3A;&#x70B9;"></a>CopyOnWrite&#x7684;&#x7F3A;&#x70B9;</h2><ul>
-<li><strong>&#x5185;&#x5B58;&#x5360;&#x7528;&#x95EE;&#x9898;</strong>&#x3002;&#x56E0;&#x4E3A;CopyOnWrite&#x7684;&#x5199;&#x65F6;&#x590D;&#x5236;&#x673A;&#x5236;&#xFF0C;&#x6240;&#x4EE5;&#x5728;&#x8FDB;&#x884C;&#x5199;&#x64CD;&#x4F5C;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x5185;&#x5B58;&#x91CC;&#x4F1A;&#x540C;&#x65F6;&#x9A7B;&#x624E;&#x4E24;&#x4E2A;&#x5BF9;&#x8C61;&#x7684;&#x5185;&#x5B58;&#xFF0C;&#x65E7;&#x7684;&#x5BF9;&#x8C61;&#x548C;&#x65B0;&#x5199;&#x5165;&#x7684;&#x5BF9;&#x8C61;&#x3002;</li>
-<li><strong>&#x6570;&#x636E;&#x4E00;&#x81F4;&#x6027;&#x95EE;&#x9898;</strong>&#x3002;CopyOnWrite&#x5BB9;&#x5668;&#x53EA;&#x80FD;&#x4FDD;&#x8BC1;&#x6570;&#x636E;&#x7684;&#x6700;&#x7EC8;&#x4E00;&#x81F4;&#x6027;&#xFF0C;&#x4E0D;&#x80FD;&#x4FDD;&#x8BC1;&#x6570;&#x636E;&#x7684;&#x5B9E;&#x65F6;&#x4E00;&#x81F4;&#x6027;&#x3002;&#x6240;&#x4EE5;&#x5982;&#x679C;&#x4F60;&#x5E0C;&#x671B;&#x5199;&#x5165;&#x7684;&#x7684;&#x6570;&#x636E;&#xFF0C;&#x9A6C;&#x4E0A;&#x80FD;&#x8BFB;&#x5230;&#xFF0C;&#x8BF7;&#x4E0D;&#x8981;&#x4F7F;&#x7528;CopyOnWrite&#x5BB9;&#x5668;&#x3002;</li>
+<h2 id="CopyOnWrite的缺点"><a href="#CopyOnWrite的缺点" class="headerlink" title="CopyOnWrite的缺点"></a>CopyOnWrite的缺点</h2><ul>
+<li><strong>内存占用问题</strong>。因为CopyOnWrite的写时复制机制，所以在进行写操作的时候，内存里会同时驻扎两个对象的内存，旧的对象和新写入的对象。</li>
+<li><strong>数据一致性问题</strong>。CopyOnWrite容器只能保证数据的最终一致性，不能保证数据的实时一致性。所以如果你希望写入的的数据，马上能读到，请不要使用CopyOnWrite容器。</li>
 </ul>
-<h1 id="&#x793A;&#x4F8B;&#x7A0B;&#x5E8F;"><a href="#&#x793A;&#x4F8B;&#x7A0B;&#x5E8F;" class="headerlink" title="&#x793A;&#x4F8B;&#x7A0B;&#x5E8F;"></a>&#x793A;&#x4F8B;&#x7A0B;&#x5E8F;</h1><h2 id="CopyOnWriteArrayList&#x7684;&#x6DFB;&#x52A0;&#x64CD;&#x4F5C;"><a href="#CopyOnWriteArrayList&#x7684;&#x6DFB;&#x52A0;&#x64CD;&#x4F5C;" class="headerlink" title="CopyOnWriteArrayList&#x7684;&#x6DFB;&#x52A0;&#x64CD;&#x4F5C;"></a>CopyOnWriteArrayList&#x7684;&#x6DFB;&#x52A0;&#x64CD;&#x4F5C;</h2><p>&#x4E4B;&#x524D;&#x6211;&#x4EEC;&#x4ECB;&#x7ECD;&#x5230;CopyOnWrite&#x662F;&#x5728;&#x5143;&#x7D20;&#x53D1;&#x751F;&#x6539;&#x53D8;&#x65F6;&#xFF0C;&#x590D;&#x5236;&#x51FA;&#x4E00;&#x4E2A;&#x65B0;&#x7684;&#x5BB9;&#x5668;&#xFF0C;&#x7136;&#x540E;&#x65B0;&#x7684;&#x5BB9;&#x5668;&#x91CC;&#x6DFB;&#x52A0;&#x5143;&#x7D20;&#xFF0C;&#x6DFB;&#x52A0;&#x5B8C;&#x5143;&#x7D20;&#x4E4B;&#x540E;&#xFF0C;&#x518D;&#x5C06;&#x539F;&#x5BB9;&#x5668;&#x7684;&#x5F15;&#x7528;&#x6307;&#x5411;&#x65B0;&#x7684;&#x5BB9;&#x5668;&#x3002;</p>
-<p>&#x6211;&#x4EEC;&#x53D6;&#x51FA;&#x6DFB;&#x52A0;&#x524D;&#x548C;&#x6DFB;&#x52A0;&#x540E;&#x7684;iterator&#x8FDB;&#x884C;&#x5BF9;&#x6BD4;&#xFF1A;</p>
-<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CopyOnWriteArrayList&lt;Integer&gt; numbers</span><br><span class="line">                = <span class="keyword">new</span> CopyOnWriteArrayList&lt;&gt;(Arrays.asList(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>));</span><br><span class="line">Iterator&lt;Integer&gt; preIt = numbers.iterator();</span><br><span class="line">numbers.add(<span class="number">9</span>);</span><br><span class="line">Iterator&lt;Integer&gt; newIt = numbers.iterator();</span><br><span class="line"></span><br><span class="line">preIt.forEachRemaining(System.out::print);	<span class="comment">//&#x8F93;&#x51FA;1234</span></span><br><span class="line">System.out.println();</span><br><span class="line">newIt.forEachRemaining(System.out::print);	<span class="comment">//&#x8F93;&#x51FA;12349</span></span><br></pre></td></tr></tbody></table></figure>
-<p>&#x6DFB;&#x52A0;&#x540E;&#x7684;iterator&#x5E94;&#x8BE5;&#x5305;&#x542B;&#x4E86;&#x65B0;&#x503C;&#xFF0C;&#x800C;&#x6DFB;&#x52A0;&#x524D;&#x7684;&#x5219;&#x4E0D;&#x5305;&#x542B;&#xFF0C;&#x53EF;&#x4EE5;&#x770B;&#x51FA;&#x662F;&#x4E24;&#x4E2A;&#x5BB9;&#x5668;&#x5BF9;&#x8C61;&#x3002;&#x6240;&#x4EE5;CopyOnWriteArrayList&#x53D1;&#x751F;&#x4FEE;&#x6539;&#xFF0C;&#x4E5F;&#x80FD;&#x88AB;&#x5B89;&#x5168;&#x8FED;&#x4EE3;&#x3002;&#x5982;&#x679C;&#x5728;&#x4E0A;&#x9762;&#x7A0B;&#x5E8F;&#x4E2D;&#x7528;ArrayList&#x4EE3;&#x66FF;CopyOnWriteArrayList&#xFF0C;&#x5219;&#x4F1A;&#x629B;&#x51FA;<code>ConcurrentModificationException</code></p>
-<h2 id="&#x4E0D;&#x80FD;&#x5728;&#x79FB;&#x9664;&#x8FED;&#x4EE3;&#x5668;&#x4E2D;&#x79FB;&#x9664;&#x5143;&#x7D20;"><a href="#&#x4E0D;&#x80FD;&#x5728;&#x79FB;&#x9664;&#x8FED;&#x4EE3;&#x5668;&#x4E2D;&#x79FB;&#x9664;&#x5143;&#x7D20;" class="headerlink" title="&#x4E0D;&#x80FD;&#x5728;&#x79FB;&#x9664;&#x8FED;&#x4EE3;&#x5668;&#x4E2D;&#x79FB;&#x9664;&#x5143;&#x7D20;"></a>&#x4E0D;&#x80FD;&#x5728;&#x79FB;&#x9664;&#x8FED;&#x4EE3;&#x5668;&#x4E2D;&#x79FB;&#x9664;&#x5143;&#x7D20;</h2><p>CopyOnWriteArrayList&#x53EF;&#x4EE5;&#x5B89;&#x5168;&#x8FED;&#x4EE3;&#x8FC7;&#x671F;&#x7684;&#x4E86;&#x7684;&#x8FED;&#x4EE3;&#x5668;&#xFF0C;&#x4F46;<code>iterator.remove()</code>&#x662F;&#x65E0;&#x6CD5;&#x4F7F;&#x7528;&#x7684;&#xFF0C;&#x4F1A;&#x629B;&#x51FA;<code>UnsupportedOperationException</code>&#x5F02;&#x5E38;&#x3002;</p>
-<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CopyOnWriteArrayList&lt;Integer&gt; numbers</span><br><span class="line">                = <span class="keyword">new</span> CopyOnWriteArrayList&lt;&gt;(Arrays.asList(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>));</span><br><span class="line">Iterator&lt;Integer&gt; it = numbers.iterator();</span><br><span class="line"><span class="keyword">try</span> {</span><br><span class="line">    <span class="keyword">while</span> (it.hasNext())</span><br><span class="line">        it.remove();</span><br><span class="line">} <span class="keyword">catch</span> (UnsupportedOperationException e){</span><br><span class="line">    System.out.println(<span class="string">&quot;&#x629B;&#x51FA;&#x4E86;UnsupportedOperationException&quot;</span>);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
-<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="http://ifeve.com/java-copy-on-write/" target="_blank" rel="noopener">&#x804A;&#x804A;&#x5E76;&#x53D1;-Java&#x4E2D;&#x7684;Copy-On-Write&#x5BB9;&#x5668;</a></p>
+<h1 id="示例程序"><a href="#示例程序" class="headerlink" title="示例程序"></a>示例程序</h1><h2 id="CopyOnWriteArrayList的添加操作"><a href="#CopyOnWriteArrayList的添加操作" class="headerlink" title="CopyOnWriteArrayList的添加操作"></a>CopyOnWriteArrayList的添加操作</h2><p>之前我们介绍到CopyOnWrite是在元素发生改变时，复制出一个新的容器，然后新的容器里添加元素，添加完元素之后，再将原容器的引用指向新的容器。</p>
+<p>我们取出添加前和添加后的iterator进行对比：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CopyOnWriteArrayList&lt;Integer&gt; numbers</span><br><span class="line">                = <span class="keyword">new</span> CopyOnWriteArrayList&lt;&gt;(Arrays.asList(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>));</span><br><span class="line">Iterator&lt;Integer&gt; preIt = numbers.iterator();</span><br><span class="line">numbers.add(<span class="number">9</span>);</span><br><span class="line">Iterator&lt;Integer&gt; newIt = numbers.iterator();</span><br><span class="line"></span><br><span class="line">preIt.forEachRemaining(System.out::print);	<span class="comment">//输出1234</span></span><br><span class="line">System.out.println();</span><br><span class="line">newIt.forEachRemaining(System.out::print);	<span class="comment">//输出12349</span></span><br></pre></td></tr></table></figure>
+<p>添加后的iterator应该包含了新值，而添加前的则不包含，可以看出是两个容器对象。所以CopyOnWriteArrayList发生修改，也能被安全迭代。如果在上面程序中用ArrayList代替CopyOnWriteArrayList，则会抛出<code>ConcurrentModificationException</code></p>
+<h2 id="不能在移除迭代器中移除元素"><a href="#不能在移除迭代器中移除元素" class="headerlink" title="不能在移除迭代器中移除元素"></a>不能在移除迭代器中移除元素</h2><p>CopyOnWriteArrayList可以安全迭代过期的了的迭代器，但<code>iterator.remove()</code>是无法使用的，会抛出<code>UnsupportedOperationException</code>异常。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CopyOnWriteArrayList&lt;Integer&gt; numbers</span><br><span class="line">                = <span class="keyword">new</span> CopyOnWriteArrayList&lt;&gt;(Arrays.asList(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>));</span><br><span class="line">Iterator&lt;Integer&gt; it = numbers.iterator();</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">while</span> (it.hasNext())</span><br><span class="line">        it.remove();</span><br><span class="line">&#125; <span class="keyword">catch</span> (UnsupportedOperationException e)&#123;</span><br><span class="line">    System.out.println(<span class="string">"抛出了UnsupportedOperationException"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="http://ifeve.com/java-copy-on-write/" target="_blank" rel="noopener">聊聊并发-Java中的Copy-On-Write容器</a></p>
 <p><a href="http://www.baeldung.com/java-copy-on-write-arraylist" target="_blank" rel="noopener">Guide to CopyOnWriteArrayList</a></p>
-<script>
-        document.querySelectorAll('.github-emoji')
-          .forEach(el => {
-            if (!el.dataset.src) { return; }
-            const img = document.createElement('img');
-            img.style = 'display:none !important;';
-            img.src = el.dataset.src;
-            img.addEventListener('error', () => {
-              img.remove();
-              el.style.color = 'inherit';
-              el.style.backgroundImage = 'none';
-              el.style.background = 'none';
-            });
-            img.addEventListener('load', () => {
-              img.remove();
-            });
-            document.body.appendChild(img);
-          });
-      </script>
+
     </article>
     <!-- license  -->
     
@@ -824,9 +806,26 @@ top:30vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 18
+        Total : 19
         </div>
         <!-- search  -->
         
@@ -843,6 +842,11 @@ top:30vh;
     
     <div class="archive-year"> 2018 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109/">深入理解Java虚拟机-第1章-走近Java</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -944,6 +948,10 @@ top:30vh;
         <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
     
         <span class="sidebar-tag-name" data-tags="并发操作合集"><span class="iconfont-archer">&#xe606;</span>并发操作合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM"><span class="iconfont-archer">&#xe606;</span>JVM</span>
+    
+        <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
     
         <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
