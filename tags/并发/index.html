@@ -366,24 +366,12 @@
                 <span>Java并发编程实战-第7章-取消与关闭</span>
         </a>
         <div class="abstract-content">
-            本章将给出各种实现取消和中断的机制，以及如何编写任务和服务，使它们能对取消请求做出响应。
-任务取消可取消的操作 ：　外部代码能在某个操作正常完成之前将其置入“完成”状态
-取消某个操作的原因：
+            &#x672C;&#x7AE0;&#x5C06;&#x7ED9;&#x51FA;&#x5404;&#x79CD;&#x5B9E;&#x73B0;&#x53D6;&#x6D88;&#x548C;&#x4E2D;&#x65AD;&#x7684;&#x673A;&#x5236;&#xFF0C;&#x4EE5;&#x53CA;&#x5982;&#x4F55;&#x7F16;&#x5199;&#x4EFB;&#x52A1;&#x548C;&#x670D;&#x52A1;&#xFF0C;&#x4F7F;&#x5B83;&#x4EEC;&#x80FD;&#x5BF9;&#x53D6;&#x6D88;&#x8BF7;&#x6C42;&#x505A;&#x51FA;&#x54CD;&#x5E94;&#x3002;
+&#x4EFB;&#x52A1;&#x53D6;&#x6D88;&#x53EF;&#x53D6;&#x6D88;&#x7684;&#x64CD;&#x4F5C; &#xFF1A;&#x3000;&#x5916;&#x90E8;&#x4EE3;&#x7801;&#x80FD;&#x5728;&#x67D0;&#x4E2A;&#x64CD;&#x4F5C;&#x6B63;&#x5E38;&#x5B8C;&#x6210;&#x4E4B;&#x524D;&#x5C06;&#x5176;&#x7F6E;&#x5165;&#x201C;&#x5B8C;&#x6210;&#x201D;&#x72B6;&#x6001;
+&#x53D6;&#x6D88;&#x67D0;&#x4E2A;&#x64CD;&#x4F5C;&#x7684;&#x539F;&#x56E0;&#xFF1A;
 
-点击某个桌面应用中的取消按钮时； 
-某个操作超过了一定的执行时间限制需要中止时； 
-多个线程做相同的事情，只要一个线程成功其它线程都可以取消时； 
-一组线程中的一个或多个出现错误导致整组都无法继续时； 
-当一个应用或服务需要停止时。
-
-Java中没有一种安全的抢占式方法来停止线程，只有一些协作式的机制，代码都会遵循的一种协议。
-比如：
-
-“已请求取消”标志
-任务将定期地查看这个标志。如果设置了这个标志，那么任务将提前结束。
-
-😊PrimeGenerator持续地枚举素数（Prime），直到cancelled被设置。为了确保可靠性cancelled被设置为volatile。
-123456789101112131415161718192021222324//        7-1      使用Volatile类型的域来保存取消状态  public class PrimeGenerator implements Runnable&#123;    private final List&lt;BigInteger&gt; primes=            new ArrayList&lt;BigInteger&gt;();    private volatile boolean cancelled;//volatile变量能确保可见性 禁止指令重排序    public void run()&#123;        BigInteger p=BigInteger.ONE;//常量        while(!cancelled)&#123;  //任务将定期地查看这个标志。如果设置了这个标志，那么任务将提前结束。（即如果cancelled不为true则一直运行）            p=p.nextProbablePrime();//返回一个比当前大的            synchronized (this) &#123; //确保不会被添加多次                primes.add(p);            &#125;        &#1...
+&#x70B9;&#x51FB;&#x67D0;&#x4E2A;&#x684C;&#x9762;&#x5E94;&#x7528;&#x4E2D;&#x7684;&#x53D6;&#x6D88;&#x6309;&#x94AE;&#x65F6;&#xFF1B; 
+&#x67D0;&#x4E2A;&#x64CD;&#x4F5C;&#x8D85;&#x8FC7;&#x4E86;&#x4E00;&#x5B9A;&#x7684;&#x6267;&#x884C;&#x65F6;&#x95F4;&#x9650;&#x523...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -416,94 +404,8 @@ Java中没有一种安全的抢占式方法来停止线程，只有一些协作�
                 <span>🍤 并发操作合集-目录</span>
         </a>
         <div class="abstract-content">
-            并发操作合集这是一个关于并发的系列。以实战为驱动，了解并发编程中的那些骚操作。文中的示例代码和部分解释来源于网络，你可以把这个系列当做一本工具书，想不起来的时候来看一看，顺便star一发也是可以的。
-对于并发，我目前也在摸索的过程中，写这个系列的目的主要是为了巩固知识。如果有不对的地方还望大佬们指正！
-
-🍤 并发操作合集系列 目录
-🍕 并发操作合集系列 源代码
-
-大纲
-
-
-章节
-源码位置
-
-
-
-
-1.线程的生命周期
-threadlifecycle
-
-
-2.状态转换方法：wait,notify,sleep,join,yield
-threadStateMethod
-
-
-3.Synchronized使用指南
-synchronizedKeyword
-
-
-4.Lcok和Condition
-lock
-
-
-5.原子变量和volatile
-atomicVolatile
-
-
-6.并发容器：ConcurrentHashMap
-concurrentMap
-
-
-7.并发容器：BlockingQueue
-blockingQueue
-
-
-8.并发容器：CopyOnWriteArrayList
-copyOnWriteArrayList
-
-
-9.并发工具：Semaphore,CountDownLatch,CyclicBarrier
-concurrentUtils
-
-
-10.Executor和线程池
-executor
-
-
-11.ThreadLocal
-threadLocal
-
-
-12.Java8：并发流
-
-
-
-13.Java8：CompletableFuture
-
-
-
-番外篇
-
-
-章节
-源码位置
-
-
-
-
-并发的N种解法：生产者消费者问题
-
-
-
-并发的N种解法：哲♂学家进餐
-
-
-
-
-不定期更新…
-
-
+            &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x8FD9;&#x662F;&#x4E00;&#x4E2A;&#x5173;&#x4E8E;&#x5E76;&#x53D1;&#x7684;&#x7CFB;&#x5217;&#x3002;&#x4EE5;&#x5B9E;&#x6218;&#x4E3A;&#x9A71;&#x52A8;&#xFF0C;&#x4E86;&#x89E3;&#x5E76;&#x53D1;&#x7F16;&#x7A0B;&#x4E2D;&#x7684;&#x90A3;&#x4E9B;&#x9A9A;&#x64CD;&#x4F5C;&#x3002;&#x6587;&#x4E2D;&#x7684;&#x793A;&#x4F8B;&#x4EE3;&#x7801;&#x548C;&#x90E8;&#x5206;&#x89E3;&#x91CA;&#x6765;&#x6E90;&#x4E8E;&#x7F51;&#x7EDC;&#xFF0C;&#x4F60;&#x53EF;&#x4EE5;&#x628A;&#x8FD9;&#x4E2A;&#x7CFB;&#x5217;&#x5F53;&#x505A;&#x4E00;&#x672C;&#x5DE5;&#x5177;&#x4E66;&#xFF0C;&#x60F3;&#x4E0D;&#x8D77;&#x6765;&#x7684;&#x65F6;&#x5019;&#x6765;&#x770B;&#x4E00;&#x770B;&#xFF0C;&#x987A;&#x4FBF;star&#x4E00;&#x53D1;&#x4E5F;&#x662F;&#x53EF;&#x4EE5;&#x7684;&#x3002;
+&#x5BF9;&#x4E8E;&#x5E76;&#x53D1;&#xFF0C;&#x6211;&#x76EE;&#x524D;&#x4E5F;&#x5728;&#x6478;&#x7D22;&#x7684;&#x8FC7;&#x7A0B;&#x4E2D;&#xFF0C;&#x5199;&#x8FD9;&#x4E2A;&#x7CFB;&#x5217;&#x7684;&#x76EE;&#x7684;&#x4E3B;&#x8981;&#x662F;&#x4E3A;...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -537,22 +439,16 @@ threadLocal
         </a>
         <div class="abstract-content">
             
-🍤 并发操作合集系列 目录
-🍕 并发操作合集系列 源代码
+&#x1F364; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;
+&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
 
-ThreadLocal的用法ThreadLocal用于保存某个线程共享变量：对于同一个static ThreadLocal，不同线程只能从中get，set，remove自己的变量，而不会影响其他线程的变量。
+ThreadLocal&#x7684;&#x7528;&#x6CD5;ThreadLocal&#x7528;&#x4E8E;&#x4FDD;&#x5B58;&#x67D0;&#x4E2A;&#x7EBF;&#x7A0B;&#x5171;&#x4EAB;&#x53D8;&#x91CF;&#xFF1A;&#x5BF9;&#x4E8E;&#x540C;&#x4E00;&#x4E2A;static ThreadLocal&#xFF0C;&#x4E0D;&#x540C;&#x7EBF;&#x7A0B;&#x53EA;&#x80FD;&#x4ECE;&#x4E2D;get&#xFF0C;set&#xFF0C;remove&#x81EA;&#x5DF1;&#x7684;&#x53D8;&#x91CF;&#xFF0C;&#x800C;&#x4E0D;&#x4F1A;&#x5F71;&#x54CD;&#x5176;&#x4ED6;&#x7EBF;&#x7A0B;&#x7684;&#x53D8;&#x91CF;&#x3002;
 
-ThreadLocal.get: 获取ThreadLocal中当前线程共享变量的值。
+ThreadLocal.get: &#x83B7;&#x53D6;ThreadLocal&#x4E2D;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x5171;&#x4EAB;&#x53D8;&#x91CF;&#x7684;&#x503C;&#x3002;
 
-ThreadLocal.set: 设置ThreadLocal中当前线程共享变量的值。
+ThreadLocal.set: &#x8BBE;&#x7F6E;ThreadLocal&#x4E2D;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x5171;&#x4EAB;&#x53D8;&#x91CF;&#x7684;&#x503C;&#x3002;
 
-ThreadLocal.remove: 移除ThreadLocal中当前线程共享变量的值。
-
-ThreadLocal.initialValue: ThreadLocal没有被当前线程赋值时或当前线程刚调用remove方法后调用get方法，返回此方法值。
-
-
-示例代码：
-1234567891011121314151617181920212223242526private static final ThreadLocal&lt;String&gt; threadLocal = new ThreadLocal&lt;&gt;();public static void main(String[] args) throws InterruptedException &#123;    Runnable task1 = () -&gt; &#123;        threadLocal.set(Instant.now().toString());        try &#123;            TimeUnit.SECONDS.sleep(3);            System.out.println(Thread.currentThread().getName() + " ==&gt; " + threadLocal.get());        &#125; catch (InterruptedException e) &#123;            e.printStackTrace();        &#125;    &#125;;    ExecutorService executorService = Executors.newFixedThreadPool(10);    for (int ...
+ThreadLocal.remove: &#x79FB;&#x9664;ThreadLocal&#x4E2D;&#...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -586,17 +482,10 @@ ThreadLocal.initialValue: ThreadLocal没有被当前线程赋值时或当前线�
         </a>
         <div class="abstract-content">
             
-🍤 并发操作合集系列 目录
-🍕 并发操作合集系列 源代码
+&#x1F364; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;
+&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
 
-Executor并发API引入了ExecutorService作为一个在程序中直接使用Thread的高层次的替换方案。Executos支持运行异步任务，通常管理一个线程池，这样一来我们就不需要手动去创建新的线程。在不断地处理任务的过程中，线程池内部线程将会得到复用，因此，在我们可以使用一个executor service来运行和我们想在我们整个程序中执行的一样多的并发任务。
-下面是使用executors的第一个代码示例：
-123456ExecutorService executor = Executors.newSingleThreadExecutor();executor.submit(() -&gt; &#123;String threadName = Thread.currentThread().getName();System.out.println("Hello " + threadName);&#125;);// =&gt; Hello pool-1-thread-1
-Executors类提供了便利的工厂方法来创建不同类型的 executor services。在这个示例中我们使用了一个单线程线程池的 executor。
-代码运行的结果类似于上一个示例，但是当运行代码时，你会注意到一个很大的差别：Java进程从没有停止！Executors必须显式的停止-否则它们将持续监听新的任务。
-ExecutorService提供了两个方法来达到这个目的——shutdwon()会等待正在执行的任务执行完而shutdownNow()会终止所有正在执行的任务并立即关闭execuotr。
-这是我喜欢的通常关闭executors的方式：
-1234567891011121314try &#123;    System.out.println("尝试终止executor");    executor.shutdown();    executor.awaitTermination(5, TimeUnit.SECONDS);// 5秒内尝试终止,期间会阻塞当前线程&#125; catch (InterruptedException e) &#123;    System.err.println("终止行为被中断...
+Executor&#x5E76;&#x53D1;API&#x5F15;&#x5165;&#x4E86;ExecutorService&#x4F5C;&#x4E3A;&#x4E00;&#x4E2A;&#x5728;&#x7A0B;&#x5E8F;&#x4E2D;&#x76F4;&#x63A5;&#x4F7F;&#x7528;Thread&#x7684;&#x9AD8;&#x5C42;&#x6B21;&#x7684;&#x66FF;&#x6362;&#x65B9;&#x6848;&#x3002;Executos&#x652F;&#x6301;&#x8FD0;&#x884C;&#x5F02;&#x6B65;&#x4EFB;&#x52A1;&#xFF0C;&#x901A;&#x5E38;&#x7BA1;&#x7406;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x6C60;&#xFF0C;&#x8FD9;&#x6837;&#x4E00;&#x6765;&#x6211;&#x4EEC;&#x5C31;&#x4E0D;&#x9700;&#x8981;&#x624B;&#x52A8;&#x53BB;&#x521B;&#x5EFA;&#x65B0;&#x7684;&#x7EBF;&#x7A0B;&#x3002;&#x5728;&#x4E0D;&#x65AD;&#x5730;&#x5904;&#x7406;&#x4EFB;&#x52A1;&#x7684;&#x8FC7;&#x7A0B;&#x4E2D;&#xFF0C;&#x7EBF;&#x7A0B;&#x6C60;&#x5185;&#x90E8;&#x7EBF;&#x7A0B;&#x5C06;&#x4F1A;&#x5F97;&#x5230;&#x590D;&#x7528;&#xFF0C;&#x56E0;&#x6B64;&#x...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -630,26 +519,11 @@ ExecutorService提供了两个方法来达到这个目的——shutdwon()会等�
         </a>
         <div class="abstract-content">
             
-🍤 并发操作合集系列 目录
-🍕 并发操作合集系列 源代码
+&#x1F364; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;
+&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
 
-这篇文章会介绍3中非常实用的并发工具，Semaphore，CountDownLatch，CyclicBarrier。
-SemaphoreSemaphore可以理解为信号量，用于控制资源能够被并发访问的线程数量，以保证多个线程能够合理的使用特定资源。Semaphore就相当于一个许可证，线程需要先通过acquire方法获取该许可证，该线程才能继续往下执行，否则只能在该方法出阻塞等待。当执行完业务功能后，需要通过release()方法将许可证归还，以便其他线程能够获得许可证继续执行。
-Semaphore可以用于做流量控制，特别是公共资源有限的应用场景，比如数据库连接。假如有多个线程读取数据后，需要将数据保存在数据库中，而可用的最大数据库连接只有3个，这时候就需要使用Semaphore来控制能够并发访问到数据库连接资源的线程个数最多只有3个。在限制资源使用的应用场景下，Semaphore是特别合适的。
-下面来看下Semaphore的主要方法：
-
-acquire() ： 获取许可，如果无法获取到，则阻塞等待直至能够获取为止
-
-tryAcquire()： 获取许可，如果许可立即可用则返回true并获取否则返回false
-
-release() ： 释放许可
-availablePermits() : 返回当前可用的许可证个数
-hasQueuedThreads() : 是否有线程正在等待获取许可证
-getQueuedThreads() : 获取所有正在等待许可的线程集合
-
-另外，在Semaphore的构造方法中还支持指定是够具有公平性，默认的是非公平性，这样也是为了保证吞吐量。
-示例程序看一个示例：
-123456789101112131415161718192021222324252627282930313233Runnable runnable = () -&gt; &#123;    try &#123;        semaphore.acquire();        System.out.println(Thread.currentThread().getName() + " =====&gt; 获取许可");        System.out.println(Thread.currentThre...
+&#x8FD9;&#x7BC7;&#x6587;&#x7AE0;&#x4F1A;&#x4ECB;&#x7ECD;3&#x4E2D;&#x975E;&#x5E38;&#x5B9E;&#x7528;&#x7684;&#x5E76;&#x53D1;&#x5DE5;&#x5177;&#xFF0C;Semaphore&#xFF0C;CountDownLatch&#xFF0C;CyclicBarrier&#x3002;
+SemaphoreSemaphore&#x53EF;&#x4EE5;&#x7406;&#x89E3;&#x4E3A;&#x4FE1;&#x53F7;&#x91CF;&#xFF0C;&#x7528;&#x4E8E;&#x63A7;&#x5236;&#x8D44;&#x6E90;&#x80FD;&#x591F;&#x88AB;&#x5E76;&#x53D1;&#x8BBF;&#x95EE;&#x7684;&#x7EBF;&#x7A0B;&#x6570;&#x91CF;&#xFF0C;&#x4EE5;&#x4FDD;&#x8BC1;&#x591A;&#x4E2A;&#x7EBF;&#x7A0B;&#x80FD;&#x591F;&#x5408;&#x7406;&#x7684;&#x4F7F;&#x7528;&#x7279;&#x5B9A;&#x8D44;&#x6E90;&#x3002;Semaphore&#x5C31;&#x76F8;&#x5F53;&#x4E8E;&#x4E00;&#x4E2A;&#x8BB8;&#x53EF;&#x8BC1;&#xFF0C;&#x7EBF;&#x7A0B;&#x9700;&#x8981;&#x5148;&#x901A;&#x8FC7;acquire&#x65B9;&#x6CD5;&#x83B7;&#x53D6;&#x8BE5;&#x8BB8;&#x...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -683,23 +557,11 @@ getQueuedThreads() : 获取所有正在等待许可的线程集合
         </a>
         <div class="abstract-content">
             
-🍤 并发操作合集系列 目录
-🍕 并发操作合集系列 源代码
+&#x1F364; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;
+&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
 
-这一篇文章也会介绍一个并发容器，CopyOnWriteArrayList。
-CopyOnWriteArrayListCopy-On-Write简称COW，是一种用于程序设计中的优化策略。其基本思路是，从一开始大家都在共享同一个内容，当某个人想要修改这个内容的时候，才会真正把内容Copy出去形成一个新的内容然后再改，这是一种延时懒惰策略。从JDK1.5开始Java并发包里提供了两个使用CopyOnWrite机制实现的并发容器,它们是CopyOnWriteArrayList和CopyOnWriteArraySet。CopyOnWrite容器非常有用，可以在非常多的并发场景中使用到。
-什么是CopyOnWrite容器CopyOnWrite容器即写时复制的容器。通俗的理解是当我们往一个容器添加元素的时候，不直接往当前容器添加，而是先将当前容器进行Copy，复制出一个新的容器，然后新的容器里添加元素，添加完元素之后，再将原容器的引用指向新的容器。
-这样做的好处是我们可以对CopyOnWrite容器进行并发的读，而不需要加锁，因为当前容器不会添加任何元素。所以CopyOnWrite容器也是一种读写分离的思想，读和写不同的容器。
-CopyOnWrite的应用场景CopyOnWrite并发容器用于读多写少的并发场景。比如白名单，黑名单，商品类目的访问和更新。此时需要注意的是：
-
-减少扩容开销。根据实际需要，初始化CopyOnWriteMap的大小，避免写时CopyOnWriteMap扩容的开销。
-使用批量添加。因为每次添加，容器每次都会进行复制，所以减少添加次数，可以减少容器的复制次数。如使用上面代码里的addBlackList方法。
-
-CopyOnWrite的缺点
-内存占用问题。因为CopyOnWrite的写时复制机制，所以在进行写操作的时候，内存里会同时驻扎两个对象的内存，旧的对象和新写入的对象。
-数据一致性问题。CopyOnWrite容器只能保证数据的最终一致性，不能保证数据的实时一致性。所以如果你希望写入的的数据，马上能读到，请不要使用CopyOnWrite容器。
-
-示例程序CopyOnWriteArrayList的添加操作之前我们介绍到CopyOnWrite是在元素发生改变时，复制出一个新的容器，然后...
+&#x8FD9;&#x4E00;&#x7BC7;&#x6587;&#x7AE0;&#x4E5F;&#x4F1A;&#x4ECB;&#x7ECD;&#x4E00;&#x4E2A;&#x5E76;&#x53D1;&#x5BB9;&#x5668;&#xFF0C;CopyOnWriteArrayList&#x3002;
+CopyOnWriteArrayListCopy-On-Write&#x7B80;&#x79F0;COW&#xFF0C;&#x662F;&#x4E00;&#x79CD;&#x7528;&#x4E8E;&#x7A0B;&#x5E8F;&#x8BBE;&#x8BA1;&#x4E2D;&#x7684;&#x4F18;&#x5316;&#x7B56;&#x7565;&#x3002;&#x5176;&#x57FA;&#x672C;&#x601D;&#x8DEF;&#x662F;&#xFF0C;&#x4ECE;&#x4E00;&#x5F00;&#x59CB;&#x5927;&#x5BB6;&#x90FD;&#x5728;&#x5171;&#x4EAB;&#x540C;&#x4E00;&#x4E2A;&#x5185;&#x5BB9;&#xFF0C;&#x5F53;&#x67D0;&#x4E2A;&#x4EBA;&#x60F3;&#x8981;&#x4FEE;&#x6539;&#x8FD9;&#x4E2A;&#x5185;&#x5BB9;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x624D;&#x4F1A;&#x771F;&#x6B63;&#x628A;&#x5185;&#x5BB9;Copy&#x51FA;&#x53BB;&#x5F62;&#x6210;&#x4E00;&#x4E2A;&#x65B0;&#x7684;&#x5185;&#x5BB9;&#x713...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -733,60 +595,11 @@ CopyOnWrite的缺点
         </a>
         <div class="abstract-content">
             
-🍤 并发操作合集系列 目录
-🍕 并发操作合集系列 源代码
+&#x1F364; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;
+&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
 
-这一篇文章也会介绍一个并发容器，BlockingQueue。
-BlockingQueue阻塞队列（BlockingQueue）是一个支持两个附加操作的队列。这两个附加的操作是：在队列为空时，获取元素的线程会等待队列变为非空。当队列满时，存储元素的线程会等待队列可用。阻塞队列常用于生产者和消费者的场景，生产者是往队列里添加元素的线程，消费者是从队列里拿元素的线程。阻塞队列就是生产者存放元素的容器，而消费者也只从容器里拿元素。
-阻塞队列提供了四种处理方法:
-
-
-
-方法\处理方式
-抛出异常
-返回特殊值
-一直阻塞
-超时退出
-
-
-
-
-插入方法
-add(e)
-offer(e)
-put(e)
-offer(e,time,unit)
-
-
-移除方法
-remove()
-poll()
-take()
-poll(time,unit)
-
-
-检查方法
-element()
-peek()
-不可用
-不可用
-
-
-
-
-抛出异常：是指当阻塞队列满时候，再往队列里插入元素，会抛出IllegalStateException(“Queue full”)异常。当队列为空时，从队列里获取元素时会抛出NoSuchElementException异常 。
-返回特殊值：插入方法会返回是否成功，成功则返回true。移除方法，则是从队列里拿出一个元素，如果没有则返回null
-一直阻塞：当阻塞队列满时，如果生产者线程往队列里put元素，队列会一直阻塞生产者线程，直到拿到数据，或者响应中断退出。当队列空时，消费者线程试图从队列里take元素，队列也会阻塞消费者线程，直到队列可用。
-超时退出：当阻塞队列满时，队列会阻塞生产者线程一段时间，如果超过一定的时间，生产者线程就会退出。
-
-Java里的阻塞队列JDK7提供了7个阻塞队列。分别是
-
-LinkedBlockingQueue ：一个由链表结构组成的有界阻塞队列。
-ArrayBlockingQueue ：一个由数组结构组成的有界阻塞队列。
-PriorityBlockingQueue ：一个支持优先级排序的无界阻塞队列。
-SynchronousQueue：一个不存储元素的阻塞队列。
-DelayQueue：一个使用优先级队列实现的无界阻塞队列。
-LinkedTransferQueue：一个由链表结构组成的无界阻塞队列。...
+&#x8FD9;&#x4E00;&#x7BC7;&#x6587;&#x7AE0;&#x4E5F;&#x4F1A;&#x4ECB;&#x7ECD;&#x4E00;&#x4E2A;&#x5E76;&#x53D1;&#x5BB9;&#x5668;&#xFF0C;BlockingQueue&#x3002;
+BlockingQueue&#x963B;&#x585E;&#x961F;&#x5217;&#xFF08;BlockingQueue&#xFF09;&#x662F;&#x4E00;&#x4E2A;&#x652F;&#x6301;&#x4E24;&#x4E2A;&#x9644;&#x52A0;&#x64CD;&#x4F5C;&#x7684;&#x961F;&#x5217;&#x3002;&#x8FD9;&#x4E24;&#x4E2A;&#x9644;&#x52A0;&#x7684;&#x64CD;&#x4F5C;&#x662F;&#xFF1A;&#x5728;&#x961F;&#x5217;&#x4E3A;&#x7A7A;&#x65F6;&#xFF0C;&#x83B7;&#x53D6;&#x5143;&#x7D20;&#x7684;&#x7EBF;&#x7A0B;&#x4F1A;&#x7B49;&#x5F85;&#x961F;&#x5217;&#x53D8;&#x4E3A;&#x975E;&#x7A7A;&#x3002;&#x5F53;&#x961F;&#x5217;&#x6EE1;&#x65F6;&#xFF0C;&#x5B58;&#x50A8;&#x5143;&#x7D20;&#x7684;&#x7EBF;&#x7A0B;&#x4F1A;&#x7B49;&#x5F85;&#x961F;&#x5217;&#x53EF;&#x7528;&#x3002;&#x963B;&#x585E;&#x...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -820,19 +633,12 @@ LinkedTransferQueue：一个由链表结构组成的无界阻塞队列。...
         </a>
         <div class="abstract-content">
             
-🍤 并发操作合集系列 目录
-🍕 并发操作合集系列 源代码
+&#x1F364; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;
+&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
 
-Java中提供了大量的并发容器，它们不同于并行容器（Vector，HashMap）。并发容器在确保线程安全的同时又具备较高的性能。
-本章会介绍并发容器中最常用的ConcurrentHashMap。
-ConcurrentHashMap简介ConcurrentMap接口继承自Map接口，实现了高吞吐量的同时线程安全。ConcurrentHashMap是ConcurrentMap的实现。基本的使用方式和Map相似，我们在这里涉及一些原理，以便更好地理解ConcurrentHashMap为何能实现高吞吐量。之后我们会看一下JDK1.8中新添加的方法。
-ConcurrentHashMap原理整个 ConcurrentHashMap 由一个个 Segment 组成，Segment 代表”部分“或”一段“的意思，所以很多地方都会将其描述为分段锁。
-简单理解就是，ConcurrentHashMap 是一个 Segment 数组，Segment 通过继承 ReentrantLock 来进行加锁，所以每次需要加锁的操作锁住的是一个 segment，这样只要保证每个 Segment 是线程安全的，也就实现了全局的线程安全。
-concurrencyLevel：并行级别。默认是 16，也就是说 ConcurrentHashMap 有 16 个 Segments。这个时候，最多可以同时支持 16 个线程并发写，只要它们的操作分别分布在不同的 Segment 上。这个值可以在初始化的时候设置为其他值。
-关于它的初始化和get，put的实现原理，可以参考文末的链接。
-ConcurrentMap新方法在下面的代码中，我们使用这个映射示例来展示那些JDK1.8提供新的方法：
-12345ConcurrentMap&lt;String, String&gt; map = new ConcurrentHashMap&lt;&gt;();map.put("foo", "bar");map.put("han", "solo");map.put("r2", "d2");map.put("c3", "p0");
-forEach()方法接受类型为BiConsumer的lambda表达式，以映射的键和值作为参数传递。它可以作为for-each循环的...
+Java&#x4E2D;&#x63D0;&#x4F9B;&#x4E86;&#x5927;&#x91CF;&#x7684;&#x5E76;&#x53D1;&#x5BB9;&#x5668;&#xFF0C;&#x5B83;&#x4EEC;&#x4E0D;&#x540C;&#x4E8E;&#x5E76;&#x884C;&#x5BB9;&#x5668;&#xFF08;Vector&#xFF0C;HashMap&#xFF09;&#x3002;&#x5E76;&#x53D1;&#x5BB9;&#x5668;&#x5728;&#x786E;&#x4FDD;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x540C;&#x65F6;&#x53C8;&#x5177;&#x5907;&#x8F83;&#x9AD8;&#x7684;&#x6027;&#x80FD;&#x3002;
+&#x672C;&#x7AE0;&#x4F1A;&#x4ECB;&#x7ECD;&#x5E76;&#x53D1;&#x5BB9;&#x5668;&#x4E2D;&#x6700;&#x5E38;&#x7528;&#x7684;ConcurrentHashMap&#x3002;
+ConcurrentHashMap&#x7B80;&#x4ECB;ConcurrentMap&#x63A5;&#x53E3;&#x7EE7;&#x627F;&#x81EA;Map&#x63A5;&#x53E3;&#xFF0C;&#x5B9E;&#x73B0;&#x4E86;&#x9AD8;&#x541E;&#x5410;&#x91CF;&#x7684;&#x540C;&#x65F6;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x3002;ConcurrentHashMap&#x662F;Concu...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -866,21 +672,11 @@ forEach()方法接受类型为BiConsumer的lambda表达式，以映射的键和�
         </a>
         <div class="abstract-content">
             
-🍤 并发操作合集系列 目录
-🍕 并发操作合集系列 源代码
+&#x1F364; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;
+&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
 
-本章主要讲解原子变量和volatile关键字的使用方式和使用场景，包括Java8中新加入的LongAdder和LongAccumulator。想要了解原子变量和volatile关键字，就必须先了解Java内存模型中的原子性和可见性。
-可见性和原子性原子性在Java中，对基本数据类型的变量的读取和赋值操作是原子性操作，即这些操作是不可被中断的，要么执行，要么不执行。
-1234x = 10;         //语句1y = x;         //语句2x++;           //语句3x = x + 1;     //语句4
-上面的语句中只有语句1是具备原子性的。也就是说其他三种语句在多线程环境下会出错。
-我们想要让其他的三种语句都变成原子操作该怎么做？这时可以用到之前介绍的synchronized和锁，还有下面要介绍原子变量。
-可见性可见性就是当一个变量被一个修改时，它的值会在主存中立即刷新，因此其他的所有线程都会主存中看到它的新值。而Java模型本身是不保证可见性的，也就是说上面的语句1,2,3,4本身都不具备可见性。
-我们想要让上面4种语句都具有可见性该怎么做？同样可以用到之前介绍的synchronized和锁，还有下面要介绍volatile关键字。
-原子变量AtomicIntegerjava.concurrent.atomic包包含了许多实用的类，用于执行原子操作。如果你能够在多线程中同时且安全地执行某个操作，而不需要synchronized关键字或锁，那么这个操作就是原子的。
-本质上，原子操作严重依赖于比较与交换（CAS），它是由多数现代CPU直接支持的原子指令。这些指令通常比同步块要快。所以在只需要并发修改单个可变变量的情况下，我建议你优先使用原子类，而不是锁。
-对于其它语言，一些语言的原子操作用锁实现，而不是原子指令。
-现在让我们选取一个原子类，例如AtomicInteger：
-12345678910111213private static AtomicInteger atomicInt = new AtomicInteger(0);    public static void testIncrement() throws InterruptedException &#12...
+&#x672C;&#x7AE0;&#x4E3B;&#x8981;&#x8BB2;&#x89E3;&#x539F;&#x5B50;&#x53D8;&#x91CF;&#x548C;volatile&#x5173;&#x952E;&#x5B57;&#x7684;&#x4F7F;&#x7528;&#x65B9;&#x5F0F;&#x548C;&#x4F7F;&#x7528;&#x573A;&#x666F;&#xFF0C;&#x5305;&#x62EC;Java8&#x4E2D;&#x65B0;&#x52A0;&#x5165;&#x7684;LongAdder&#x548C;LongAccumulator&#x3002;&#x60F3;&#x8981;&#x4E86;&#x89E3;&#x539F;&#x5B50;&#x53D8;&#x91CF;&#x548C;volatile&#x5173;&#x952E;&#x5B57;&#xFF0C;&#x5C31;&#x5FC5;&#x987B;&#x5148;&#x4E86;&#x89E3;Java&#x5185;&#x5B58;&#x6A21;&#x578B;&#x4E2D;&#x7684;&#x539F;&#x5B50;&#x6027;&#x548C;&#x53EF;&#x89C1;&#x6027;&#x3002;
+&#x53EF;&#x89C1;&#x6027;&#x548C;&#x539F;&#x5B50;&#x6027;&#x539F;&#x5B50;&#x6027;&#x5728;Java&#x4E2D;&#xFF0C;&#x5BF9;&#x57FA;&#x672C;&#x6570;&#x636E;&#x7C7B;&#x578B;&#x7684;&#x53D8;&#x91CF;&#x7684;&#x8BFB;&#x53D6;&#x54...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -914,74 +710,23 @@ forEach()方法接受类型为BiConsumer的lambda表达式，以映射的键和�
         </a>
         <div class="abstract-content">
             
-🍤 并发操作合集系列 目录
-🍕 并发操作合集系列 源代码
+&#x1F364; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;
+&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
 
-并发API支持多种显式的锁，它们由Lock接口规定，用于代替synchronized的隐式锁。锁对细粒度的控制支持多种方法，因此它们比隐式的监视器具有更大的开销。
-Lock接口和synchronized关键字的差别两者的区别如下：
+&#x5E76;&#x53D1;API&#x652F;&#x6301;&#x591A;&#x79CD;&#x663E;&#x5F0F;&#x7684;&#x9501;&#xFF0C;&#x5B83;&#x4EEC;&#x7531;Lock&#x63A5;&#x53E3;&#x89C4;&#x5B9A;&#xFF0C;&#x7528;&#x4E8E;&#x4EE3;&#x66FF;synchronized&#x7684;&#x9690;&#x5F0F;&#x9501;&#x3002;&#x9501;&#x5BF9;&#x7EC6;&#x7C92;&#x5EA6;&#x7684;&#x63A7;&#x5236;&#x652F;&#x6301;&#x591A;&#x79CD;&#x65B9;&#x6CD5;&#xFF0C;&#x56E0;&#x6B64;&#x5B83;&#x4EEC;&#x6BD4;&#x9690;&#x5F0F;&#x7684;&#x76D1;&#x89C6;&#x5668;&#x5177;&#x6709;&#x66F4;&#x5927;&#x7684;&#x5F00;&#x9500;&#x3002;
+Lock&#x63A5;&#x53E3;&#x548C;synchronized&#x5173;&#x952E;&#x5B57;&#x7684;&#x5DEE;&#x522B;&#x4E24;&#x8005;&#x7684;&#x533A;&#x522B;&#x5982;&#x4E0B;&#xFF1A;
 
 
 
-类别
+&#x7C7B;&#x522B;
 synchronized
 Lock
 
 
 
 
-存在层次
-Java的关键字，在jvm层面上
-是一个类
-
-
-锁的释放
-1、以获取锁的线程执行完同步代码，释放锁2、线程执行发生异常，jvm会让线程释放锁
-在finally中必须释放锁，不然容易造成线程死锁
-
-
-锁的获取
-假设A线程获得锁，B线程等待。如果A线程阻塞，B线程会一直等待
-分情况而定，Lock有多个锁获锁的方式，大致就是可以尝试获得锁，线程可以不用一直等待
-
-
-锁状态
-无法判断
-可以判断
-
-
-锁类型
-可重入 不可中断 非公平
-可重入 可中断 可公平（两者皆可）
-
-
-性能
-少量同步
-大量同步
-
-
-
-表中提到了所类型，先了解一下锁类型都有哪些：
-
-可重入锁：在执行对象中所有同步方法不用再次获得锁
-可中断锁：在等待获取锁过程中可中断
-公平锁： 按等待获取锁的线程的等待时间进行获取，等待时间长的具有优先获取锁权利
-读写锁：对资源读取和写入的时候拆分为2部分处理，读的时候可以多线程一起读，写的时候必须同步地写
-
-Lock接口定义的方法和使用
-lock()：获取锁，如果锁被暂用则一直等待
-
-unlock():释放锁
-
-tryLock(): 注意返回类型是boolean，如果获取锁的时候锁被占用就返回false，否则返回true
-
-tryLock(long time, TimeUnit unit)：比起tryLock()就是给了一个时间期限，保证等待参数时间
-
-lockInterruptibly()：锁的获得方式，如果线程在获取锁的阶段进入了等待，那么可以中断此线程，先去做别的事
-
-
-通过 以上的解释，大致可以解释在上个部分中“锁类型(lockInterruptibly())”，“锁状态(tryLock())”等问题，还有就是前面子所获取的过程我所写的“大致就是可以尝试获得锁，线程可以不会一直等待”用了“可以”的原因。
-简单看一下比较常用的lock()和tryLock()方法的使用方式,启动两个线程来调用这些方法：
-l...
+&#x5B58;&#x5728;&#x5C42;&#x6B21;
+Java&#x7684;&#x5173;&#x952E;&#x5B57;&#xFF0C;&#x5728;jvm&#x5...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -1314,9 +1059,22 @@ l...
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 19
+        Total : 20
         </div>
         <!-- search  -->
         
@@ -1333,6 +1091,11 @@ l...
     
     <div class="archive-year"> 2018 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109-2/">深入理解Java虚拟机-第2章-Java内存区域与内存溢出异常</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -1396,12 +1159,12 @@ l...
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
         </li>
     
     
