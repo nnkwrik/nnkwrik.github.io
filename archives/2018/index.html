@@ -361,6 +361,42 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2018/11/19/20181119/">
+            
+                <span>Spring Cloud中使用RabbitMQ的两种方式</span>
+        </a>
+        <div class="abstract-content">
+            rabbitmq&#x5728;springboot(cloud)&#x4E2D;AmqpTemplate&#x548C;Spring Cloud Stream&#x7684;&#x7B80;&#x5355;&#x4F7F;&#x7528;
+Docker&#x5B89;&#x88C5;RabbitMQ&#x4F7F;&#x7528;docker&#x642D;&#x5EFA;RabbitMQ
+12345678#!/usr/bin/env bash#default username/password = guest/guest# 15672 &#x6D4F;&#x89C8;&#x5668;&#x80FD;&#x8BBF;&#x95EE;&#x7684;&#x7BA1;&#x7406;&#x754C;&#x9762;# 5672 &#x5728;&#x9879;&#x76EE;&#x4E2D;&#x914D;&#x7F6E;&#x8FD9;&#x4E2A;&#x7AEF;&#x53E3;docker stop my-rabbitmqdocker rm my-rabbitmqdocker run -d --name my-rabbitmq --hostname my-rabbit-mq -p 5672:5672 -p 15672:15672 rabbitmq:3.7.8-management
+&#x7B2C;&#x4E00;&#x79CD;&#x65B9;&#x5F0F;: &#x901A;&#x8FC7;AmqpTemplate&#x52A0;&#x4F9D;&#x8D56;1234&lt;dependency&gt;    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;    &lt;artifactId&gt;spring-boot-starter-amqp&lt;/artifactId&gt;&lt;/dependency&gt;
+&#x52A0;yml&#x53D1;&#x9001;&#x65B9;&#x63A5;&#x6536;&#x65B9;&#x90FD;&#x9700;&#x8981;&#x914D;&#x7F6E;
+123456spring:  rabbitmq:    host: ...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/19</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class="abstract-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="微服务">微服务</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="消息队列">消息队列</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2018/11/12/20181112/">
             
                 <span>深入理解Java虚拟机-第4章-虚拟机性能监控与故障处理工具</span>
@@ -692,44 +728,6 @@ Executor&#x5E76;&#x53D1;API&#x5F15;&#x5165;&#x4E86;ExecutorService&#x4F5C;&#x4E3
 
 &#x8FD9;&#x7BC7;&#x6587;&#x7AE0;&#x4F1A;&#x4ECB;&#x7ECD;3&#x4E2D;&#x975E;&#x5E38;&#x5B9E;&#x7528;&#x7684;&#x5E76;&#x53D1;&#x5DE5;&#x5177;&#xFF0C;Semaphore&#xFF0C;CountDownLatch&#xFF0C;CyclicBarrier&#x3002;
 SemaphoreSemaphore&#x53EF;&#x4EE5;&#x7406;&#x89E3;&#x4E3A;&#x4FE1;&#x53F7;&#x91CF;&#xFF0C;&#x7528;&#x4E8E;&#x63A7;&#x5236;&#x8D44;&#x6E90;&#x80FD;&#x591F;&#x88AB;&#x5E76;&#x53D1;&#x8BBF;&#x95EE;&#x7684;&#x7EBF;&#x7A0B;&#x6570;&#x91CF;&#xFF0C;&#x4EE5;&#x4FDD;&#x8BC1;&#x591A;&#x4E2A;&#x7EBF;&#x7A0B;&#x80FD;&#x591F;&#x5408;&#x7406;&#x7684;&#x4F7F;&#x7528;&#x7279;&#x5B9A;&#x8D44;&#x6E90;&#x3002;Semaphore&#x5C31;&#x76F8;&#x5F53;&#x4E8E;&#x4E00;&#x4E2A;&#x8BB8;&#x53EF;&#x8BC1;&#xFF0C;&#x7EBF;&#x7A0B;&#x9700;&#x8981;&#x5148;&#x901A;&#x8FC7;acquire&#x65B9;&#x6CD5;&#x83B7;&#x53D6;&#x8BE5;&#x8BB8;&#x...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/04</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/04/20181104/">
-            
-                <span>并发操作合集-8.并发容器：CopyOnWriteArrayList</span>
-        </a>
-        <div class="abstract-content">
-            
-&#x1F364; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;
-&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
-
-&#x8FD9;&#x4E00;&#x7BC7;&#x6587;&#x7AE0;&#x4E5F;&#x4F1A;&#x4ECB;&#x7ECD;&#x4E00;&#x4E2A;&#x5E76;&#x53D1;&#x5BB9;&#x5668;&#xFF0C;CopyOnWriteArrayList&#x3002;
-CopyOnWriteArrayListCopy-On-Write&#x7B80;&#x79F0;COW&#xFF0C;&#x662F;&#x4E00;&#x79CD;&#x7528;&#x4E8E;&#x7A0B;&#x5E8F;&#x8BBE;&#x8BA1;&#x4E2D;&#x7684;&#x4F18;&#x5316;&#x7B56;&#x7565;&#x3002;&#x5176;&#x57FA;&#x672C;&#x601D;&#x8DEF;&#x662F;&#xFF0C;&#x4ECE;&#x4E00;&#x5F00;&#x59CB;&#x5927;&#x5BB6;&#x90FD;&#x5728;&#x5171;&#x4EAB;&#x540C;&#x4E00;&#x4E2A;&#x5185;&#x5BB9;&#xFF0C;&#x5F53;&#x67D0;&#x4E2A;&#x4EBA;&#x60F3;&#x8981;&#x4FEE;&#x6539;&#x8FD9;&#x4E2A;&#x5185;&#x5BB9;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x624D;&#x4F1A;&#x771F;&#x6B63;&#x628A;&#x5185;&#x5BB9;Copy&#x51FA;&#x53BB;&#x5F62;&#x6210;&#x4E00;&#x4E2A;&#x65B0;&#x7684;&#x5185;&#x5BB9;&#x713...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -1107,9 +1105,26 @@ CopyOnWriteArrayListCopy-On-Write&#x7B80;&#x79F0;COW&#xFF0C;&#x662F;&#x4E00;&#x7
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 22
+        Total : 23
         </div>
         <!-- search  -->
         
@@ -1126,6 +1141,11 @@ CopyOnWriteArrayListCopy-On-Write&#x7B80;&#x79F0;COW&#xFF0C;&#x662F;&#x4E00;&#x7
     
     <div class="archive-year"> 2018 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/19</span><a class="archive-post-title" href="/2018/11/19/20181119/">Spring Cloud中使用RabbitMQ的两种方式</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -1204,12 +1224,12 @@ CopyOnWriteArrayListCopy-On-Write&#x7B80;&#x79F0;COW&#xFF0C;&#x662F;&#x4E00;&#x7
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     
@@ -1252,6 +1272,10 @@ CopyOnWriteArrayListCopy-On-Write&#x7B80;&#x79F0;COW&#xFF0C;&#x662F;&#x4E00;&#x7
     
         <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
     
+        <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
+    
+        <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
+    
         <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
     </div>
@@ -1290,6 +1314,8 @@ jsonContent:
         <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
     
         <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="框架使用"><span class="iconfont-archer">&#xe60a;</span>框架使用</span>
     
     </div>
     <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
