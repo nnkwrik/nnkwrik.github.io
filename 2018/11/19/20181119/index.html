@@ -17,7 +17,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="曽生">
     
-    <meta name="keywords" content="nnkwrik,曽生,曾丽桦,野々川麗樺">
+    <meta name="keywords" content="nnkwrik,曽生,曾丽桦">
     
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
@@ -415,7 +415,7 @@ height:30vh;
     <article class="article-entry">
         <p>rabbitmq&#x5728;springboot(cloud)&#x4E2D;AmqpTemplate&#x548C;Spring Cloud Stream&#x7684;&#x7B80;&#x5355;&#x4F7F;&#x7528;</p>
 <h1 id="Docker&#x5B89;&#x88C5;RabbitMQ"><a href="#Docker&#x5B89;&#x88C5;RabbitMQ" class="headerlink" title="Docker&#x5B89;&#x88C5;RabbitMQ"></a>Docker&#x5B89;&#x88C5;RabbitMQ</h1><p>&#x4F7F;&#x7528;docker&#x642D;&#x5EFA;RabbitMQ</p>
-<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/usr/bin/env bash</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">default username/password = guest/guest</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 15672 &#x6D4F;&#x89C8;&#x5668;&#x80FD;&#x8BBF;&#x95EE;&#x7684;&#x7BA1;&#x7406;&#x754C;&#x9762;</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 5672 &#x5728;&#x9879;&#x76EE;&#x4E2D;&#x914D;&#x7F6E;&#x8FD9;&#x4E2A;&#x7AEF;&#x53E3;</span></span><br><span class="line">docker stop my-rabbitmq</span><br><span class="line">docker rm my-rabbitmq</span><br><span class="line">docker run -d --name my-rabbitmq --hostname my-rabbit-mq -p 5672:5672 -p 15672:15672 rabbitmq:3.7.8-management</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>!/usr/bin/env bash</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span>default username/password = guest/guest</span><br><span class="line"><span class="meta">#</span> 15672 &#x6D4F;&#x89C8;&#x5668;&#x80FD;&#x8BBF;&#x95EE;&#x7684;&#x7BA1;&#x7406;&#x754C;&#x9762;</span><br><span class="line"><span class="meta">#</span> 5672 &#x5728;&#x9879;&#x76EE;&#x4E2D;&#x914D;&#x7F6E;&#x8FD9;&#x4E2A;&#x7AEF;&#x53E3;</span><br><span class="line">docker stop my-rabbitmq</span><br><span class="line">docker rm my-rabbitmq</span><br><span class="line">docker run -d --name my-rabbitmq --hostname my-rabbit-mq -p 5672:5672 -p 15672:15672 rabbitmq:3.7.8-management</span><br></pre></td></tr></tbody></table></figure>
 <h1 id="&#x7B2C;&#x4E00;&#x79CD;&#x65B9;&#x5F0F;-&#x901A;&#x8FC7;AmqpTemplate"><a href="#&#x7B2C;&#x4E00;&#x79CD;&#x65B9;&#x5F0F;-&#x901A;&#x8FC7;AmqpTemplate" class="headerlink" title="&#x7B2C;&#x4E00;&#x79CD;&#x65B9;&#x5F0F;: &#x901A;&#x8FC7;AmqpTemplate"></a>&#x7B2C;&#x4E00;&#x79CD;&#x65B9;&#x5F0F;: &#x901A;&#x8FC7;AmqpTemplate</h1><h2 id="&#x52A0;&#x4F9D;&#x8D56;"><a href="#&#x52A0;&#x4F9D;&#x8D56;" class="headerlink" title="&#x52A0;&#x4F9D;&#x8D56;"></a>&#x52A0;&#x4F9D;&#x8D56;</h2><figure class="highlight xml"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-amqp<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></tbody></table></figure>
 <h2 id="&#x52A0;yml"><a href="#&#x52A0;yml" class="headerlink" title="&#x52A0;yml"></a>&#x52A0;yml</h2><p>&#x53D1;&#x9001;&#x65B9;&#x63A5;&#x6536;&#x65B9;&#x90FD;&#x9700;&#x8981;&#x914D;&#x7F6E;</p>
 <figure class="highlight yml"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line"><span class="attr">  rabbitmq:</span></span><br><span class="line"><span class="attr">    host:</span> <span class="string">localhost</span></span><br><span class="line"><span class="attr">    port:</span> <span class="number">5672</span></span><br><span class="line"><span class="attr">    username:</span> <span class="string">guest</span></span><br><span class="line"><span class="attr">    password:</span> <span class="string">guest</span></span><br></pre></td></tr></tbody></table></figure>
@@ -451,14 +451,6 @@ height:30vh;
       </script>
     </article>
     <!-- license  -->
-    
-        <div class="license-wrapper">
-            <p>原文作者：<a href="http://nnkwrik.github.io">曽生</a>
-            </p><p>原文链接：<a href="http://nnkwrik.github.io/2018/11/19/20181119/">http://nnkwrik.github.io/2018/11/19/20181119/</a>
-            </p><p>发表日期：<a href="http://nnkwrik.github.io/2018/11/19/20181119/">November 19th 2018, 10:53:44 pm</a>
-            </p><p>更新日期：<a href="http://nnkwrik.github.io/2018/11/19/20181119/">November 19th 2018, 11:00:24 pm</a>
-            </p><p>版权声明：本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
-        </div>
     
     <!-- paginator  -->
     <ul class="post-paginator">
@@ -977,10 +969,6 @@ top:30vh;
     
     
     
-    
-    
-    
-    
     <div class="total-and-search">
         <div class="total-archive">
         Total : 29
@@ -1108,7 +1096,7 @@ top:30vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</a>
         </li>
     
     
@@ -1118,7 +1106,7 @@ top:30vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     
@@ -1165,11 +1153,11 @@ top:30vh;
     
         <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
     
-        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
-    
         <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
     
         <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
+    
+        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
     
         <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
