@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="曽生">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="曽生">
+    
+    <meta name="keywords" content="nnkwrik,曽生,曾丽桦">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>慕课网-Java读源码之Netty深入剖析 · 农场主的黑科技.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin="">
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin="">
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"输入关键字 :D","hits_empty":"没有找到相关信息 :(","hits_stats":"找到 ${hits} 个相关信息,耗时 ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'LXR3VBZBS6',
+                apiKey: '17d6d4ab4ba943bab3232eced0eea766',
+                indexName: 'index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">农场主的黑科技.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">慕课网-Java读源码之Netty深入剖析</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href="/">农场主的黑科技.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:30vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/andrew-leu-1113236-unsplash.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            慕课网-Java读源码之Netty深入剖析
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class="post-intro-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">2.6k</span>阅读时长: <span class="post-count reading-time">16 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2018/12/25</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="&#x4E00;&#x4E2A;&#x7B80;&#x5355;&#x7684;netty&#x670D;&#x52A1;&#x7AEF;"><a href="#&#x4E00;&#x4E2A;&#x7B80;&#x5355;&#x7684;netty&#x670D;&#x52A1;&#x7AEF;" class="headerlink" title="&#x4E00;&#x4E2A;&#x7B80;&#x5355;&#x7684;netty&#x670D;&#x52A1;&#x7AEF;"></a>&#x4E00;&#x4E2A;&#x7B80;&#x5355;&#x7684;netty&#x670D;&#x52A1;&#x7AEF;</h1><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Server</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        <span class="comment">//&#x4E24;&#x79CD;&#x7C7B;&#x578B;&#x7684;event loop</span></span><br><span class="line">        EventLoopGroup bossGroup = <span class="keyword">new</span> NioEventLoopGroup(<span class="number">1</span>);    <span class="comment">//&#x5BF9;&#x5E94;com.imooc.netty.ch2.Server.start,&#x65B0;&#x8FDE;&#x63A5;</span></span><br><span class="line">        EventLoopGroup workerGroup = <span class="keyword">new</span> NioEventLoopGroup();   <span class="comment">//&#x5BF9;&#x5E94;com.imooc.netty.ch2.Client.start&#xFF0C;&#x5BF9;&#x8FDE;&#x63A5;&#x8FDB;&#x884C;&#x903B;&#x8F91;&#x64CD;&#x4F5C;</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            ServerBootstrap b = <span class="keyword">new</span> ServerBootstrap();</span><br><span class="line">            b.group(bossGroup, workerGroup)<span class="comment">//&#x914D;&#x7F6E;&#x4E24;&#x79CD;event loop</span></span><br><span class="line">                    .channel(NioServerSocketChannel.class)<span class="comment">//&#x8BBE;&#x7F6E;&#x670D;&#x52A1;&#x7AEF;&#x7684;channel</span></span><br><span class="line">                    .childOption(ChannelOption.TCP_NODELAY, <span class="keyword">true</span>)<span class="comment">//&#x7ED9;&#x6BCF;&#x4E2A;&#x8FDE;&#x63A5;&#x8BBE;&#x7F6E;TCP&#x7684;&#x57FA;&#x672C;&#x5C5E;&#x6027;</span></span><br><span class="line">                    .childAttr(AttributeKey.newInstance(<span class="string">&quot;childAttr&quot;</span>), <span class="string">&quot;childAttrValue&quot;</span>)<span class="comment">//&#x7ED9;&#x6BCF;&#x4E2A;&#x8FDE;&#x63A5;&#x7ED1;&#x5B9A;&#x4E00;&#x4E9B;&#x57FA;&#x672C;&#x7684;&#x5C5E;&#x6027;</span></span><br><span class="line">                    .handler(<span class="keyword">new</span> ServerHandler())<span class="comment">//&#x52A0;&#x5165;&#x670D;&#x52A1;&#x7AEF;&#x542F;&#x52A8;&#x65F6;&#x7684;&#x903B;&#x8F91;&#xFF0C;&#x5BF9;&#x5E94;&#x4E8E;com.imooc.netty.ch2.Server.doStart</span></span><br><span class="line">                    .childHandler(<span class="keyword">new</span> ChannelInitializer&lt;SocketChannel&gt;() {</span><br><span class="line">                        <span class="meta">@Override</span></span><br><span class="line">                        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initChannel</span><span class="params">(SocketChannel ch)</span> </span>{<span class="comment">//&#x7ED9;&#x8FDE;&#x63A5;&#x52A0;&#x5165;&#x903B;&#x8F91;</span></span><br><span class="line"><span class="comment">//                            ch.pipeline().addLast(new AuthHandler());</span></span><br><span class="line">                            <span class="comment">//..</span></span><br><span class="line">                        }</span><br><span class="line">                    });</span><br><span class="line"></span><br><span class="line">            ChannelFuture f = b.bind(<span class="number">8888</span>).sync();  <span class="comment">//&#x7ED1;&#x5B9A;&#x7AEF;&#x53E3;</span></span><br><span class="line"></span><br><span class="line">            f.channel().closeFuture().sync();</span><br><span class="line">        } <span class="keyword">finally</span> {</span><br><span class="line">            bossGroup.shutdownGracefully();</span><br><span class="line">            workerGroup.shutdownGracefully();</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<ul>
+<li>&#x670D;&#x52A1;&#x7AEF;&#x7684;socket&#x5728;&#x54EA;&#x91CC;&#x521D;&#x59CB;&#x5316;&#xFF1F;</li>
+<li>&#x5728;&#x54EA;&#x91CC;accept&#x8FDE;&#x63A5;&#xFF1F;</li>
+</ul>
+<h1 id="Netty&#x670D;&#x52A1;&#x7AEF;&#x542F;&#x52A8;&#x7684;&#x8FC7;&#x7A0B;"><a href="#Netty&#x670D;&#x52A1;&#x7AEF;&#x542F;&#x52A8;&#x7684;&#x8FC7;&#x7A0B;" class="headerlink" title="Netty&#x670D;&#x52A1;&#x7AEF;&#x542F;&#x52A8;&#x7684;&#x8FC7;&#x7A0B;"></a>Netty&#x670D;&#x52A1;&#x7AEF;&#x542F;&#x52A8;&#x7684;&#x8FC7;&#x7A0B;</h1><ol>
+<li>&#x521B;&#x5EFA;&#x670D;&#x52A1;&#x7AEF;Channel<br>&#x8C03;&#x7528;JDK&#x7684;API&#x521B;&#x5EFA;Channel&#xFF0C;&#x7ED1;&#x5B9A;&#x4E00;&#x4E9B;&#x57FA;&#x672C;&#x7EC4;&#x4EF6;</li>
+<li>&#x521D;&#x59CB;&#x5316;&#x670D;&#x52A1;&#x7AEF;Channel<br>&#x521D;&#x59CB;&#x5316;&#x4E00;&#x4E9B;&#x57FA;&#x672C;&#x5C5E;&#x6027;&#xFF0C;&#x6DFB;&#x52A0;&#x4E00;&#x4E9B;&#x903B;&#x8F91;&#x5904;&#x7406;&#x5668;</li>
+<li>&#x6CE8;&#x518C;selector<br>&#x5C06;&#x5E95;&#x5C42;&#x7684;Channel&#x6CE8;&#x518C;&#x5230;&#x4E8B;&#x4EF6;&#x8F6E;&#x8BE2;&#x5668;selector&#x4E0A;&#xFF0C;&#x518D;&#x628A;&#x670D;&#x52A1;&#x7AEF;channel&#x6CE8;&#x518C;&#x5230;&#x5E95;&#x5C42;</li>
+<li>&#x7AEF;&#x53E3;&#x7ED1;&#x5B9A;</li>
+</ol>
+<h2 id="&#x521B;&#x5EFA;&#x670D;&#x52A1;&#x7AEF;Channel"><a href="#&#x521B;&#x5EFA;&#x670D;&#x52A1;&#x7AEF;Channel" class="headerlink" title="&#x521B;&#x5EFA;&#x670D;&#x52A1;&#x7AEF;Channel"></a>&#x521B;&#x5EFA;&#x670D;&#x52A1;&#x7AEF;Channel</h2><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">bind()[&#x7528;&#x6237;&#x7AEF;&#x4EE3;&#x7801;&#x5165;&#x53E3;]</span><br><span class="line">	|</span><br><span class="line">	doBind()</span><br><span class="line">        |</span><br><span class="line">        initAndRegist()[&#x521D;&#x59CB;&#x5316;&#x5E76;&#x6CE8;&#x518C;]</span><br><span class="line">            |</span><br><span class="line">            newChannel()[&#x521B;&#x5EFA;&#x670D;&#x52A1;&#x7AEF;Channel]</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x6700;&#x7EC8;&#x5728;<code>channelFactory.newChannel()</code>&#x4E2D;&#x901A;&#x8FC7;&#x53CD;&#x5C04;&#x521B;&#x5EFA;Channel&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">final</span> ChannelFuture <span class="title">initAndRegister</span><span class="params">()</span> </span>{</span><br><span class="line">    Channel channel = <span class="keyword">null</span>;</span><br><span class="line">    channel = channelFactory.newChannel();</span><br><span class="line">    init(channel);</span><br><span class="line">    ...</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x6B64;&#x65F6;&#x53D1;&#x73B0;&#x8FD9;&#x4E2A;<code>channelFactory</code>&#x5B9E;&#x9645;&#x662F;&#x4E00;&#x4E2A;&#x53EB;<code>ReflectiveChannelFactory</code>&#x7684;&#x7C7B;&#x578B;,&#x662F;&#x4ED6;&#x7528;&#x53CD;&#x5C04;&#x521B;&#x5EFA;&#x7684;channel.</p>
+<p>&#x90A3;&#x4E48;&#x8FD9;&#x4E2A;<code>ReflectiveChannelFactory</code>&#x662F;&#x5728;&#x54EA;&#x91CC;&#x521D;&#x59CB;&#x5316;&#x7684;&#xFF1F;</p>
+<p>&#x770B;&#x4E00;&#x4E0B;&#x4E0A;&#x4E00;&#x8282;&#x7684;&#x4EE3;&#x7801;&#x4E2D;&#x7684;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.channel(NioServerSocketChannel.class)<span class="comment">//&#x8BBE;&#x7F6E;&#x670D;&#x52A1;&#x7AEF;&#x7684;channel</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E2D;&#x5230;&#x5E95;&#x505A;&#x4E86;&#x54EA;&#x4E9B;&#x4E8B;&#x60C5;&#x3002;</p>
+<p>&#x70B9;&#x8FDB;&#x53BB;&#x4F1A;&#x53D1;&#x73B0;&#x662F;&#x8FD9;&#x4E48;&#x4E00;&#x6BB5;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> channelFactory(<span class="keyword">new</span> ReflectiveChannelFactory&lt;C&gt;(channelClass))<span class="comment">//channelClass&#x53C2;&#x6570;&#x5C31;&#x662F;NioServerSocketChannel.class</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E5F;&#x5C31;&#x662F;&#x8FD9;&#x4E2A;&#x65F6;&#x5019;&#x5E2E;&#x4ED6;&#x8BBE;&#x7F6E;&#x5230;&#x91CC;&#x9762;&#x53BB;&#x7684;&#xFF0C;&#x6240;&#x4EE5;&#x6700;&#x7EC8;&#x53CD;&#x5C04;&#x6784; &#x5EFA;&#x7684;channel&#x662F;<code>NioServerSocketChannel.class</code>&#x3002;</p>
+<p>&#x77E5;&#x9053;&#x5B83;&#x901A;&#x8FC7;&#x53CD;&#x5C04;&#x628A;channel&#x6784;&#x9020;&#x4E3A;NioServerSocketChannel&#x540E;&#xFF0C;&#x53BB;&#x770B;&#x770B;&#x8FD9;&#x4E2A;<code>NioServerSocketChannel</code>&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4F1A;&#x505A;&#x90A3;&#x4E9B;&#x4E8B;&#x3002;</p>
+<h2 id="&#x53CD;&#x5C04;&#x6784;&#x5EFA;&#x670D;&#x52A1;&#x7AEF;Channel"><a href="#&#x53CD;&#x5C04;&#x6784;&#x5EFA;&#x670D;&#x52A1;&#x7AEF;Channel" class="headerlink" title="&#x53CD;&#x5C04;&#x6784;&#x5EFA;&#x670D;&#x52A1;&#x7AEF;Channel"></a>&#x53CD;&#x5C04;&#x6784;&#x5EFA;&#x670D;&#x52A1;&#x7AEF;Channel</h2><p>&#x4E86;&#x89E3;&#x6211;&#x4EEC;&#x901A;&#x8FC7;&#x53CD;&#x5C04;&#x6784;&#x9020;Channel&#x7684;&#x540C;&#x65F6;&#x505A;&#x4E86;&#x54EA;&#x4E9B;&#x4E8B;.</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">newSocket()[&#x901A;&#x8FC7;jdk&#x6765;&#x521B;&#x5EFA;&#x5E95;&#x5C42;jdk channel]</span><br><span class="line">|</span><br><span class="line">NioServerSocketChannelConfig()[tcp&#x53C2;&#x6570;&#x914D;&#x7F6E;&#x7C7B;]</span><br><span class="line">|</span><br><span class="line">AbstractNioChannel()</span><br><span class="line">	|</span><br><span class="line">    configureBlocking(false)[&#x8BBE;&#x7F6E;&#x4E3A;&#x975E;&#x963B;&#x585E;&#x6A21;&#x5F0F;]</span><br><span class="line">    |</span><br><span class="line">    AbstractChannel()[&#x521B;&#x5EFA;id,unsafe,pipeline]</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="newSocket-&#x76F8;&#x5173;&#x90E8;&#x5206;"><a href="#newSocket-&#x76F8;&#x5173;&#x90E8;&#x5206;" class="headerlink" title="newSocket()&#x76F8;&#x5173;&#x90E8;&#x5206;"></a>newSocket()&#x76F8;&#x5173;&#x90E8;&#x5206;</h3><p>&#x4EE5;&#x4E0B;&#x57FA;&#x4E8E; <code>io.netty.channel.socket.nio.NioServerSocketChannel</code>&#x6E90;&#x4EE3;&#x7801;</p>
+<p>NioServerSocketChannel&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x8C03;&#x7528; <code>newSocket()</code>,&#x91CC;&#x9762;&#x53C8;&#x8C03;&#x7528;<code>provider.openServerSocketChannel();</code>&#x521B;&#x5EFA;&#x5E76;&#x8FD4;&#x56DE;<code>ServerSocketChannel</code>&#x3002;<code>ServerSocketChannel</code>&#x662F;JDK&#x5E95;&#x5C42;&#x7684;Channel&#x3002;</p>
+<p>&#x8FD9;&#x4E48;&#x4E00;&#x6765;&#x5E95;&#x5C42;&#x7684;channel&#x5C31;&#x521B;&#x5EFA;&#x597D;&#x4E86;.&#x63A5;&#x4E0B;&#x6765;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4F1A;&#x8FDB;&#x5165;&#x8FD9;&#x4E48;&#x4E00;&#x6BB5;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">NioServerSocketChannel</span><span class="params">(ServerSocketChannel channel)</span> </span>{<span class="comment">//&#x53C2;&#x6570;&#x662F;&#x521A;&#x624D;&#x521B;&#x5EFA;&#x7684;&#x5E95;&#x5C42;channel</span></span><br><span class="line">    <span class="keyword">super</span>(<span class="keyword">null</span>, channel, SelectionKey.OP_ACCEPT);</span><br><span class="line">    config = <span class="keyword">new</span> NioServerSocketChannelConfig(<span class="keyword">this</span>, javaChannel().socket());</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="NioServerSocketChannelConfig-&#x76F8;&#x5173;&#x90E8;&#x5206;"><a href="#NioServerSocketChannelConfig-&#x76F8;&#x5173;&#x90E8;&#x5206;" class="headerlink" title="NioServerSocketChannelConfig()&#x76F8;&#x5173;&#x90E8;&#x5206;"></a>NioServerSocketChannelConfig()&#x76F8;&#x5173;&#x90E8;&#x5206;</h3><p><code>NioServerSocketChannel</code>&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E2D;&#x8C03;&#x7528;&#x4E86;&#x8FD9;&#x4E48;&#x4E00;&#x4E2A;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">config = <span class="keyword">new</span> NioServerSocketChannelConfig(<span class="keyword">this</span>, javaChannel().socket());</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x65B9;&#x4FBF;&#x540E;&#x671F;&#x5BF9;TCP&#x8FDB;&#x884C;&#x914D;&#x7F6E;.</p>
+<h3 id="AbstractNioChannel-&#x76F8;&#x5173;&#x90E8;&#x5206;"><a href="#AbstractNioChannel-&#x76F8;&#x5173;&#x90E8;&#x5206;" class="headerlink" title="AbstractNioChannel()&#x76F8;&#x5173;&#x90E8;&#x5206;"></a>AbstractNioChannel()&#x76F8;&#x5173;&#x90E8;&#x5206;</h3><p>&#x518D;&#x770B;&#x5B83;&#x7684;&#x7236;&#x7C7B;&#x6784;&#x9020;&#x5668;,&#x8FFD;&#x8E2A;&#x5230;<code>AstractNioChannel</code>&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x91CC;&#x9762;&#x4F1A;&#x770B;&#x5230;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ch.configureBlocking(<span class="keyword">false</span>);	<span class="comment">//&#x8FD9;&#x91CC;&#x7684;ch&#x662F;&#x521A;&#x624D;&#x521B;&#x5EFA;&#x7684;jdk&#x5E95;&#x5C42;&#x7684;channel,&#x628A;&#x5B83;&#x8BBE;&#x4E3A;&#x975E;&#x963B;&#x585E;</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD9;&#x4E48;&#x4E00;&#x6BB5;.&#x628A;channel&#x8BBE;&#x7F6E;&#x4E3A;&#x975E;&#x963B;&#x585E;&#x6D41;</p>
+<p>&#x7EE7;&#x7EED;&#x8FFD;&#x8E2A;<code>AbstractNioChannel</code>&#x7684;&#x7236;&#x7C7B;,&#x5230;&#x4E86;<code>AbstractChannel</code>&#x4E4B;&#x540E;,&#x4F1A;&#x770B;&#x5230;&#x5B83;&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E3A;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="title">AbstractChannel</span><span class="params">(Channel parent)</span> </span>{</span><br><span class="line">    <span class="keyword">this</span>.parent = parent;</span><br><span class="line">    id = newId();	<span class="comment">//id</span></span><br><span class="line">    unsafe = newUnsafe();	<span class="comment">//&#x5E95;&#x5C42;TCP&#x8BFB;&#x5199;&#x64CD;&#x4F5C;&#x7684;&#x7C7B;</span></span><br><span class="line">    pipeline = newChannelPipeline();	<span class="comment">//pipeline</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="&#x521D;&#x59CB;&#x5316;&#x670D;&#x52A1;&#x7AEF;Channel"><a href="#&#x521D;&#x59CB;&#x5316;&#x670D;&#x52A1;&#x7AEF;Channel" class="headerlink" title="&#x521D;&#x59CB;&#x5316;&#x670D;&#x52A1;&#x7AEF;Channel"></a>&#x521D;&#x59CB;&#x5316;&#x670D;&#x52A1;&#x7AEF;Channel</h2><p>&#x518D;&#x770B;&#x521B;&#x5EFA;&#x670D;&#x52A1;&#x7AEF;Channel&#x65F6;&#x7684;&#x8FC7;&#x7A0B;,&#x4ED6;&#x4E4B;&#x540E;&#x5C06;&#x4F1A;&#x8C03;&#x7528;<code>init()</code>&#x65B9;&#x6CD5;.</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">bind()[&#x7528;&#x6237;&#x7AEF;&#x4EE3;&#x7801;&#x5165;&#x53E3;]</span><br><span class="line">	|</span><br><span class="line">	doBind()</span><br><span class="line">	|</span><br><span class="line">    initAndRegist()[&#x521D;&#x59CB;&#x5316;&#x5E76;&#x6CE8;&#x518C;]</span><br><span class="line">        |</span><br><span class="line">        newChannel()[&#x521B;&#x5EFA;&#x670D;&#x52A1;&#x7AEF;Channel]	//&#x901A;&#x8FC7;&#x53CD;&#x5C04;&#x6784;&#x9020;channel</span><br><span class="line">        |</span><br><span class="line">        init()[&#x521D;&#x59CB;&#x5316;&#x670D;&#x52A1;&#x7AEF;Channel]	//&#x521D;&#x59CB;&#x5316;&#x521A;&#x624D;&#x7528;&#x53CD;&#x5C04;&#x6784;&#x9020;&#x7684;channel</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x90A3;&#x4E48;&#x8FD9;&#x4E2A;&#x521D;&#x59CB;&#x5316;&#x4F1A;&#x505A;&#x54EA;&#x4E9B;&#x4E8B;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">init()[&#x521D;&#x59CB;&#x5316;&#x670D;&#x52A1;&#x7AEF;Channel]</span><br><span class="line">	|</span><br><span class="line">	set ChannelOptions,ChannelAttrs	//&#x914D;&#x7F6E;&#x7528;&#x6237;&#x81EA;&#x5B9A;&#x4E49;&#x7684;&#x670D;&#x52A1;&#x7AEF;&#x914D;&#x7F6E;</span><br><span class="line">	|</span><br><span class="line">	set childOption,childAttr	//&#x914D;&#x7F6E;&#x7528;&#x6237;&#x81EA;&#x5B9A;&#x4E49;&#x7684;&#x8FDE;&#x63A5;&#x914D;&#x7F6E;,&#x4E3A;&#x6BCF;&#x4E2A;&#x65B0;&#x8FDE;&#x63A5;&#x90FD;&#x914D;&#x7F6E;</span><br><span class="line">	|</span><br><span class="line">	config handler [&#x914D;&#x7F6E;&#x670D;&#x52A1;&#x7AEF;pipeline]	//&#x7528;&#x6237;&#x4EE3;&#x7801;&#x4E2D;&#x901A;&#x8FC7;.handler()&#x8BBE;&#x7F6E;&#x7684;&#x90E8;&#x5206;</span><br><span class="line">	|</span><br><span class="line">	add ServerBootstrapAcceptor[&#x6DFB;&#x52A0;&#x8FDE;&#x63A5;&#x5668;] 	//&#x6DFB;&#x52A0;&#x4E00;&#x4E2A;&#x7ED9;accept&#x7528;&#x7684;NIO&#x7684;&#x7EBF;&#x7A0B;</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="set-ChannelOptions-ChannelAttrs"><a href="#set-ChannelOptions-ChannelAttrs" class="headerlink" title="set ChannelOptions,ChannelAttrs"></a>set ChannelOptions,ChannelAttrs</h3><p>&#x76EE;&#x7684;&#x662F;&#x8BBE;&#x7F6E;&#x7528;&#x6237;&#x81EA;&#x5B9A;&#x4E49;&#x7684;&#x670D;&#x52A1;&#x7AEF;&#x914D;&#x7F6E;.</p>
+<p>&#x5728;<code>io.netty.bootstrap.ServerBootstrap#init</code>&#x4E2D;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">(Channel channel)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">    <span class="keyword">final</span> Map&lt;ChannelOption&lt;?&gt;, Object&gt; options = options0();<span class="comment">//&#x62FF;&#x5230;&#x7528;&#x6237;&#x81EA;&#x5B9A;&#x4E49;&#x7684;option</span></span><br><span class="line">    <span class="keyword">synchronized</span> (options) {</span><br><span class="line">        channel.config().setOptions(options);	<span class="comment">//&#x8BBE;&#x7F6E;&#x8FDB;&#x53BB;</span></span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> Map&lt;AttributeKey&lt;?&gt;, Object&gt; attrs = attrs0();<span class="comment">//&#x62FF;&#x5230;&#x7528;&#x6237;&#x81EA;&#x5B9A;&#x4E49;&#x7684;attr</span></span><br><span class="line">    <span class="keyword">synchronized</span> (attrs) {</span><br><span class="line">        <span class="keyword">for</span> (Entry&lt;AttributeKey&lt;?&gt;, Object&gt; e: attrs.entrySet()) {</span><br><span class="line">            <span class="meta">@SuppressWarnings</span>(<span class="string">&quot;unchecked&quot;</span>)</span><br><span class="line">            AttributeKey&lt;Object&gt; key = (AttributeKey&lt;Object&gt;) e.getKey();</span><br><span class="line">            channel.attr(key).set(e.getValue());	<span class="comment">//&#x8BBE;&#x7F6E;&#x8FDB;&#x53BB;</span></span><br><span class="line">        }</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD9;&#x91CC;&#x914D;&#x7F6E;&#x7684;&#x662F;&#x901A;&#x8FC7;&#x4EE5;&#x4E0B;&#x7684;&#x65B9;&#x5F0F;&#x914D;&#x7F6E;&#x7684;,&#x7B2C;&#x4E00;&#x8282;&#x4E2D;&#x7684;&#x4EE3;&#x7801;&#x793A;&#x4F8B;&#x4E2D;&#x6CA1;&#x6709;&#x914D;.</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ServerBootstrap b = <span class="keyword">new</span> ServerBootstrap();</span><br><span class="line">b.option(<span class="comment">/**/).attr(/**/</span>);</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="set-childOption-childAttr"><a href="#set-childOption-childAttr" class="headerlink" title="set childOption,childAttr"></a>set childOption,childAttr</h3><p>&#x8FD9;&#x4E00;&#x6B65;&#x662F;&#x4E3A;&#x4E86;&#x8BBE;&#x7F6E;&#x7528;&#x6237;&#x81EA;&#x5B9A;&#x4E49;&#x7684;&#x8FDE;&#x63A5;&#x914D;&#x7F6E;,&#x4E3A;&#x6BCF;&#x4E2A;&#x65B0;&#x8FDE;&#x63A5;&#x90FD;&#x914D;&#x7F6E;. &#x503C;&#x662F;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x4E2D;<code>.childOption()</code>&#x548C;<code>.childAttr()</code>&#x914D;&#x7F6E;&#x7684;&#x90E8;&#x5206;.</p>
+<p>&#x540C;&#x6837;&#x5728;<code>io.netty.bootstrap.ServerBootstrap#init</code>&#x4E2D;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">synchronized</span> (childOptions) {</span><br><span class="line">    currentChildOptions = childOptions.entrySet().toArray(newOptionArray(childOptions.size()));</span><br><span class="line">}</span><br><span class="line"><span class="keyword">synchronized</span> (childAttrs) {</span><br><span class="line">    currentChildAttrs = childAttrs.entrySet().toArray(newAttrArray(childAttrs.size()));</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="config-handler"><a href="#config-handler" class="headerlink" title="config handler"></a>config handler</h3><p>&#x914D;&#x7F6E;&#x5B8C;&#x6210;&#x540E;&#x63A5;&#x4E0B;&#x6765;&#x5728;,&#x5728;pipeline&#x4E2D;&#x628A;&#x7528;&#x6237;&#x81EA;&#x5B9A;&#x4E49;&#x7684;handler&#x653E;&#x5165;.&#x8FD9;&#x4E2A;handler&#x662F;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x4E2D;&#x901A;&#x8FC7;.handler()&#x8BBE;&#x7F6E;&#x7684;&#x90E8;&#x5206;.&#x540C;&#x6837;&#x662F;<code>io.netty.bootstrap.ServerBootstrap#init</code>.</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ChannelPipeline p = channel.pipeline();</span><br><span class="line">p.addLast(<span class="keyword">new</span> ChannelInitializer&lt;Channel&gt;() {</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initChannel</span><span class="params">(Channel ch)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        <span class="keyword">final</span> ChannelPipeline pipeline = ch.pipeline();</span><br><span class="line">        ChannelHandler handler = config.handler();	<span class="comment">//&#x83B7;&#x53D6;&#x7528;&#x6237;&#x8BBE;&#x7F6E;&#x7684;&#x670D;&#x52A1;&#x7AEF;handler</span></span><br><span class="line">        <span class="keyword">if</span> (handler != <span class="keyword">null</span>) {</span><br><span class="line">            pipeline.addLast(handler);	<span class="comment">//&#x628A;&#x670D;&#x52A1;&#x7AEF;handler&#x653E;&#x5230;pipeline&#x4E2D;</span></span><br><span class="line">        }</span><br><span class="line">        ...</span><br><span class="line">    })</span><br></pre></td></tr></tbody></table></figure>
+<p>config.handler()&#x662F;&#x5982;&#x4F55;&#x83B7;&#x53D6;&#x7528;&#x6237;&#x8BBE;&#x7F6E;&#x7684;handler&#x7684;?</p>
+<p>&#x9996;&#x5148;&#x5F97;&#x77E5;&#x9053;,&#x5BA2;&#x6237;&#x7AEF;&#x4EE3;&#x7801;&#x8FDB;&#x884C;<code>.handler(/**/)</code>&#x7684;&#x65F6;&#x5019;,&#x8C03;&#x7528;&#x7684;&#x662F;<code>AbstractBootstrap#handler</code>,&#x6B64;&#x65F6;&#x53EA;&#x4F1A;&#x5355;&#x7EAF;&#x628A;&#x8FD9;&#x4E2A;handler&#x5B58;&#x5230;<code>AbstractBootstrap</code>&#x7684;&#x4E00;&#x4E2A;handler&#x5C5E;&#x6027;&#x4E2D;.<code>config.handler()</code>&#x5C31;&#x662F;&#x8FD4;&#x56DE;&#x8FD9;&#x4E2A;handler&#x5C5E;&#x6027;&#x7684;&#x503C;.&#x540E;&#x9762;&#x7684;<code>.childHandler()</code>&#x7B49;&#x914D;&#x7F6E;&#x53D6;&#x503C;&#x90FD;&#x662F;&#x901A;&#x8FC7;&#x7C7B;&#x4F3C;&#x65B9;&#x5F0F;.</p>
+<h3 id="add-ServerBootstrapAcceptor"><a href="#add-ServerBootstrapAcceptor" class="headerlink" title="add ServerBootstrapAcceptor"></a>add ServerBootstrapAcceptor</h3><p>&#x8FD9;&#x4E00;&#x6B65;&#x7684;&#x76EE;&#x7684;&#x662F;&#x7ED9;accept&#x6DFB;&#x52A0;&#x4E00;&#x4E2A;NIO&#x7684;&#x7EBF;&#x7A0B;,&#x8FD8;&#x662F;&#x63A5;&#x7740;&#x770B;<code>io.netty.bootstrap.ServerBootstrap#init</code>.&#x4E0A;&#x4E00;&#x6B65;&#x64CD;&#x4F5C;&#x540E;,&#x4ED6;&#x4F1A;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">p.addLast(<span class="keyword">new</span> ChannelInitializer&lt;Channel&gt;() {</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initChannel</span><span class="params">(Channel ch)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        <span class="keyword">final</span> ChannelPipeline pipeline = ch.pipeline();</span><br><span class="line">        ChannelHandler handler = config.handler();</span><br><span class="line">        <span class="keyword">if</span> (handler != <span class="keyword">null</span>) {</span><br><span class="line">            pipeline.addLast(handler);</span><br><span class="line">        }</span><br><span class="line">        <span class="comment">//&#x521B;&#x5EFA;&#x4E86;&#x4E00;&#x4E2A;accept&#x7EBF;&#x7A0B;</span></span><br><span class="line">        ch.eventLoop().execute(<span class="keyword">new</span> Runnable() {</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{</span><br><span class="line">                <span class="comment">//&#x6DFB;&#x52A0;&#x7279;&#x6B8A;&#x7684;&#x4E00;&#x4E2A;acceptor&#x5904;&#x7406;&#x5668;,&#x628A;&#x5BA2;&#x6237;&#x7AEF;&#x914D;&#x7F6E;&#x90FD;&#x653E;&#x5165;</span></span><br><span class="line">                pipeline.addLast(</span><br><span class="line">                    <span class="keyword">new</span> ServerBootstrapAcceptor(</span><br><span class="line">                        currentChildGroup,	<span class="comment">//&#x7528;&#x6237;&#x4EE3;&#x7801;&#x901A;&#x8FC7;.childGroup()&#x914D;&#x7F6E;</span></span><br><span class="line">                        currentChildHandler,<span class="comment">//&#x7528;&#x6237;&#x4EE3;&#x7801;&#x901A;&#x8FC7;.childHandler()&#x914D;&#x7F6E;</span></span><br><span class="line">                        currentChildOptions,<span class="comment">//&#x4E0A;&#x9762;&#x8BF4;&#x8FC7;&#x4E86;</span></span><br><span class="line">                        currentChildAttrs));</span><br><span class="line">            }</span><br><span class="line">        });</span><br><span class="line">    }</span><br><span class="line">});</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="&#x6CE8;&#x518C;selector"><a href="#&#x6CE8;&#x518C;selector" class="headerlink" title="&#x6CE8;&#x518C;selector"></a>&#x6CE8;&#x518C;selector</h2><p>&#x56DE;&#x5230;<code>io.netty.bootstrap.AbstractBootstrap#initAndRegister</code>&#x65B9;&#x6CD5;.&#x6784;&#x9020;channel,channel&#x521D;&#x59CB;&#x5316;&#x7684;&#x4E24;&#x6B65;&#x5B8C;&#x6210;&#x540E;&#x4F1A;&#x8C03;&#x7528;register&#x65B9;&#x6CD5;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Channel channel = <span class="keyword">null</span>;</span><br><span class="line">channel = channelFactory.newChannel();<span class="comment">//&#x6784;&#x9020;</span></span><br><span class="line">init(channel);	<span class="comment">//&#x521D;&#x59CB;&#x5316;</span></span><br><span class="line">ChannelFuture regFuture = config().group().register(channel);	<span class="comment">//&#x6CE8;&#x518C;,&#x5B9E;&#x9645;&#x8C03;&#x7528;io.netty.channel.AbstractChannel.AbstractUnsafe#register</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x6B65;&#x9AA4;:</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">io.netty.channel.AbstractChannel.AbstractUnsafe#register</span><br><span class="line">AbstractBootstrap.register(channel)[&#x5165;&#x53E3;]</span><br><span class="line">	|</span><br><span class="line">	this.eventLoop = eventLoop[&#x7ED1;&#x5B9A;&#x7EBF;&#x7A0B;]</span><br><span class="line">	|</span><br><span class="line">	register0()[&#x5B9E;&#x9645;&#x6CE8;&#x518C;]</span><br><span class="line">		|</span><br><span class="line">		doRegister()[&#x8C03;&#x7528;jdk&#x5E95;&#x5C42;&#x6CE8;&#x518C;]	//&#x628A;jdk channel&#x6CE8;&#x518C;&#x5230;selector</span><br><span class="line">		|</span><br><span class="line">		invokeHandlerAddedIfNeeded()	//&#x6CE8;&#x518C;&#x4E8B;&#x4EF6;&#x7684;&#x56DE;&#x8C03;</span><br><span class="line">		|</span><br><span class="line">		fireChannelRegistered()[&#x4F20;&#x64AD;&#x4E8B;&#x4EF6;]	//&#x544A;&#x8BC9;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x6CE8;&#x518C;&#x6210;&#x529F;</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="this-eventLoop-eventLoop"><a href="#this-eventLoop-eventLoop" class="headerlink" title="this.eventLoop = eventLoop"></a>this.eventLoop = eventLoop</h3><p>&#x5B9E;&#x9645;&#x4EE3;&#x7801;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AbstractChannel.<span class="keyword">this</span>.eventLoop = eventLoop;</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E4B;&#x540E;&#x7684;&#x6240;&#x6709;&#x64CD;&#x4F5C;&#x90FD;&#x7531;&#x8FD9;&#x4E2A;eventLoop&#x5904;&#x7406;,&#x4E4B;&#x540E;&#x8C03;&#x7528;register0()</p>
+<h3 id="register0"><a href="#register0" class="headerlink" title="register0()"></a>register0()</h3><p><code>io.netty.channel.AbstractChannel.AbstractUnsafe#register0</code>,&#x505A;&#x4E86;&#x4E09;&#x4EF6;&#x4E8B;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">doRegister();	<span class="comment">//&#x628A;jdk channel&#x6CE8;&#x518C;&#x5230;selector</span></span><br><span class="line">...</span><br><span class="line">pipeline.invokeHandlerAddedIfNeeded();<span class="comment">//&#x6CE8;&#x518C;&#x4E8B;&#x4EF6;&#x7684;&#x56DE;&#x8C03;</span></span><br><span class="line">...</span><br><span class="line">pipeline.fireChannelRegistered();<span class="comment">//&#x544A;&#x8BC9;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x6CE8;&#x518C;&#x6210;&#x529F;</span></span><br></pre></td></tr></tbody></table></figure>
+<p><strong>doRegister()</strong></p>
+<p>&#x4F4D;&#x7F6E;:<code>io.netty.channel.nio.AbstractNioChannel#doRegister</code></p>
+<p>&#x91CC;&#x8FB9;&#x8C03;&#x7528;JDK&#x5E95;&#x5C42;&#x7684;&#x4E00;&#x4E2A;&#x6CE8;&#x518C;&#x65B9;&#x6CD5;,&#x628A;jdk channel&#x6CE8;&#x518C;&#x5230;selector</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">selectionKey = javaChannel()<span class="comment">//&#x8FD4;&#x56DE;&#x4E4B;&#x524D;&#x521B;&#x5EFA;&#x670D;&#x52A1;&#x7AEF;channel&#x65F6;&#x521B;&#x5EFA;&#x7684;&#x5E95;&#x5C42;Channel</span></span><br><span class="line">    		.register(	<span class="comment">//jdk channel&#x7684;api</span></span><br><span class="line">    			eventLoop().selector,<span class="comment">//&#x8BA9;&#x4ED6;&#x6CE8;&#x518C;&#x5230;&#x8FD9;&#x4E2A;selector&#x4E2D;</span></span><br><span class="line">    			<span class="number">0</span>,<span class="comment">//&#x6CE8;&#x518C;&#x65F6;&#x9700;&#x8981;&#x5173;&#x5FC3;&#x7684;&#x4E8B;&#x4EF6;.&#x8FD9;&#x91CC;&#x662F;0&#x8BF4;&#x660E;&#x4E0D;&#x9700;&#x8981;&#x5173;&#x5FC3;,&#x53EA;&#x662F;&#x5355;&#x7EAF;&#x628A;channel&#x7ED1;&#x5B9A;&#x5230;selector&#x4E0A;</span></span><br><span class="line">    			<span class="keyword">this</span>);	<span class="comment">//attachment</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5B9E;&#x9645;&#x4E0A;,&#x6CE8;&#x518C;&#x4E00;&#x4E2A;channel&#x7684;&#x65F6;&#x5019;&#x662F;&#x8C03;&#x7528;jdk&#x5E95;&#x5C42;&#x7684;&#x4E00;&#x4E2A;api&#x53BB;&#x6CE8;&#x518C;&#x5230;selector&#x4E2D;<br>&#x5E76;&#x628A;&#x8FD9;&#x4E2A;this,&#x5C31;&#x662F;&#x670D;&#x52A1;&#x7AEF;&#x7684;channel,&#x4E5F;&#x4E00;&#x540C;&#x9644;&#x52A0;&#x8FDB;&#x53BB;,<br>&#x4E4B;&#x540E;selector&#x8F6E;&#x8BE2;&#x5230;jdk channel&#x65F6;&#x901A;&#x8FC7;&#x83B7;&#x53D6;attachment&#x5C31;&#x80FD;&#x53D6;&#x51FA;netty&#x670D;&#x52A1;&#x7AEF;&#x7684;Channel,&#x4ECE;&#x800C;&#x8FDB;&#x884C;&#x7279;&#x5B9A;&#x7684;&#x4F20;&#x64AD;.</p>
+<p><strong>invokeHandlerAddedIfNeeded&#x548C;fireChannelRegistered</strong></p>
+<p>&#x7531;&#x4E8E;&#x5728;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x4E2D;&#x901A;&#x8FC7;<code>.handler(new ServerHandler())</code>&#x8FDB;&#x884C;&#x4E86;&#x7ED1;&#x5B9A;.</p>
+<p>invokeHandlerAddedIfNeeded&#x548C;fireChannelRegistered&#x5206;&#x522B;&#x8C03;&#x7528;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x4E2D;&#x7684;<code>com.imooc.netty.ch3.ServerHandler#channelRegistered</code>&#x548C;<code>com.imooc.netty.ch3.ServerHandler#handlerAdded</code></p>
+<p>&#x4F46;&#x6CE8;&#x610F;,<code>register0()</code>&#x4E2D;&#x4E0B;&#x9762;&#x8FD8;&#x6709;&#x4E2A;<code></code>pipeline.fireChannelActive();`:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (isActive()) {	<span class="comment">//&#x6B64;&#x65F6;&#x8FD4;&#x56DE;false</span></span><br><span class="line">    <span class="keyword">if</span> (firstRegistration) {</span><br><span class="line">        pipeline.fireChannelActive();	<span class="comment">//&#x4E0D;&#x4F1A;&#x88AB;&#x8C03;&#x7528;</span></span><br><span class="line">    } <span class="keyword">else</span> <span class="keyword">if</span> (config().isAutoRead()) {</span><br><span class="line">        beginRead();</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4F46;&#x6B64;&#x65F6;&#x7531;&#x4E8E;<code>isActive()</code>&#x8FD4;&#x56DE;false,&#x8FD9;&#x4E2A;<code>fireChannelActive</code>&#x662F;&#x4E0D;&#x4F1A;&#x88AB;&#x89E6;&#x53D1;&#x7684;.</p>
+<h2 id="&#x7AEF;&#x53E3;&#x7ED1;&#x5B9A;"><a href="#&#x7AEF;&#x53E3;&#x7ED1;&#x5B9A;" class="headerlink" title="&#x7AEF;&#x53E3;&#x7ED1;&#x5B9A;"></a>&#x7AEF;&#x53E3;&#x7ED1;&#x5B9A;</h2><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">AbstractUnsafe.bind()[&#x5165;&#x53E3;]</span><br><span class="line">	|</span><br><span class="line">	doBind()//&#x5B9E;&#x9645;&#x7ED1;&#x5B9A;&#x5230;&#x672C;&#x5730;</span><br><span class="line">		|</span><br><span class="line">		javaChannel().bind()[jdk&#x5E95;&#x5C42;&#x7ED1;&#x5B9A;] </span><br><span class="line">	|</span><br><span class="line">	pipline.fireChannelActive()[&#x4F20;&#x64AD;&#x4E8B;&#x4EF6;]	//active</span><br><span class="line">		|</span><br><span class="line">		HeadContext.readIdIsAutoRead()	//&#x628A;&#x4E4B;&#x524D;&#x6CE8;&#x518C;&#x5230;selector&#x7684;&#x4E8B;&#x4EF6;,&#x91CD;&#x65B0;&#x7ED1;&#x5B9A;&#x4E3A;accept&#x4E8B;&#x4EF6;</span><br><span class="line">										//&#x4E4B;&#x540E;&#x6709;&#x65B0;&#x8FDE;&#x63A5;&#x8FDB;&#x6765;,&#x4ED6;&#x90FD;&#x4F1A;&#x8F6E;&#x8BE2;&#x5230;&#x8FD9;&#x4E2A;accept&#x4E8B;&#x4EF6;.&#x4EA4;&#x7ED9;netty&#x5904;&#x7406;</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x56DE;&#x5230;<code>io.netty.bootstrap.AbstractBootstrap#doBind</code>,&#x7136;&#x540E;-&gt;<code>bind0</code>-&gt;..-&gt;<code>io.netty.channel.AbstractChannel.AbstractUnsafe#bind</code>.&#x5728;&#x91CC;&#x9762;&#x4F1A;&#x770B;&#x5230;&#x5B9E;&#x9645;&#x7ED1;&#x5B9A;&#x672C;&#x5730;&#x7AEF;&#x53E3;&#x7684;<code>doBind()</code>&#x548C;active&#x4E8B;&#x4EF6;&#x4F20;&#x64AD;&#x7684;<code>pipline.fireChannelActive()</code>.</p>
+<h3 id="doBind"><a href="#doBind" class="headerlink" title="doBind()"></a>doBind()</h3><p>&#x8FD9;&#x91CC;&#x5B9E;&#x9645;&#x8C03;&#x7528;&#x7684;&#x662F;<code>io.netty.channel.socket.nio.NioServerSocketChannel#doBind</code>. &#x901A;&#x8FC7;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">javaChannel()<span class="comment">//&#x4E4B;&#x524D;&#x521B;&#x5EFA;&#x7684;jdk&#x5E95;&#x5C42;channel </span></span><br><span class="line">    .bind(localAddress, config.getBacklog());<span class="comment">//jdk&#x63D0;&#x4F9B;&#x7684;api</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5BF9;&#x4E00;&#x4E2A;&#x7AEF;&#x53E3;&#x8FDB;&#x884C;&#x7ED1;&#x5B9A;.</p>
+<h3 id="pipline-fireChannelActive"><a href="#pipline-fireChannelActive" class="headerlink" title="pipline.fireChannelActive()"></a>pipline.fireChannelActive()</h3><p>&#x4EE3;&#x7801;&#x76F8;&#x5173;&#x90E8;&#x5206;(<code>AbstractUnsafe#bind</code>):</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">boolean</span> wasActive = isActive();<span class="comment">//&#x8FD8;&#x6CA1;&#x7ED1;&#x5B9A;,false </span></span><br><span class="line">doDisconnect();<span class="comment">//&#x7ED1;&#x5B9A;&#x7AEF;&#x53E3;</span></span><br><span class="line"><span class="keyword">if</span> (!wasActive &amp;&amp; isActive()) {<span class="comment">//!false&amp;true,&#x7ED1;&#x5B9A;&#x524D;&#x4E0D;&#x662F;active&#x7ED1;&#x5B9A;&#x540E;active.&#x89E6;&#x53D1;&#x4E8B;&#x4EF6;</span></span><br><span class="line">    invokeLater(<span class="keyword">new</span> Runnable() {</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{</span><br><span class="line">            pipeline.fireChannelActive();	<span class="comment">//&#x89E6;&#x53D1;active&#x4E8B;&#x4EF6;</span></span><br><span class="line">        }</span><br><span class="line">    });</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>fireChannelActive,&#x5B9E;&#x9645;&#x4E0A;&#x4E0D;&#x53EA;&#x662F;&#x5355;&#x7EAF;&#x7684;&#x89E6;&#x53D1;active&#x4E8B;&#x4EF6;.&#x8FFD;&#x8E2A;<code>pipeline.fireChannelActive()</code>-&gt;<code>DefaultChannelPipeline#fireChannelActive</code>-&gt;<code>AbstractChannelHandlerContext#invokeChannelActive</code>-&gt;<code>io.netty.channel.DefaultChannelPipeline.HeadContext#channelActive</code></p>
+<p>&#x8FD9;&#x4E2A;<code>HeadContext#channelActive</code>&#x7684;&#x4EE3;&#x7801;&#x5982;&#x4E0B;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelActive</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">    ctx.fireChannelActive();	<span class="comment">//&#x89E6;&#x53D1;active</span></span><br><span class="line"></span><br><span class="line">    readIfIsAutoRead();		<span class="comment">//&#x628A;&#x4E4B;&#x524D;&#x6CE8;&#x518C;&#x5230;selector&#x7684;&#x4E8B;&#x4EF6;,&#x91CD;&#x65B0;&#x7ED1;&#x5B9A;&#x4E3A;accept&#x4E8B;&#x4EF6;.</span></span><br><span class="line">    						<span class="comment">//&#x4F7F;&#x4E4B;&#x540E;&#x6709;&#x65B0;&#x8FDE;&#x63A5;&#x8FDB;&#x6765;,&#x4ED6;&#x90FD;&#x4F1A;&#x8F6E;&#x8BE2;&#x5230;&#x8FD9;&#x4E2A;accept&#x4E8B;&#x4EF6;.&#x628A;&#x5B83;&#x4EA4;&#x7ED9;netty&#x5904;&#x7406;</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x600E;&#x6837;&#x5B9E;&#x73B0;&#x91CD;&#x65B0;&#x7ED1;&#x5B9A;accept&#x4E8B;&#x4EF6;?</p>
+<p>&#x8DDF;&#x8E2A;&#x8FD9;&#x4E2A;<code>readIfIsAutoRead()</code>-&gt;..-&gt;<code>io.netty.channel.AbstractChannelHandlerContext#read</code>-&gt;..<code>io.netty.channel.AbstractChannel.AbstractUnsafe#beginRead</code>-&gt;..-&gt;<code>io.netty.channel.nio.AbstractNioChannel#doBeginRead</code></p>
+<p>doBeginRead&#x7684;&#x5185;&#x5BB9;&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doBeginRead</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">    <span class="keyword">final</span> SelectionKey selectionKey = <span class="keyword">this</span>.selectionKey;<span class="comment">//&#x521A;&#x624D;&#x6CE8;&#x518C;channel&#x5230;selector&#x65F6;&#x62FF;&#x5230;&#x7684;key</span></span><br><span class="line">    <span class="keyword">if</span> (!selectionKey.isValid()) {</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    readPending = <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> interestOps = selectionKey.interestOps();<span class="comment">//&#x56E0;&#x4E3A;&#x6CE8;&#x518C;selector&#x65F6;&#x653E;&#x4E86;0,&#x8FD9;&#x91CC;&#x8FD4;&#x56DE;0</span></span><br><span class="line">    <span class="keyword">if</span> ((interestOps &amp; readInterestOp) == <span class="number">0</span>) {<span class="comment">// 0 &amp; ... == 0 ,&#x6210;&#x7ACB;</span></span><br><span class="line">        <span class="comment">//&#x610F;&#x601D;&#x5C31;&#x662F;&#x5728;&#x524D;&#x9762;&#x6CE8;&#x518C;&#x7684;&#x4E8B;&#x4EF6;&#x7684;&#x57FA;&#x7840;&#x4E0A;&#x518D;&#x52A0;&#x5165;&#x4E00;&#x4E2A;&#x4E8B;&#x4EF6;</span></span><br><span class="line">        <span class="comment">//&#x8FD9;&#x4E2A;readInterestOp&#x5C31;&#x662F;accept&#x4E8B;&#x4EF6;</span></span><br><span class="line">        selectionKey.interestOps(interestOps | readInterestOp);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x56DE;&#x987E;&#x4E00;&#x4E0B;<code>readInterestOp</code>&#x662F;&#x4ECE;&#x54EA;&#x6765;&#x7684;.&#x5728;<code>NioServerSocketChannel</code>&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x4E2D;&#x5C31;&#x5E26;&#x5165;&#x4E86;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">super</span>(<span class="keyword">null</span>, channel, SelectionKey.OP_ACCEPT);	<span class="comment">//&#x52A0;&#x5165;accept&#x4E8B;&#x4EF6;</span></span><br><span class="line">---</span><br><span class="line"><span class="comment">//&#x4E4B;&#x540E;&#x7684;&#x7236;&#x7C7B;&#x6784;&#x9020;&#x5668; ..</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="title">AbstractNioChannel</span><span class="params">(Channel parent, SelectableChannel ch, <span class="keyword">int</span> readInterestOp)</span> </span>{</span><br><span class="line">    <span class="keyword">super</span>(parent);</span><br><span class="line">    <span class="keyword">this</span>.ch = ch;</span><br><span class="line">    <span class="keyword">this</span>.readInterestOp = readInterestOp;	<span class="comment">//!!&#x5C31;&#x662F;&#x8FD9;&#x91CC;&#x6DFB;&#x52A0;&#x7684;readInterestOp,&#x4E5F;&#x5C31;&#x662F;SelectionKey.OP_ACCEPT</span></span><br></pre></td></tr></tbody></table></figure>
+<p><code>readIfIsAutoRead()</code>&#x7684;&#x903B;&#x8F91;&#x5B8C;&#x6210;&#x540E;,&#x5F53;&#x6536;&#x5230;OP_ACCEPT&#x4E8B;&#x4EF6;&#x7684;&#x65F6;&#x5019;&#x5C31;&#x4F1A;&#x4EA4;&#x7ED9;netty&#x5904;&#x7406;.</p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2018/12/25/20181225/" title="慕课网-Java读源码之Netty深入剖析-Netty基本组件">
+                    <div class="prevTitle">慕课网-Java读源码之Netty深入剖析-Netty基本组件</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MDUwMy8xNzAzMA==">
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:nnkwrik@gmail.com" class="iconfont-archer email" title="email"></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/nnkwrik" class="iconfont-archer github" target="_blank" title="github"></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title="wechat">
+                  
+                  <img class="profile-qr" src="/assets/qr.png">
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:30vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#一个简单的netty服务端"><span class="toc-number">1.</span> <span class="toc-text">一个简单的netty服务端</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Netty服务端启动的过程"><span class="toc-number">2.</span> <span class="toc-text">Netty服务端启动的过程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#创建服务端Channel"><span class="toc-number">2.1.</span> <span class="toc-text">创建服务端Channel</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#反射构建服务端Channel"><span class="toc-number">2.2.</span> <span class="toc-text">反射构建服务端Channel</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#newSocket-相关部分"><span class="toc-number">2.2.1.</span> <span class="toc-text">newSocket()相关部分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NioServerSocketChannelConfig-相关部分"><span class="toc-number">2.2.2.</span> <span class="toc-text">NioServerSocketChannelConfig()相关部分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AbstractNioChannel-相关部分"><span class="toc-number">2.2.3.</span> <span class="toc-text">AbstractNioChannel()相关部分</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#初始化服务端Channel"><span class="toc-number">2.3.</span> <span class="toc-text">初始化服务端Channel</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#set-ChannelOptions-ChannelAttrs"><span class="toc-number">2.3.1.</span> <span class="toc-text">set ChannelOptions,ChannelAttrs</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#set-childOption-childAttr"><span class="toc-number">2.3.2.</span> <span class="toc-text">set childOption,childAttr</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#config-handler"><span class="toc-number">2.3.3.</span> <span class="toc-text">config handler</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#add-ServerBootstrapAcceptor"><span class="toc-number">2.3.4.</span> <span class="toc-text">add ServerBootstrapAcceptor</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#注册selector"><span class="toc-number">2.4.</span> <span class="toc-text">注册selector</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#this-eventLoop-eventLoop"><span class="toc-number">2.4.1.</span> <span class="toc-text">this.eventLoop = eventLoop</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#register0"><span class="toc-number">2.4.2.</span> <span class="toc-text">register0()</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#端口绑定"><span class="toc-number">2.5.</span> <span class="toc-text">端口绑定</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#doBind"><span class="toc-number">2.5.1.</span> <span class="toc-text">doBind()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pipline-fireChannelActive"><span class="toc-number">2.5.2.</span> <span class="toc-text">pipline.fireChannelActive()</span></a></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 40
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-1/">慕课网-Java读源码之Netty深入剖析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225/">慕课网-Java读源码之Netty深入剖析-Netty基本组件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224-3/">高性能MySQL-第5章-创建高性能的索引</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224/">高性能MySQL-第1章-MySQL架构与历史</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-7/">高性能MySQL-第4章-Schema与数据类型优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-6/">🍓 JVM知识点合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-5/">JVM知识点合集-4.Class文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-4/">JVM知识点合集-3.GC算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-3/">JVM知识点合集-2.内存结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-2/">JVM知识点合集-1.类的加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223/">深入理解Java虚拟机-第12章-Java内存模型与线程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222-2/">深入理解Java虚拟机-第8章-虚拟机字节码执行引擎</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222/">深入理解Java虚拟机-第7章-虚拟机类加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181221/">深入理解Java虚拟机-第6章-类文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/19</span><a class="archive-post-title" href="/2018/12/19/20181219/">重构的艺术？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/30</span><a class="archive-post-title" href="/2018/11/30/20181130/">万能的Jackson</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span><a class="archive-post-title" href="/2018/11/20/20181120/">Guava的Cache</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/19</span><a class="archive-post-title" href="/2018/11/19/20181119/">Spring Cloud中使用RabbitMQ的两种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href="/2018/11/12/20181112/">深入理解Java虚拟机-第4章-虚拟机性能监控与故障处理工具</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href="/2018/11/10/20181110/">深入理解Java虚拟机-第3章-垃圾收集器与内存分配策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109-2/">深入理解Java虚拟机-第2章-Java内存区域与内存溢出异常</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109/">深入理解Java虚拟机-第1章-走近Java</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/05</span><a class="archive-post-title" href="/2018/11/05/20181105/">Java并发编程实战-第7章-取消与关闭</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-5/">🍤 并发操作合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-4/">并发操作合集-11.ThreadLocal</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-3/">并发操作合集-10.Executor和线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-2/">并发操作合集-9.并发工具：Semaphore,CountDownLatch,CyclicBarrier</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104/">并发操作合集-8.并发容器：CopyOnWriteArrayList</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181102-3/">并发操作合集-7.并发容器：BlockingQueue</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102-2/">并发操作合集-6.并发容器：ConcurrentHashMap</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102/">并发操作合集-5.原子变量和volatile</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181030-2/">并发操作合集-1.线程的生命周期</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span><a class="archive-post-title" href="/2018/10/30/20181030/">Java并发编程实战-第6章-任务执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/29</span><a class="archive-post-title" href="/2018/10/29/20181029/">Java并发编程实战-第5章-基础构建模块</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href="/2018/10/28/20181028/">Java并发编程实战-第4章-对象的组合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span><a class="archive-post-title" href="/2018/10/27/20181027/">Java并发编程实战-第3章-对象的共享</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/25</span><a class="archive-post-title" href="/2018/10/25/20181025/">Java并发编程实战-第2章-线程安全性</a>
+        </li>
+    
+    </ul></div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发操作合集"><span class="iconfont-archer">&#xe606;</span>并发操作合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM"><span class="iconfont-archer">&#xe606;</span>JVM</span>
+    
+        <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
+    
+        <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
+    
+        <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
+    
+        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
+    
+        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
+    
+        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br>
+    1、请确保node版本大于6.2<br>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
+    
+        <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="框架使用"><span class="iconfont-archer">&#xe60a;</span>框架使用</span>
+    
+        <span class="sidebar-category-name" data-categories="瞎逼叨"><span class="iconfont-archer">&#xe60a;</span>瞎逼叨</span>
+    
+        <span class="sidebar-category-name" data-categories="JVM知识点合集"><span class="iconfont-archer">&#xe60a;</span>JVM知识点合集</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "曽生"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
