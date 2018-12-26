@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="曽生">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="曽生">
+    
+    <meta name="keywords" content="nnkwrik,曽生,曾丽桦">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>慕课网-Java读源码之Netty深入剖析 · 农场主的黑科技.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin="">
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin="">
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"输入关键字 :D","hits_empty":"没有找到相关信息 :(","hits_stats":"找到 ${hits} 个相关信息,耗时 ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'LXR3VBZBS6',
+                apiKey: '17d6d4ab4ba943bab3232eced0eea766',
+                indexName: 'index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">农场主的黑科技.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">慕课网-Java读源码之Netty深入剖析</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href="/">农场主的黑科技.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:30vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/andrew-leu-1113236-unsplash.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            慕课网-Java读源码之Netty深入剖析
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class="post-intro-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">2k</span>阅读时长: <span class="post-count reading-time">12 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2018/12/25</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <ul>
+<li>&#x9ED8;&#x8BA4;&#x60C5;&#x51B5;&#x4E0B;,Netty&#x670D;&#x52A1;&#x7AEF;&#x8D77;&#x591A;&#x5C11;&#x7EBF;&#x7A0B;?&#x4F55;&#x65F6;&#x542F;&#x52A8;?</li>
+<li>Netty&#x662F;&#x5982;&#x4F55;&#x89E3;&#x51B3;jdk&#x7A7A;&#x8F6E;&#x8BE2;bug&#x7684;?</li>
+<li>netty&#x5982;&#x4F55;&#x4FDD;&#x8BC1;&#x5F02;&#x6B65;&#x4E32;&#x884C;&#x65E0;&#x6240;&#x5316;?</li>
+</ul>
+<h1 id="NioEventLoop"><a href="#NioEventLoop" class="headerlink" title="NioEventLoop"></a>NioEventLoop</h1><ul>
+<li>NioEventLoop&#x521B;&#x5EFA; </li>
+<li>NioEventLoop&#x542F;&#x52A8;</li>
+<li>NioEventLoop&#x6267;&#x884C;&#x903B;&#x8F91;</li>
+</ul>
+<h1 id="NioEventLoop&#x521B;&#x5EFA;"><a href="#NioEventLoop&#x521B;&#x5EFA;" class="headerlink" title="NioEventLoop&#x521B;&#x5EFA;"></a>NioEventLoop&#x521B;&#x5EFA;</h1><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">new NioEventLoopGroup()[&#x7EBF;&#x7A0B;&#x6570;,&#x9ED8;&#x8BA4;2*cpu]</span><br><span class="line">	|</span><br><span class="line">	new ThreadPerTaskExecutor()[&#x7EBF;&#x7A0B;&#x521B;&#x5EFA;&#x5668;]</span><br><span class="line">	|</span><br><span class="line">	for{newChlid()}[&#x6784;&#x9020;NioEventLoop]</span><br><span class="line">	|</span><br><span class="line">	chooserFactory.newChooser()[&#x7EBF;&#x7A0B;&#x9009;&#x62E9;&#x5668;]</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8DDF;&#x8E2A;<code>new NioEventLoopGroup()</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">NioEventLoopGroup</span><span class="params">(<span class="keyword">int</span> nThreads, Executor executor)</span> </span>{</span><br><span class="line">        <span class="keyword">this</span>(nThreads, executor, SelectorProvider.provider());<span class="comment">//&#x52A0;&#x5165;selector</span></span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">MultithreadEventLoopGroup</span><span class="params">(<span class="keyword">int</span> nThreads, Executor executor, Object... args)</span> </span>{</span><br><span class="line">    	<span class="comment">//&#x6CA1;&#x4F20;&#x6784;&#x9020;&#x51FD;&#x6570;&#x65F6;,&#x8FD9;&#x91CC;&#x5C31;&#x662F;0.&#x6B64;&#x65F6;&#x4F1A;&#x9ED8;&#x8BA4;cpu*2</span></span><br><span class="line">        <span class="keyword">super</span>(nThreads == <span class="number">0</span> ? DEFAULT_EVENT_LOOP_THREADS : nThreads, executor, args);</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">MultithreadEventExecutorGroup</span><span class="params">(<span class="keyword">int</span> nThreads, Executor executor, Object... args)</span> </span>{</span><br><span class="line">    <span class="comment">//&#x653E;&#x5165;&#x521B;&#x5EFA;&#x7EBF;&#x7A0B;&#x9009;&#x62E9;&#x5668;&#x7684;factory</span></span><br><span class="line">        <span class="keyword">this</span>(nThreads, executor, DefaultEventExecutorChooserFactory.INSTANCE, args);</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">MultithreadEventExecutorGroup</span><span class="params">(<span class="keyword">int</span> nThreads, Executor executor,</span></span></span><br><span class="line"><span class="function"><span class="params">                                            EventExecutorChooserFactory chooserFactory, Object... args)</span> </span>{</span><br><span class="line">    	<span class="comment">//..</span></span><br><span class="line">    	<span class="comment">//&#x521B;&#x5EFA;&#x7EBF;&#x7A0B;&#x9009;&#x62E9;&#x5668;</span></span><br><span class="line">        <span class="keyword">if</span> (executor == <span class="keyword">null</span>) {</span><br><span class="line">            executor = <span class="keyword">new</span> ThreadPerTaskExecutor(newDefaultThreadFactory());</span><br><span class="line">        }</span><br><span class="line">		<span class="comment">//&#x6784;&#x9020;NioEventLoop</span></span><br><span class="line">        children = <span class="keyword">new</span> EventExecutor[nThreads];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; nThreads; i ++) {</span><br><span class="line">            children[i] = newChild(executor, args);</span><br><span class="line">        }</span><br><span class="line">		<span class="comment">//&#x7EBF;&#x7A0B;&#x9009;&#x62E9;&#x5668;</span></span><br><span class="line">        chooser = chooserFactory.newChooser(children);</span><br><span class="line">		<span class="comment">//..</span></span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="ThreadPerTaskExcecutor"><a href="#ThreadPerTaskExcecutor" class="headerlink" title="ThreadPerTaskExcecutor"></a>ThreadPerTaskExcecutor</h2><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> ThreadPerTaskExecutor(newDefaultThreadFactory())</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4ED6;&#x4F1A;&#x505A;&#x4E24;&#x4EF6;&#x4E8B;:&#x4E3A;&#x6BCF;&#x4E00;&#x6B21;&#x6267;&#x884C;&#x4EFB;&#x52A1;&#x90FD;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x5B9E;&#x4F53;&#x7684;&#x5DE5;&#x5382;,&#x5B9A;&#x4E49;NioEventLoop&#x7684;&#x540D;&#x5B57;</p>
+<ul>
+<li><p>&#x6BCF;&#x4E00;&#x6B21;&#x6267;&#x884C;&#x4EFB;&#x52A1;&#x90FD;&#x4F1A;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x5B9E;&#x4F53;<br>ThreadPerTaskExcecutor&#x4E2D;&#x5305;&#x542B;&#x4E00;&#x4E2A;execute&#x65B9;&#x6CD5;,&#x4EE3;&#x7801;&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Runnable command)</span> </span>{</span><br><span class="line">    threadFactory.newThread(command).start();<span class="comment">//&#x7528;&#x53C2;&#x6570;factory&#x6BCF;&#x6B21;&#x90FD;&#x521B;&#x5EFA;&#x7EBF;&#x7A0B;</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>NioEventLoop&#x7EBF;&#x7A0B;&#x547D;&#x540D;&#x89C4;&#x5219;nioEventLoop-1&#x2013;xx<br>&#x8FFD;&#x4E00;&#x4E0B;&#x5B83;&#x7684;&#x5B9E;&#x73B0;&#x65B9;&#x5F0F;.&#x9996;&#x5148;ThreadPerTaskExecutor&#x7684;&#x53C2;&#x6570;&#x7684;factory:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> ThreadFactory <span class="title">newDefaultThreadFactory</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> DefaultThreadFactory(getClass());	<span class="comment">//&#x53C2;&#x6570;&#x4E3A;NioEventLoop.class</span></span><br><span class="line">}</span><br><span class="line">---&#x8DDF;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">DefaultThreadFactory</span><span class="params">(Class&lt;?&gt; poolType, <span class="keyword">boolean</span> daemon, <span class="keyword">int</span> priority)</span> </span>{</span><br><span class="line">    	<span class="comment">//toPoolName,&#x628A;NioEventLoop&#x8F6C;&#x6210;&quot;nioEventLoop&quot;</span></span><br><span class="line">        <span class="keyword">this</span>(toPoolName(poolType), daemon, priority);</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p> &#x7EE7;&#x7EED;&#x8DDF;&#x6784;&#x9020;&#x65B9;&#x6CD5;,&#x5230;<code>DefaultThreadFactory#DefaultThreadFactory</code>&#x5C31;&#x4F1A;&#x770B;&#x5230;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">prefix = poolName + <span class="string">&apos;-&apos;</span> + poolId.incrementAndGet() + <span class="string">&apos;-&apos;</span>;</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x987A;&#x4FBF;&#x770B;&#x4E00;&#x4E0B;<code>DefaultThreadFactory#newThread</code>,&#x5C31;&#x662F;&#x4E4B;&#x524D;<code>ThreadPerTaskExecutor</code>&#x91CC;&#x9762;&#x7684;&#x90A3;&#x4E2A;.&#x5C31;&#x4F1A;&#x53D1;&#x73B0;&#x5B83;&#x91CC;&#x9762;&#x521B;&#x5EFA;&#x4E86;Thread,&#x5E76;&#x4E14;&#x81EA;&#x5B9A;&#x4E49;&#x4E86;&#x540D;&#x5B57;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Thread t = newThread(<span class="keyword">new</span> DefaultRunnableDecorator(r), prefix + nextId.incrementAndGet());</span><br></pre></td></tr></tbody></table></figure>
+</li>
+</ul>
+<p><code>newThread</code>&#x65B9;&#x6CD5;&#x6E90;&#x7801;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> Thread <span class="title">newThread</span><span class="params">(Runnable r, String name)</span> </span>{</span><br><span class="line">    <span class="comment">//&#x4E5F;&#x5C31;&#x662F;&#x8BF4;,ThreadPerTaskExecutor&#x5B9E;&#x9645;&#x4E0A;&#x6267;&#x884C;&#x7684;&#x662F;&#x5BF9;java&#x7EBF;&#x7A0B;&#x8FDB;&#x884C;&#x5C01;&#x88C5;&#x540E;&#x7684;&#x7EBF;&#x7A0B;.&#x800C;&#x4E0D;&#x662F;&#x539F;&#x751F;&#x7684;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> FastThreadLocalThread(threadGroup, r, name);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p><code>FastThreadLocalThread</code>&#x7EE7;&#x627F;&#x4E8E;Thread,&#x5BF9;ThreadLocal&#x505A;&#x4E86;&#x4E9B;&#x4F18;&#x5316;,&#x5E76;&#x4E14;&#x81EA;&#x5DF1;&#x5305;&#x88C5;&#x4E86;ThreadLocalMap.</p>
+<h2 id="newChilld"><a href="#newChilld" class="headerlink" title="newChilld()"></a>newChilld()</h2><p>&#x63A5;&#x7740;&#x770B;&#x5728;NioEventLoop&#x4E2D;&#x505A;&#x7684;&#x7B2C;&#x4E8C;&#x4EF6;&#x4E8B;:&#x901A;&#x8FC7;for{newChlid()}&#x4E3A;&#x6BCF;&#x4E2A;&#x5904;&#x7406;&#x7EBF;&#x7A0B;(&#x9ED8;&#x8BA4;cpu*2)&#x521B;&#x5EFA;NioEventLoop.</p>
+<p>&#x5B83;&#x4E3B;&#x8981;&#x505A;&#x8FD9;&#x4E09;&#x4EF6;&#x4E8B;:</p>
+<ul>
+<li>&#x4FDD;&#x5B58;&#x7EBF;&#x7A0B;&#x6267;&#x884C;&#x5668;ThreadPerTaskExecutor</li>
+<li>&#x521B;&#x5EFA;&#x4E00;&#x4E2A;MpscQueue</li>
+<li>&#x521B;&#x5EFA;&#x4E00;&#x4E2A;selector</li>
+</ul>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">newChild(executor, args) <span class="comment">// &#x53C2;&#x6570;executor&#x5C31;&#x662F;&#x4E0A;&#x9762;&#x521B;&#x5EFA;&#x7684;ThreadPerTaskExecutor.</span></span><br><span class="line">    					<span class="comment">//&#x8FD9;&#x4E2A;&#x65B9;&#x6CD5;&#x4F1A;&#x6784;&#x9020;NioEventLoop</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8DDF;&#x8E2A;&#x5230;NioEventLoop&#x7684;&#x6784;&#x9020;&#x65B9;&#x6CD5;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">NioEventLoop(NioEventLoopGroup parent, Executor executor, SelectorProvider selectorProvider,</span><br><span class="line">             SelectStrategy strategy, RejectedExecutionHandler rejectedExecutionHandler) {</span><br><span class="line">    <span class="comment">//&#x7236;&#x7C7B;</span></span><br><span class="line">    <span class="keyword">super</span>(parent, executor, <span class="keyword">false</span>, DEFAULT_MAX_PENDING_TASKS, rejectedExecutionHandler);</span><br><span class="line">    </span><br><span class="line">    provider = selectorProvider;</span><br><span class="line">    selector = openSelector();	<span class="comment">//&#x5BF9;NioEventLoop&#x7ED1;&#x5B9A;&#x4E00;&#x4E2A;selector&#x8F6E;&#x8BE2;&#x5668;</span></span><br><span class="line">    selectStrategy = strategy;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>openSelector()&#x5C31;&#x662F;&#x901A;&#x8FC7;<code>provider.openSelector();</code>&#x83B7;&#x53D6;&#x8F6E;&#x8BAD;&#x5668;&#x540E;&#x4FDD;&#x5B58;</p>
+<p>&#x7EE7;&#x7EED;&#x8DDF;&#x8E2A;&#x7236;&#x7C7B;&#x6784;&#x9020;&#x65B9;&#x6CD5;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="title">SingleThreadEventExecutor</span><span class="params">(EventExecutorGroup parent, Executor executor,</span></span></span><br><span class="line"><span class="function"><span class="params">                                    <span class="keyword">boolean</span> addTaskWakesUp, <span class="keyword">int</span> maxPendingTasks,</span></span></span><br><span class="line"><span class="function"><span class="params">                                    RejectedExecutionHandler rejectedHandler)</span> </span>{</span><br><span class="line">    <span class="keyword">super</span>(parent);</span><br><span class="line">    <span class="keyword">this</span>.addTaskWakesUp = addTaskWakesUp;</span><br><span class="line">    <span class="keyword">this</span>.maxPendingTasks = Math.max(<span class="number">16</span>, maxPendingTasks);</span><br><span class="line">    <span class="comment">//&#x4FDD;&#x5B58;&#x7EBF;&#x7A0B;&#x6267;&#x884C;&#x5668;,&#x4E5F;&#x5C31;&#x662F;ThreadPerTaskExecutor.</span></span><br><span class="line">    <span class="comment">//&#x6BCF;&#x4E2A;NioEventLoop&#x90FD;&#x4F1A;&#x8C03;&#x7528;&#x8FD9;&#x4E2A;ThreadPerTaskExecutor&#x521B;&#x5EFA;&#x6267;&#x884C;&#x7EBF;&#x7A0B;</span></span><br><span class="line">    <span class="keyword">this</span>.executor = ObjectUtil.checkNotNull(executor, <span class="string">&quot;executor&quot;</span>);</span><br><span class="line">    <span class="comment">//taskQueue:&#x5916;&#x90E8;&#x7EBF;&#x7A0B;&#x6267;&#x884C;netty&#x4EFB;&#x52A1;&#x7684;&#x65F6;&#x5019;.&#x4E0D;&#x4F1A;&#x76F4;&#x63A5;&#x8BA9;NioEventLoop&#x6267;&#x884C;,&#x800C;&#x662F;&#x585E;&#x5230;&#x961F;&#x5217;&#x91CC;&#x9762;&#x8BA9;&#x5B83;&#x6267;&#x884C;</span></span><br><span class="line">    <span class="comment">//&#x521B;&#x5EFA;taskQueue</span></span><br><span class="line">    taskQueue = newTaskQueue(<span class="keyword">this</span>.maxPendingTasks);</span><br><span class="line">    rejectedExecutionHandler = ObjectUtil.checkNotNull(rejectedHandler, <span class="string">&quot;rejectedHandler&quot;</span>);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x770B;&#x4E00;&#x4E0B;&#x8FD9;&#x4E2A;<code>newTaskQueue()</code>(<code>io.netty.channel.nio.NioEventLoop#newTaskQueue</code>)</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> Queue&lt;Runnable&gt; <span class="title">newTaskQueue</span><span class="params">(<span class="keyword">int</span> maxPendingTasks)</span> </span>{</span><br><span class="line">    <span class="comment">//&#x662F;&#x901A;&#x8FC7;MpscQueue&#x521B;&#x5EFA;</span></span><br><span class="line">    <span class="keyword">return</span> PlatformDependent.newMpscQueue(maxPendingTasks);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p><code>MPSC</code> :  multiProducer(&#x6307;&#x5916;&#x90E8;&#x7EBF;&#x7A0B;)-SingleConsumer (netty&#x7684;&#x5904;&#x7406;&#x7EBF;&#x7A0B;)</p>
+<h2 id="chooserFactory-newChooser"><a href="#chooserFactory-newChooser" class="headerlink" title="chooserFactory.newChooser()"></a>chooserFactory.newChooser()</h2><p>&#x5B8C;&#x6210;&#x4E86;NioEventLoop[]&#x7684;&#x521B;&#x5EFA;.&#x63A5;&#x7740;&#x770B;&#x5728;NioEventLoop&#x4E2D;&#x505A;&#x7684;&#x7B2C;&#x4E09;&#x4EF6;&#x4E8B;:&#x901A;&#x8FC7;chooserFactory.newChooser()&#x6784;&#x9020;&#x7EBF;&#x7A0B;&#x9009;&#x62E9;&#x5668;.</p>
+<p>&#x76EE;&#x7684;&#x662F;&#x7ED9;&#x65B0;&#x8FDE;&#x63A5;&#x7ED1;&#x5B9A;&#x5BF9;&#x5E94;&#x7684;NioEventLoop,&#x901A;&#x8FC7;<code>io.netty.util.concurrent.MultithreadEventExecutorGroup#next</code>&#x7ED1;&#x5B9A;.</p>
+<p>&#x4ED6;&#x662F;&#x5982;&#x4F55;&#x9009;&#x62E9;&#x7EBF;&#x7A0B;&#x8FDB;&#x884C;&#x7ED1;&#x5B9A;&#x7684;?&#x5F88;&#x7B80;&#x5355;,&#x5F53;&#x7B2C;&#x4E00;&#x4E2A;&#x65B0;&#x8FDE;&#x63A5;&#x8FDB;&#x6765;&#x7684;&#x65F6;&#x5019;&#x7ED1;&#x5B9A;NioEventLoop[]&#x4E2D;&#x7684;&#x7B2C;&#x4E00;&#x4E2A;,&#x7B2C;&#x4E8C;&#x4E2A;&#x8FDE;&#x63A5;&#x5219;&#x7ED1;&#x5B9A;&#x7B2C;&#x4E8C;&#x4E2A;,&#x8D85;&#x8FC7;NioEventLoop[]&#x5927;&#x5C0F;&#x540E;&#x53C8;&#x56DE;&#x5230;&#x7B2C;&#x4E00;&#x4E2A;.&#x4F46;netty&#x5BF9;&#x6B64;&#x8FDB;&#x884C;&#x4E86;&#x4F18;&#x5316;:</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">isPowerOfTwo()[&#x5224;&#x65AD;NioEventLoop[]&#x7684;&#x4E2A;&#x6570;&#x662F;&#x5426;&#x662F;2&#x7684;&#x5E42;,&#x5982;2,4,8,16]</span><br><span class="line">	|</span><br><span class="line">	PowerOfTwoEventExecutorChooser[&#x662F;2&#x7684;&#x5E42;:&#x4F18;&#x5316;]</span><br><span class="line">		|</span><br><span class="line">		index++ &amp; (length - 1)</span><br><span class="line">	|</span><br><span class="line">	GenericEventChooser[&#x4E0D;&#x662F;2&#x7684;&#x5E42;:&#x666E;&#x901A;]</span><br><span class="line">		|</span><br><span class="line">		abs(index++ % length)</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x770B;&#x4E00;&#x4E0B;&#x6B65;&#x9AA4;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">chooserFactory.newChooser(children); <span class="comment">//&#x53C2;&#x6570;children&#x5C31;&#x662F;&#x521A;&#x624D;&#x901A;&#x8FC7;for&#x521B;&#x5EFA;&#x7684;NioEventLoop&#x7684;&#x6570;&#x7EC4;</span></span><br><span class="line">---</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> EventExecutorChooser <span class="title">newChooser</span><span class="params">(EventExecutor[] executors)</span> </span>{</span><br><span class="line">    	<span class="comment">//executors&#x6307;NioEventLoop[]</span></span><br><span class="line">        <span class="keyword">if</span> (isPowerOfTwo(executors.length)) {	<span class="comment">//&#x5224;&#x65AD;2&#x7684;&#x5E42;</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> PowerOfTowEventExecutorChooser(executors);</span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line">            <span class="comment">//</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> GenericEventExecutorChooser(executors);</span><br><span class="line">        }</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5173;&#x4E8E;GenericEventExecutorChooser:</p>
+<p>&#x7C7B;&#x91CC;&#x9762;&#x6709;&#x4E2A;next&#x65B9;&#x6CD5;:DefaultEventExecutorChooserFactory.GenericEventExecutorChooser#next</p>
+<p>&#x5C31;&#x662F;&#x5355;&#x7EAF;&#x7684;<code>executors[Math.abs(idx.getAndIncrement() % executors.length)];</code></p>
+<p>&#x5173;&#x4E8E;PowerOfTowEventExecutorChooser:</p>
+<p>&#x7C7B;&#x91CC;&#x9762;&#x6709;&#x4E2A;next&#x65B9;&#x6CD5;:DefaultEventExecutorChooserFactory.PowerOfTowEventExecutorChooser#next</p>
+<p>&#x8FD4;&#x56DE;&#x7684;&#x662F;<code>executors[idx.getAndIncrement() &amp; executors.length - 1]</code></p>
+<h1 id="NioEventLoop&#x6267;&#x884C;"><a href="#NioEventLoop&#x6267;&#x884C;" class="headerlink" title="NioEventLoop&#x6267;&#x884C;"></a>NioEventLoop&#x6267;&#x884C;</h1><p>nioEventLoop&#x5728;&#x7EBF;&#x7A0B;&#x88AB;&#x9996;&#x6B21;&#x521B;&#x5EFA;&#x7684;&#x65F6;&#x5019;&#x4F1A;&#x901A;&#x8FC7;run&#x65B9;&#x6CD5;&#x6267;&#x884C; (<code>SingleThreadEventExecutor.this.run()</code>).Netty&#x57FA;&#x672C;&#x7EC4;&#x4EF6;&#x90A3;&#x6B21;&#x7684;&#x7B14;&#x8BB0;&#x91CC;&#x6709;&#x6D89;&#x53CA;&#x5230;.</p>
+<h2 id="NioEventLoop-run"><a href="#NioEventLoop-run" class="headerlink" title="NioEventLoop.run()"></a>NioEventLoop.run()</h2><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">run() -&gt; for(;;)</span><br><span class="line">	|</span><br><span class="line">	select()[&#x68C0;&#x67E5;&#x662F;&#x5426;&#x6709;io&#x4E8B;&#x4EF6;]</span><br><span class="line">	|</span><br><span class="line">	processSelectKeys()[&#x5904;&#x7406;io&#x4E8B;&#x4EF6;]</span><br><span class="line">	|</span><br><span class="line">	runAllTask()[&#x5904;&#x7406;&#x5F02;&#x6B65;&#x4EFB;&#x52A1;&#x961F;&#x5217;,&#x5C31;&#x662F;&#x4E0A;&#x4E00;&#x8282;&#x6700;&#x540E;&#x8BF4;&#x7684;taskQueue]</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5B9E;&#x9645;&#x4EE3;&#x7801;<code>io.netty.channel.nio.NioEventLoop#run</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="keyword">for</span> (;;) {</span><br><span class="line">        <span class="keyword">switch</span> (selectStrategy.calculateStrategy(selectNowSupplier, hasTasks())) {</span><br><span class="line">            <span class="keyword">case</span> SelectStrategy.CONTINUE:</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">case</span> SelectStrategy.SELECT:</span><br><span class="line">                select(wakenUp.getAndSet(<span class="keyword">false</span>));<span class="comment">//&#x8F6E;&#x8BE2;io&#x4E8B;&#x4EF6;</span></span><br><span class="line">                <span class="comment">//&#x4E00;&#x4E2A;nioEventLoop&#x5BF9;&#x5E94;&#x4E86;&#x4E00;&#x4E2A;selector,&#x8F6E;&#x8BE2;&#x6CE8;&#x518C;&#x5230;&#x8FD9;&#x4E2A;selector&#x4E0A;&#x7684;io&#x4E8B;&#x4EF6;</span></span><br><span class="line">                <span class="comment">//..</span></span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="comment">//&#x6CE8;&#x610F;&#x6709;&#x4E24;&#x4E2A;processSelectedKeys();</span></span><br><span class="line">        <span class="comment">//ioRatio :&#x63A7;&#x5236;processSelectedKeys()&#x548C;runAllTasks()&#x7684;&#x6267;&#x884C;&#x65F6;&#x95F4;,&#x9ED8;&#x8BA4;50</span></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> ioRatio = <span class="keyword">this</span>.ioRatio;</span><br><span class="line">        <span class="keyword">if</span> (ioRatio == <span class="number">100</span>) {</span><br><span class="line">            <span class="keyword">try</span> {</span><br><span class="line">                processSelectedKeys();<span class="comment">//&#x5904;&#x7406;io&#x4E8B;&#x4EF6;</span></span><br><span class="line">            } <span class="keyword">finally</span> {</span><br><span class="line">                runAllTasks();<span class="comment">//&#x5904;&#x7406;&#x5916;&#x90E8;&#x7EBF;&#x7A0B;&#x653E;&#x5230;taskQueue&#x4E2D;&#x7684;&#x4EFB;&#x52A1;</span></span><br><span class="line">            }</span><br><span class="line">        } <span class="keyword">else</span> {<span class="comment">//&#x9ED8;&#x8BA4;&#x6267;&#x884C;&#x8FD9;&#x6BB5;</span></span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">long</span> ioStartTime = System.nanoTime();</span><br><span class="line">            <span class="keyword">try</span> {</span><br><span class="line">                processSelectedKeys();</span><br><span class="line">            } <span class="keyword">finally</span> {</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">long</span> ioTime = System.nanoTime() - ioStartTime;</span><br><span class="line">                <span class="comment">//&#x53C2;&#x6570;&#x4E3A;processSelectedKeys()&#x82B1;&#x8D39;&#x7684;&#x65F6;&#x95F4;</span></span><br><span class="line">                runAllTasks(ioTime * (<span class="number">100</span> - ioRatio) / ioRatio);</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">        <span class="comment">//..</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="select-&#x65B9;&#x6CD5;&#x6267;&#x884C;&#x903B;&#x8F91;"><a href="#select-&#x65B9;&#x6CD5;&#x6267;&#x884C;&#x903B;&#x8F91;" class="headerlink" title="select()&#x65B9;&#x6CD5;&#x6267;&#x884C;&#x903B;&#x8F91;"></a>select()&#x65B9;&#x6CD5;&#x6267;&#x884C;&#x903B;&#x8F91;</h2><ul>
+<li><p>deadline&#x4EE5;&#x53CA;&#x4EFB;&#x52A1;&#x7A7F;&#x63D2;&#x903B;&#x8F91;&#x5904;&#x7406;</p>
+<ul>
+<li>deadline:&#x6839;&#x636E;nioEventLoop&#x662F;&#x5426;&#x6709;&#x5B9A;&#x65F6;&#x4EFB;&#x52A1;</li>
+<li>&#x5F53;&#x524D;&#x662F;&#x5426;&#x6709;&#x5F02;&#x6B65;&#x4EFB;&#x52A1;</li>
+</ul>
+<p>&#x6EE1;&#x8DB3;&#x4E0A;&#x9762;&#x4EFB;&#x610F;&#x4E00;&#x4E2A;.select()&#x5C31;&#x4F1A;&#x505C;&#x6B62;&#x5E76;&#x9000;&#x51FA;</p>
+</li>
+<li><p>&#x963B;&#x585E;&#x5F0F;select,</p>
+<ul>
+<li>&#x6CA1;&#x6709;&#x5230;deadLine&#x5E76;&#x4E14;&#x4EFB;&#x52A1;&#x961F;&#x5217;&#x4E3A;&#x7A7A;&#x7684;&#x60C5;&#x51B5;</li>
+<li>&#x9ED8;&#x8BA4;&#x662F;1&#x79D2;&#x949F;,&#x5916;&#x90E8;&#x7EBF;&#x7A0B;&#x4E5F;&#x53EF;&#x4EE5;&#x5728;&#x8FD9;&#x65F6;&#x628A;&#x963B;&#x585E;&#x64CD;&#x4F5C;&#x5524;&#x8D77;</li>
+</ul>
+</li>
+<li><p>&#x907F;&#x514D;jdk&#x7A7A;&#x8F6E;&#x8BE2;&#x7684;bug</p>
+</li>
+</ul>
+<p><strong>deadline&#x4EE5;&#x53CA;&#x4EFB;&#x52A1;&#x7A7F;&#x63D2;&#x903B;&#x8F91;&#x5904;&#x7406;</strong></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> SelectStrategy.SELECT:</span><br><span class="line">	select(wakenUp.getAndSet(<span class="keyword">false</span>));<span class="comment">//&#x53C2;&#x6570;&#x83B7;&#x53D6;&#x662F;&#x5426;&#x662F;&#x5524;&#x9192;&#x72B6;&#x6001;,&#x5E76;&#x4E4B;&#x540E;&#x628A;&#x4ED6;&#x8BBE;&#x4E3A;false</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5148;&#x770B;&#x4E00;&#x4E0B;&#x5B83;&#x7684;&#x6E90;&#x7801;(<code>io.netty.channel.nio.NioEventLoop#select</code>):</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">select</span><span class="params">(<span class="keyword">boolean</span> oldWakenUp)</span> <span class="keyword">throws</span> IOException </span>{</span><br><span class="line">    Selector selector = <span class="keyword">this</span>.selector;</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        <span class="keyword">int</span> selectCnt = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">long</span> currentTimeNanos = System.nanoTime();<span class="comment">//&#x5F53;&#x524D;&#x65F6;&#x95F4;</span></span><br><span class="line">        <span class="comment">//&#x5B9A;&#x65F6;&#x4EFB;&#x52A1;&#x961F;&#x5217;:&#x6309;&#x7167;&#x4EFB;&#x52A1;&#x7684;&#x622A;&#x6B62;&#x65F6;&#x95F4;&#x6B63;&#x5E8F;&#x6392;&#x5E8F;&#x7684;&#x961F;&#x5217;,</span></span><br><span class="line">        <span class="comment">//&#x8BA1;&#x7B97;&#x5F53;&#x524D;&#x7B2C;&#x4E00;&#x4E2A;&#x5B9A;&#x65F6;&#x4EFB;&#x52A1;&#x7684;&#x622A;&#x6B62;&#x65F6;&#x95F4;,&#x5F53;&#x524D;&#x7684;select()&#x4E0D;&#x80FD;&#x8D85;&#x8FC7;&#x8FD9;&#x4E2A;&#x65F6;&#x95F4;</span></span><br><span class="line">        <span class="keyword">long</span> selectDeadLineNanos = currentTimeNanos + delayNanos(currentTimeNanos);</span><br><span class="line">        <span class="keyword">for</span> (;;) {</span><br><span class="line">            <span class="keyword">long</span> timeoutMillis = (selectDeadLineNanos - currentTimeNanos + <span class="number">500000L</span>) / <span class="number">1000000L</span>;</span><br><span class="line">            <span class="keyword">if</span> (timeoutMillis &lt;= <span class="number">0</span>) {<span class="comment">//&#x5DF2;&#x7ECF;&#x8D85;&#x65F6;&#x4E86;</span></span><br><span class="line">                <span class="keyword">if</span> (selectCnt == <span class="number">0</span>) {</span><br><span class="line">                    selector.selectNow();	<span class="comment">//&#x975E;&#x963B;&#x585E;&#x7684;select&#x65B9;&#x6CD5;</span></span><br><span class="line">                    selectCnt = <span class="number">1</span>;</span><br><span class="line">                }</span><br><span class="line">                <span class="keyword">break</span>;<span class="comment">//&#x9000;&#x51FA;</span></span><br><span class="line">            }</span><br><span class="line">            </span><br><span class="line">            <span class="comment">//hasTasks(): &#x5224;&#x65AD;&#x5F02;&#x6B65;&#x961F;&#x5217;&#x4E2D;&#x662F;&#x5426;&#x6709;&#x4EFB;&#x52A1;&#x8981;&#x6267;&#x884C;</span></span><br><span class="line">            <span class="comment">//&#x5B9E;&#x9645;&#x5728;SingleThreadEventExecutor#hasTasks&#x4E2D;&#x5224;&#x65AD;taskQueue&#x662F;&#x5426;&#x4E3A;&#x7A7A;</span></span><br><span class="line">            <span class="keyword">if</span> (hasTasks() &amp;&amp; wakenUp.compareAndSet(<span class="keyword">false</span>, <span class="keyword">true</span>)) {</span><br><span class="line">                selector.selectNow();	<span class="comment">//&#x975E;&#x963B;&#x585E;&#x7684;select&#x65B9;&#x6CD5;</span></span><br><span class="line">                selectCnt = <span class="number">1</span>;</span><br><span class="line">                <span class="keyword">break</span>;<span class="comment">//&#x9000;&#x51FA;</span></span><br><span class="line">            }</span><br></pre></td></tr></tbody></table></figure>
+<p><strong>&#x963B;&#x585E;&#x5F0F;select</strong></p>
+<p>&#x5BF9;&#x5E94;run()&#x4E2D;&#x7684;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> selectedKeys = selector.select(timeoutMillis);<span class="comment">//&#x53C2;&#x6570;&#x4E3A;&#x672C;&#x6B21;&#x53EF;&#x4EE5;&#x8FDB;&#x884C;select&#x7684;&#x6700;&#x5927;&#x65F6;&#x95F4;,&#x9ED8;&#x8BA4;1&#x79D2;</span></span><br><span class="line">selectCnt ++; <span class="comment">//&#x8868;&#x793A;&#x5F53;&#x524D;&#x5DF2;&#x7ECF;&#x8F6E;&#x8BE2;&#x4E86;selectCnt&#x6B21;</span></span><br><span class="line"><span class="comment">//&#x8F6E;&#x8BE2;&#x5230;&#x4E86;&#x4E8B;&#x4EF6;||&#x662F;&#x5524;&#x9192;&#x7684;&#x72B6;&#x6001;||&#x88AB;&#x5524;&#x9192;&#x4E86;||&#x5F02;&#x6B65;&#x961F;&#x5217;&#x6709;&#x4EFB;&#x52A1;||&#x5B9A;&#x65F6;&#x4EFB;&#x52A1;&#x961F;&#x5217;&#x6709;&#x4EFB;&#x52A1;</span></span><br><span class="line"><span class="keyword">if</span> (selectedKeys != <span class="number">0</span> || oldWakenUp || wakenUp.get() || hasTasks() || hasScheduledTasks()) {</span><br><span class="line">    <span class="comment">//&#x5C31;&#x662F;&#x8BF4;&#x6709;&#x4E8B;&#x5E72;&#x4E86;.&#x8FD4;&#x56DE;</span></span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p><strong>&#x907F;&#x514D;jdk&#x7A7A;&#x8F6E;&#x8BE2;&#x7684;bug</strong></p>
+<p>jdk&#x7684;&#x7A7A;&#x8F6E;&#x8BE2;&#x7684;bug&#x4F1A;&#x5BFC;&#x81F4;cpu&#x5230;100%,</p>
+<p>&#x7EE7;&#x7EED;&#x770B;run()</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">long</span> time = System.nanoTime();</span><br><span class="line"><span class="comment">//&#x5DF2;&#x7ECF;&#x8D85;&#x8FC7;&#x4E86;&#x622A;&#x6B62;&#x65F6;&#x95F4;(&#x9ED8;&#x8BA4;1),&#x610F;&#x601D;&#x5C31;&#x662F;&#x5DF2;&#x7ECF;&#x6B63;&#x5E38;&#x5B8C;&#x6210;&#x4E86;&#x4E00;&#x6B21;select()&#x4F46;&#x6CA1;&#x6709;&#x8F6E;&#x8BE2;&#x5230;&#x4E1C;&#x897F;</span></span><br><span class="line"><span class="keyword">if</span> (time - TimeUnit.MILLISECONDS.toNanos(timeoutMillis) &gt;= currentTimeNanos) {</span><br><span class="line">    selectCnt = <span class="number">1</span>;</span><br><span class="line"><span class="comment">//select()&#x6CA1;&#x6709;&#x963B;&#x585E;&#x7ACB;&#x5373;&#x8FD4;&#x56DE;&#x4E86;,&#x53EF;&#x80FD;&#x89E6;&#x53D1;&#x4E86;&#x7A7A;&#x8F6E;&#x8BE2;</span></span><br><span class="line">} <span class="keyword">else</span> <span class="keyword">if</span> (SELECTOR_AUTO_REBUILD_THRESHOLD &gt; <span class="number">0</span> &amp;&amp;</span><br><span class="line">           <span class="comment">//&#x8FD9;&#x4E2A;&#x503C;&#x662F;512,&#x4E5F;&#x5C31;&#x662F;&#x8BF4;512&#x6B21;&#x8F6E;&#x8BE2;&#x7684;&#x7ED3;&#x679C;&#x90FD;&#x4E3A;&#x7A7A;</span></span><br><span class="line">           selectCnt &gt;= SELECTOR_AUTO_REBUILD_THRESHOLD) {</span><br><span class="line"></span><br><span class="line">    rebuildSelector();	<span class="comment">//&#x8C03;&#x7528;&#x8FD9;&#x4E2A;&#x907F;&#x514D;&#x4E0B;&#x4E00;&#x6B21;&#x7A7A;&#x8F6E;&#x8BE2;&#x7EE7;&#x7EED;&#x53D1;&#x751F;</span></span><br><span class="line">    <span class="comment">//&#x628A;&#x8001;&#x7684;selectedKeys&#x90FD;&#x6CE8;&#x518C;&#x5230;&#x4E00;&#x4E2A;&#x65B0;&#x7684;selector&#x91CC;&#x9762;&#x53BB;,&#x66FF;&#x6362;&#x5F53;&#x524D;&#x7684;selector</span></span><br><span class="line">    </span><br><span class="line">    selector = <span class="keyword">this</span>.selector;</span><br><span class="line">    selector.selectNow();	<span class="comment">//&#x91CD;&#x65B0;&#x8FDB;&#x884C;select,&#x6210;&#x529F;&#x89E3;&#x51B3;</span></span><br><span class="line">    selectCnt = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x770B;&#x4E00;&#x4E0B;&#x907F;&#x514D;&#x4E0B;&#x4E00;&#x6B21;&#x7A7A;&#x8F6E;&#x8BE2;&#x7EE7;&#x7EED;&#x53D1;&#x751F; &#x7684;<code>rebuildSelector();</code>&#x8C03;&#x7528;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">rebuildSelector</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="keyword">final</span> Selector oldSelector = selector;</span><br><span class="line">    <span class="keyword">final</span> Selector newSelector;</span><br><span class="line"></span><br><span class="line">    newSelector = openSelector();	<span class="comment">//&#x521B;&#x5EFA;&#x65B0;&#x7684;selector</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (;;) {</span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            <span class="keyword">for</span> (SelectionKey key: oldSelector.keys()) {<span class="comment">//&#x62FF;&#x5230;&#x65E7;&#x7684;key</span></span><br><span class="line">                Object a = key.attachment();<span class="comment">//&#x4E4B;&#x524D;&#x8BB2;&#x8FC7;,&#x662F;netty&#x5305;&#x88C5;&#x7684;channel</span></span><br><span class="line"></span><br><span class="line">                <span class="keyword">int</span> interestOps = key.interestOps();<span class="comment">//&#x6CE8;&#x518C;&#x7684;&#x4E8B;&#x4EF6;</span></span><br><span class="line">                key.cancel();<span class="comment">//&#x53D6;&#x6D88;&#x65E7;&#x7684;</span></span><br><span class="line">                <span class="comment">//&#x521B;&#x5EFA;&#x5230;&#x65B0;&#x7684;&#x4E0A;&#x9762;</span></span><br><span class="line">                SelectionKey newKey = key.channel().register(newSelector, interestOps, a);</span><br><span class="line">                <span class="keyword">if</span> (a <span class="keyword">instanceof</span> AbstractNioChannel) {</span><br><span class="line">                    <span class="comment">//attachment&#x662F;netty&#x5305;&#x88C5;&#x7684;channel&#x7684;&#x8BDD;,&#x52A0;&#x5165;key(&#x4E4B;&#x524D;&#x8BF4;&#x8FC7;)    </span></span><br><span class="line">                    ((AbstractNioChannel) a).selectionKey = newKey;</span><br><span class="line">                }</span><br><span class="line">            }</span><br></pre></td></tr></tbody></table></figure>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2018/12/25/20181225-1/" title="慕课网-Java读源码之Netty深入剖析-Netty服务端启动的过程">
+                    <div class="prevTitle">慕课网-Java读源码之Netty深入剖析-Netty服务端启动的过程</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MDUwMy8xNzAzMA==">
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:nnkwrik@gmail.com" class="iconfont-archer email" title="email"></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/nnkwrik" class="iconfont-archer github" target="_blank" title="github"></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title="wechat">
+                  
+                  <img class="profile-qr" src="/assets/qr.png">
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:30vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#NioEventLoop"><span class="toc-number">1.</span> <span class="toc-text">NioEventLoop</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#NioEventLoop创建"><span class="toc-number">2.</span> <span class="toc-text">NioEventLoop创建</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ThreadPerTaskExcecutor"><span class="toc-number">2.1.</span> <span class="toc-text">ThreadPerTaskExcecutor</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#newChilld"><span class="toc-number">2.2.</span> <span class="toc-text">newChilld()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#chooserFactory-newChooser"><span class="toc-number">2.3.</span> <span class="toc-text">chooserFactory.newChooser()</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#NioEventLoop执行"><span class="toc-number">3.</span> <span class="toc-text">NioEventLoop执行</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#NioEventLoop-run"><span class="toc-number">3.1.</span> <span class="toc-text">NioEventLoop.run()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#select-方法执行逻辑"><span class="toc-number">3.2.</span> <span class="toc-text">select()方法执行逻辑</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 41
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-2/">慕课网-Java读源码之Netty深入剖析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-1/">慕课网-Java读源码之Netty深入剖析-Netty服务端启动的过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225/">慕课网-Java读源码之Netty深入剖析-Netty基本组件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224-3/">高性能MySQL-第5章-创建高性能的索引</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224/">高性能MySQL-第1章-MySQL架构与历史</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-7/">高性能MySQL-第4章-Schema与数据类型优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-6/">🍓 JVM知识点合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-5/">JVM知识点合集-4.Class文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-4/">JVM知识点合集-3.GC算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-3/">JVM知识点合集-2.内存结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-2/">JVM知识点合集-1.类的加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223/">深入理解Java虚拟机-第12章-Java内存模型与线程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222-2/">深入理解Java虚拟机-第8章-虚拟机字节码执行引擎</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222/">深入理解Java虚拟机-第7章-虚拟机类加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181221/">深入理解Java虚拟机-第6章-类文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/19</span><a class="archive-post-title" href="/2018/12/19/20181219/">重构的艺术？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/30</span><a class="archive-post-title" href="/2018/11/30/20181130/">万能的Jackson</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span><a class="archive-post-title" href="/2018/11/20/20181120/">Guava的Cache</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/19</span><a class="archive-post-title" href="/2018/11/19/20181119/">Spring Cloud中使用RabbitMQ的两种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href="/2018/11/12/20181112/">深入理解Java虚拟机-第4章-虚拟机性能监控与故障处理工具</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href="/2018/11/10/20181110/">深入理解Java虚拟机-第3章-垃圾收集器与内存分配策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109-2/">深入理解Java虚拟机-第2章-Java内存区域与内存溢出异常</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109/">深入理解Java虚拟机-第1章-走近Java</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/05</span><a class="archive-post-title" href="/2018/11/05/20181105/">Java并发编程实战-第7章-取消与关闭</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-5/">🍤 并发操作合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-4/">并发操作合集-11.ThreadLocal</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-3/">并发操作合集-10.Executor和线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-2/">并发操作合集-9.并发工具：Semaphore,CountDownLatch,CyclicBarrier</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104/">并发操作合集-8.并发容器：CopyOnWriteArrayList</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181102-3/">并发操作合集-7.并发容器：BlockingQueue</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102-2/">并发操作合集-6.并发容器：ConcurrentHashMap</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102/">并发操作合集-5.原子变量和volatile</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181030-2/">并发操作合集-1.线程的生命周期</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span><a class="archive-post-title" href="/2018/10/30/20181030/">Java并发编程实战-第6章-任务执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/29</span><a class="archive-post-title" href="/2018/10/29/20181029/">Java并发编程实战-第5章-基础构建模块</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href="/2018/10/28/20181028/">Java并发编程实战-第4章-对象的组合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span><a class="archive-post-title" href="/2018/10/27/20181027/">Java并发编程实战-第3章-对象的共享</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/25</span><a class="archive-post-title" href="/2018/10/25/20181025/">Java并发编程实战-第2章-线程安全性</a>
+        </li>
+    
+    </ul></div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发操作合集"><span class="iconfont-archer">&#xe606;</span>并发操作合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM"><span class="iconfont-archer">&#xe606;</span>JVM</span>
+    
+        <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
+    
+        <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
+    
+        <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
+    
+        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
+    
+        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
+    
+        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
+    
+        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br>
+    1、请确保node版本大于6.2<br>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
+    
+        <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="框架使用"><span class="iconfont-archer">&#xe60a;</span>框架使用</span>
+    
+        <span class="sidebar-category-name" data-categories="瞎逼叨"><span class="iconfont-archer">&#xe60a;</span>瞎逼叨</span>
+    
+        <span class="sidebar-category-name" data-categories="JVM知识点合集"><span class="iconfont-archer">&#xe60a;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "曽生"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
