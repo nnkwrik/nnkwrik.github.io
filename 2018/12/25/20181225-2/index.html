@@ -22,7 +22,7 @@
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>慕课网-Java读源码之Netty深入剖析 · 农场主的黑科技.</title>
+    <title>Netty源码剖析-NioEventLoop创建 · 农场主的黑科技.</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -232,7 +232,7 @@
                 <a href="/">农场主的黑科技.</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">慕课网-Java读源码之Netty深入剖析</a>
+                <a href="#" class="post-name">Netty源码剖析-NioEventLoop创建</a>
             </div>
     </div>
     
@@ -262,7 +262,7 @@ height:30vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            慕课网-Java读源码之Netty深入剖析
+            Netty源码剖析-NioEventLoop创建
             <!-- 404 -->
             
         </h1>
@@ -291,7 +291,7 @@ height:30vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>字数统计: <span class="post-count word-count">2k</span>阅读时长: <span class="post-count reading-time">12 min</span></span>
+                        <span>字数统计: <span class="post-count word-count">1.1k</span>阅读时长: <span class="post-count reading-time">7 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -418,7 +418,7 @@ height:30vh;
         <ul>
 <li>&#x9ED8;&#x8BA4;&#x60C5;&#x51B5;&#x4E0B;,Netty&#x670D;&#x52A1;&#x7AEF;&#x8D77;&#x591A;&#x5C11;&#x7EBF;&#x7A0B;?&#x4F55;&#x65F6;&#x542F;&#x52A8;?</li>
 <li>Netty&#x662F;&#x5982;&#x4F55;&#x89E3;&#x51B3;jdk&#x7A7A;&#x8F6E;&#x8BE2;bug&#x7684;?</li>
-<li>netty&#x5982;&#x4F55;&#x4FDD;&#x8BC1;&#x5F02;&#x6B65;&#x4E32;&#x884C;&#x65E0;&#x6240;&#x5316;?</li>
+<li>netty&#x5982;&#x4F55;&#x4FDD;&#x8BC1;&#x5F02;&#x6B65;&#x4E32;&#x884C;&#x65E0;&#x9501;&#x5316;?</li>
 </ul>
 <h1 id="NioEventLoop"><a href="#NioEventLoop" class="headerlink" title="NioEventLoop"></a>NioEventLoop</h1><ul>
 <li>NioEventLoop&#x521B;&#x5EFA; </li>
@@ -429,7 +429,7 @@ height:30vh;
 <p>&#x8DDF;&#x8E2A;<code>new NioEventLoopGroup()</code></p>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">NioEventLoopGroup</span><span class="params">(<span class="keyword">int</span> nThreads, Executor executor)</span> </span>{</span><br><span class="line">        <span class="keyword">this</span>(nThreads, executor, SelectorProvider.provider());<span class="comment">//&#x52A0;&#x5165;selector</span></span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">MultithreadEventLoopGroup</span><span class="params">(<span class="keyword">int</span> nThreads, Executor executor, Object... args)</span> </span>{</span><br><span class="line">    	<span class="comment">//&#x6CA1;&#x4F20;&#x6784;&#x9020;&#x51FD;&#x6570;&#x65F6;,&#x8FD9;&#x91CC;&#x5C31;&#x662F;0.&#x6B64;&#x65F6;&#x4F1A;&#x9ED8;&#x8BA4;cpu*2</span></span><br><span class="line">        <span class="keyword">super</span>(nThreads == <span class="number">0</span> ? DEFAULT_EVENT_LOOP_THREADS : nThreads, executor, args);</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">MultithreadEventExecutorGroup</span><span class="params">(<span class="keyword">int</span> nThreads, Executor executor, Object... args)</span> </span>{</span><br><span class="line">    <span class="comment">//&#x653E;&#x5165;&#x521B;&#x5EFA;&#x7EBF;&#x7A0B;&#x9009;&#x62E9;&#x5668;&#x7684;factory</span></span><br><span class="line">        <span class="keyword">this</span>(nThreads, executor, DefaultEventExecutorChooserFactory.INSTANCE, args);</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">MultithreadEventExecutorGroup</span><span class="params">(<span class="keyword">int</span> nThreads, Executor executor,</span></span></span><br><span class="line"><span class="function"><span class="params">                                            EventExecutorChooserFactory chooserFactory, Object... args)</span> </span>{</span><br><span class="line">    	<span class="comment">//..</span></span><br><span class="line">    	<span class="comment">//&#x521B;&#x5EFA;&#x7EBF;&#x7A0B;&#x9009;&#x62E9;&#x5668;</span></span><br><span class="line">        <span class="keyword">if</span> (executor == <span class="keyword">null</span>) {</span><br><span class="line">            executor = <span class="keyword">new</span> ThreadPerTaskExecutor(newDefaultThreadFactory());</span><br><span class="line">        }</span><br><span class="line">		<span class="comment">//&#x6784;&#x9020;NioEventLoop</span></span><br><span class="line">        children = <span class="keyword">new</span> EventExecutor[nThreads];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; nThreads; i ++) {</span><br><span class="line">            children[i] = newChild(executor, args);</span><br><span class="line">        }</span><br><span class="line">		<span class="comment">//&#x7EBF;&#x7A0B;&#x9009;&#x62E9;&#x5668;</span></span><br><span class="line">        chooser = chooserFactory.newChooser(children);</span><br><span class="line">		<span class="comment">//..</span></span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
 <h2 id="ThreadPerTaskExcecutor"><a href="#ThreadPerTaskExcecutor" class="headerlink" title="ThreadPerTaskExcecutor"></a>ThreadPerTaskExcecutor</h2><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> ThreadPerTaskExecutor(newDefaultThreadFactory())</span><br></pre></td></tr></tbody></table></figure>
-<p>&#x4ED6;&#x4F1A;&#x505A;&#x4E24;&#x4EF6;&#x4E8B;:&#x4E3A;&#x6BCF;&#x4E00;&#x6B21;&#x6267;&#x884C;&#x4EFB;&#x52A1;&#x90FD;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x5B9E;&#x4F53;&#x7684;&#x5DE5;&#x5382;,&#x5B9A;&#x4E49;NioEventLoop&#x7684;&#x540D;&#x5B57;</p>
+<p>&#x4ED6;&#x4F1A;&#x505A;&#x4E24;&#x4EF6;&#x4E8B;:&#x4E3A;&#x6BCF;&#x4E00;&#x6B21;&#x6267;&#x884C;&#x4EFB;&#x52A1;&#x90FD;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x5B9E;&#x4F53;&#x7684;&#x5DE5;&#x5382;,&#x5B9A;&#x4E49;NioEventLoop&#x7684;&#x540D;&#x5B57;.&#x540E;&#x671F;&#x7528;&#x4E8E;&#x521B;&#x5EFA;NioEventLoop&#x7EBF;&#x7A0B;</p>
 <ul>
 <li><p>&#x6BCF;&#x4E00;&#x6B21;&#x6267;&#x884C;&#x4EFB;&#x52A1;&#x90FD;&#x4F1A;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x5B9E;&#x4F53;<br>ThreadPerTaskExcecutor&#x4E2D;&#x5305;&#x542B;&#x4E00;&#x4E2A;execute&#x65B9;&#x6CD5;,&#x4EE3;&#x7801;&#x5982;&#x4E0B;</p>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Runnable command)</span> </span>{</span><br><span class="line">    threadFactory.newThread(command).start();<span class="comment">//&#x7528;&#x53C2;&#x6570;factory&#x6BCF;&#x6B21;&#x90FD;&#x521B;&#x5EFA;&#x7EBF;&#x7A0B;</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
@@ -473,40 +473,6 @@ height:30vh;
 <p>&#x5173;&#x4E8E;PowerOfTowEventExecutorChooser:</p>
 <p>&#x7C7B;&#x91CC;&#x9762;&#x6709;&#x4E2A;next&#x65B9;&#x6CD5;:DefaultEventExecutorChooserFactory.PowerOfTowEventExecutorChooser#next</p>
 <p>&#x8FD4;&#x56DE;&#x7684;&#x662F;<code>executors[idx.getAndIncrement() &amp; executors.length - 1]</code></p>
-<h1 id="NioEventLoop&#x6267;&#x884C;"><a href="#NioEventLoop&#x6267;&#x884C;" class="headerlink" title="NioEventLoop&#x6267;&#x884C;"></a>NioEventLoop&#x6267;&#x884C;</h1><p>nioEventLoop&#x5728;&#x7EBF;&#x7A0B;&#x88AB;&#x9996;&#x6B21;&#x521B;&#x5EFA;&#x7684;&#x65F6;&#x5019;&#x4F1A;&#x901A;&#x8FC7;run&#x65B9;&#x6CD5;&#x6267;&#x884C; (<code>SingleThreadEventExecutor.this.run()</code>).Netty&#x57FA;&#x672C;&#x7EC4;&#x4EF6;&#x90A3;&#x6B21;&#x7684;&#x7B14;&#x8BB0;&#x91CC;&#x6709;&#x6D89;&#x53CA;&#x5230;.</p>
-<h2 id="NioEventLoop-run"><a href="#NioEventLoop-run" class="headerlink" title="NioEventLoop.run()"></a>NioEventLoop.run()</h2><figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">run() -&gt; for(;;)</span><br><span class="line">	|</span><br><span class="line">	select()[&#x68C0;&#x67E5;&#x662F;&#x5426;&#x6709;io&#x4E8B;&#x4EF6;]</span><br><span class="line">	|</span><br><span class="line">	processSelectKeys()[&#x5904;&#x7406;io&#x4E8B;&#x4EF6;]</span><br><span class="line">	|</span><br><span class="line">	runAllTask()[&#x5904;&#x7406;&#x5F02;&#x6B65;&#x4EFB;&#x52A1;&#x961F;&#x5217;,&#x5C31;&#x662F;&#x4E0A;&#x4E00;&#x8282;&#x6700;&#x540E;&#x8BF4;&#x7684;taskQueue]</span><br></pre></td></tr></tbody></table></figure>
-<p>&#x5B9E;&#x9645;&#x4EE3;&#x7801;<code>io.netty.channel.nio.NioEventLoop#run</code></p>
-<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="keyword">for</span> (;;) {</span><br><span class="line">        <span class="keyword">switch</span> (selectStrategy.calculateStrategy(selectNowSupplier, hasTasks())) {</span><br><span class="line">            <span class="keyword">case</span> SelectStrategy.CONTINUE:</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">case</span> SelectStrategy.SELECT:</span><br><span class="line">                select(wakenUp.getAndSet(<span class="keyword">false</span>));<span class="comment">//&#x8F6E;&#x8BE2;io&#x4E8B;&#x4EF6;</span></span><br><span class="line">                <span class="comment">//&#x4E00;&#x4E2A;nioEventLoop&#x5BF9;&#x5E94;&#x4E86;&#x4E00;&#x4E2A;selector,&#x8F6E;&#x8BE2;&#x6CE8;&#x518C;&#x5230;&#x8FD9;&#x4E2A;selector&#x4E0A;&#x7684;io&#x4E8B;&#x4EF6;</span></span><br><span class="line">                <span class="comment">//..</span></span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="comment">//&#x6CE8;&#x610F;&#x6709;&#x4E24;&#x4E2A;processSelectedKeys();</span></span><br><span class="line">        <span class="comment">//ioRatio :&#x63A7;&#x5236;processSelectedKeys()&#x548C;runAllTasks()&#x7684;&#x6267;&#x884C;&#x65F6;&#x95F4;,&#x9ED8;&#x8BA4;50</span></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> ioRatio = <span class="keyword">this</span>.ioRatio;</span><br><span class="line">        <span class="keyword">if</span> (ioRatio == <span class="number">100</span>) {</span><br><span class="line">            <span class="keyword">try</span> {</span><br><span class="line">                processSelectedKeys();<span class="comment">//&#x5904;&#x7406;io&#x4E8B;&#x4EF6;</span></span><br><span class="line">            } <span class="keyword">finally</span> {</span><br><span class="line">                runAllTasks();<span class="comment">//&#x5904;&#x7406;&#x5916;&#x90E8;&#x7EBF;&#x7A0B;&#x653E;&#x5230;taskQueue&#x4E2D;&#x7684;&#x4EFB;&#x52A1;</span></span><br><span class="line">            }</span><br><span class="line">        } <span class="keyword">else</span> {<span class="comment">//&#x9ED8;&#x8BA4;&#x6267;&#x884C;&#x8FD9;&#x6BB5;</span></span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">long</span> ioStartTime = System.nanoTime();</span><br><span class="line">            <span class="keyword">try</span> {</span><br><span class="line">                processSelectedKeys();</span><br><span class="line">            } <span class="keyword">finally</span> {</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">long</span> ioTime = System.nanoTime() - ioStartTime;</span><br><span class="line">                <span class="comment">//&#x53C2;&#x6570;&#x4E3A;processSelectedKeys()&#x82B1;&#x8D39;&#x7684;&#x65F6;&#x95F4;</span></span><br><span class="line">                runAllTasks(ioTime * (<span class="number">100</span> - ioRatio) / ioRatio);</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">        <span class="comment">//..</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
-<h2 id="select-&#x65B9;&#x6CD5;&#x6267;&#x884C;&#x903B;&#x8F91;"><a href="#select-&#x65B9;&#x6CD5;&#x6267;&#x884C;&#x903B;&#x8F91;" class="headerlink" title="select()&#x65B9;&#x6CD5;&#x6267;&#x884C;&#x903B;&#x8F91;"></a>select()&#x65B9;&#x6CD5;&#x6267;&#x884C;&#x903B;&#x8F91;</h2><ul>
-<li><p>deadline&#x4EE5;&#x53CA;&#x4EFB;&#x52A1;&#x7A7F;&#x63D2;&#x903B;&#x8F91;&#x5904;&#x7406;</p>
-<ul>
-<li>deadline:&#x6839;&#x636E;nioEventLoop&#x662F;&#x5426;&#x6709;&#x5B9A;&#x65F6;&#x4EFB;&#x52A1;</li>
-<li>&#x5F53;&#x524D;&#x662F;&#x5426;&#x6709;&#x5F02;&#x6B65;&#x4EFB;&#x52A1;</li>
-</ul>
-<p>&#x6EE1;&#x8DB3;&#x4E0A;&#x9762;&#x4EFB;&#x610F;&#x4E00;&#x4E2A;.select()&#x5C31;&#x4F1A;&#x505C;&#x6B62;&#x5E76;&#x9000;&#x51FA;</p>
-</li>
-<li><p>&#x963B;&#x585E;&#x5F0F;select,</p>
-<ul>
-<li>&#x6CA1;&#x6709;&#x5230;deadLine&#x5E76;&#x4E14;&#x4EFB;&#x52A1;&#x961F;&#x5217;&#x4E3A;&#x7A7A;&#x7684;&#x60C5;&#x51B5;</li>
-<li>&#x9ED8;&#x8BA4;&#x662F;1&#x79D2;&#x949F;,&#x5916;&#x90E8;&#x7EBF;&#x7A0B;&#x4E5F;&#x53EF;&#x4EE5;&#x5728;&#x8FD9;&#x65F6;&#x628A;&#x963B;&#x585E;&#x64CD;&#x4F5C;&#x5524;&#x8D77;</li>
-</ul>
-</li>
-<li><p>&#x907F;&#x514D;jdk&#x7A7A;&#x8F6E;&#x8BE2;&#x7684;bug</p>
-</li>
-</ul>
-<p><strong>deadline&#x4EE5;&#x53CA;&#x4EFB;&#x52A1;&#x7A7F;&#x63D2;&#x903B;&#x8F91;&#x5904;&#x7406;</strong></p>
-<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> SelectStrategy.SELECT:</span><br><span class="line">	select(wakenUp.getAndSet(<span class="keyword">false</span>));<span class="comment">//&#x53C2;&#x6570;&#x83B7;&#x53D6;&#x662F;&#x5426;&#x662F;&#x5524;&#x9192;&#x72B6;&#x6001;,&#x5E76;&#x4E4B;&#x540E;&#x628A;&#x4ED6;&#x8BBE;&#x4E3A;false</span></span><br></pre></td></tr></tbody></table></figure>
-<p>&#x5148;&#x770B;&#x4E00;&#x4E0B;&#x5B83;&#x7684;&#x6E90;&#x7801;(<code>io.netty.channel.nio.NioEventLoop#select</code>):</p>
-<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">select</span><span class="params">(<span class="keyword">boolean</span> oldWakenUp)</span> <span class="keyword">throws</span> IOException </span>{</span><br><span class="line">    Selector selector = <span class="keyword">this</span>.selector;</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        <span class="keyword">int</span> selectCnt = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">long</span> currentTimeNanos = System.nanoTime();<span class="comment">//&#x5F53;&#x524D;&#x65F6;&#x95F4;</span></span><br><span class="line">        <span class="comment">//&#x5B9A;&#x65F6;&#x4EFB;&#x52A1;&#x961F;&#x5217;:&#x6309;&#x7167;&#x4EFB;&#x52A1;&#x7684;&#x622A;&#x6B62;&#x65F6;&#x95F4;&#x6B63;&#x5E8F;&#x6392;&#x5E8F;&#x7684;&#x961F;&#x5217;,</span></span><br><span class="line">        <span class="comment">//&#x8BA1;&#x7B97;&#x5F53;&#x524D;&#x7B2C;&#x4E00;&#x4E2A;&#x5B9A;&#x65F6;&#x4EFB;&#x52A1;&#x7684;&#x622A;&#x6B62;&#x65F6;&#x95F4;,&#x5F53;&#x524D;&#x7684;select()&#x4E0D;&#x80FD;&#x8D85;&#x8FC7;&#x8FD9;&#x4E2A;&#x65F6;&#x95F4;</span></span><br><span class="line">        <span class="keyword">long</span> selectDeadLineNanos = currentTimeNanos + delayNanos(currentTimeNanos);</span><br><span class="line">        <span class="keyword">for</span> (;;) {</span><br><span class="line">            <span class="keyword">long</span> timeoutMillis = (selectDeadLineNanos - currentTimeNanos + <span class="number">500000L</span>) / <span class="number">1000000L</span>;</span><br><span class="line">            <span class="keyword">if</span> (timeoutMillis &lt;= <span class="number">0</span>) {<span class="comment">//&#x5DF2;&#x7ECF;&#x8D85;&#x65F6;&#x4E86;</span></span><br><span class="line">                <span class="keyword">if</span> (selectCnt == <span class="number">0</span>) {</span><br><span class="line">                    selector.selectNow();	<span class="comment">//&#x975E;&#x963B;&#x585E;&#x7684;select&#x65B9;&#x6CD5;</span></span><br><span class="line">                    selectCnt = <span class="number">1</span>;</span><br><span class="line">                }</span><br><span class="line">                <span class="keyword">break</span>;<span class="comment">//&#x9000;&#x51FA;</span></span><br><span class="line">            }</span><br><span class="line">            </span><br><span class="line">            <span class="comment">//hasTasks(): &#x5224;&#x65AD;&#x5F02;&#x6B65;&#x961F;&#x5217;&#x4E2D;&#x662F;&#x5426;&#x6709;&#x4EFB;&#x52A1;&#x8981;&#x6267;&#x884C;</span></span><br><span class="line">            <span class="comment">//&#x5B9E;&#x9645;&#x5728;SingleThreadEventExecutor#hasTasks&#x4E2D;&#x5224;&#x65AD;taskQueue&#x662F;&#x5426;&#x4E3A;&#x7A7A;</span></span><br><span class="line">            <span class="keyword">if</span> (hasTasks() &amp;&amp; wakenUp.compareAndSet(<span class="keyword">false</span>, <span class="keyword">true</span>)) {</span><br><span class="line">                selector.selectNow();	<span class="comment">//&#x975E;&#x963B;&#x585E;&#x7684;select&#x65B9;&#x6CD5;</span></span><br><span class="line">                selectCnt = <span class="number">1</span>;</span><br><span class="line">                <span class="keyword">break</span>;<span class="comment">//&#x9000;&#x51FA;</span></span><br><span class="line">            }</span><br></pre></td></tr></tbody></table></figure>
-<p><strong>&#x963B;&#x585E;&#x5F0F;select</strong></p>
-<p>&#x5BF9;&#x5E94;run()&#x4E2D;&#x7684;</p>
-<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> selectedKeys = selector.select(timeoutMillis);<span class="comment">//&#x53C2;&#x6570;&#x4E3A;&#x672C;&#x6B21;&#x53EF;&#x4EE5;&#x8FDB;&#x884C;select&#x7684;&#x6700;&#x5927;&#x65F6;&#x95F4;,&#x9ED8;&#x8BA4;1&#x79D2;</span></span><br><span class="line">selectCnt ++; <span class="comment">//&#x8868;&#x793A;&#x5F53;&#x524D;&#x5DF2;&#x7ECF;&#x8F6E;&#x8BE2;&#x4E86;selectCnt&#x6B21;</span></span><br><span class="line"><span class="comment">//&#x8F6E;&#x8BE2;&#x5230;&#x4E86;&#x4E8B;&#x4EF6;||&#x662F;&#x5524;&#x9192;&#x7684;&#x72B6;&#x6001;||&#x88AB;&#x5524;&#x9192;&#x4E86;||&#x5F02;&#x6B65;&#x961F;&#x5217;&#x6709;&#x4EFB;&#x52A1;||&#x5B9A;&#x65F6;&#x4EFB;&#x52A1;&#x961F;&#x5217;&#x6709;&#x4EFB;&#x52A1;</span></span><br><span class="line"><span class="keyword">if</span> (selectedKeys != <span class="number">0</span> || oldWakenUp || wakenUp.get() || hasTasks() || hasScheduledTasks()) {</span><br><span class="line">    <span class="comment">//&#x5C31;&#x662F;&#x8BF4;&#x6709;&#x4E8B;&#x5E72;&#x4E86;.&#x8FD4;&#x56DE;</span></span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
-<p><strong>&#x907F;&#x514D;jdk&#x7A7A;&#x8F6E;&#x8BE2;&#x7684;bug</strong></p>
-<p>jdk&#x7684;&#x7A7A;&#x8F6E;&#x8BE2;&#x7684;bug&#x4F1A;&#x5BFC;&#x81F4;cpu&#x5230;100%,</p>
-<p>&#x7EE7;&#x7EED;&#x770B;run()</p>
-<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">long</span> time = System.nanoTime();</span><br><span class="line"><span class="comment">//&#x5DF2;&#x7ECF;&#x8D85;&#x8FC7;&#x4E86;&#x622A;&#x6B62;&#x65F6;&#x95F4;(&#x9ED8;&#x8BA4;1),&#x610F;&#x601D;&#x5C31;&#x662F;&#x5DF2;&#x7ECF;&#x6B63;&#x5E38;&#x5B8C;&#x6210;&#x4E86;&#x4E00;&#x6B21;select()&#x4F46;&#x6CA1;&#x6709;&#x8F6E;&#x8BE2;&#x5230;&#x4E1C;&#x897F;</span></span><br><span class="line"><span class="keyword">if</span> (time - TimeUnit.MILLISECONDS.toNanos(timeoutMillis) &gt;= currentTimeNanos) {</span><br><span class="line">    selectCnt = <span class="number">1</span>;</span><br><span class="line"><span class="comment">//select()&#x6CA1;&#x6709;&#x963B;&#x585E;&#x7ACB;&#x5373;&#x8FD4;&#x56DE;&#x4E86;,&#x53EF;&#x80FD;&#x89E6;&#x53D1;&#x4E86;&#x7A7A;&#x8F6E;&#x8BE2;</span></span><br><span class="line">} <span class="keyword">else</span> <span class="keyword">if</span> (SELECTOR_AUTO_REBUILD_THRESHOLD &gt; <span class="number">0</span> &amp;&amp;</span><br><span class="line">           <span class="comment">//&#x8FD9;&#x4E2A;&#x503C;&#x662F;512,&#x4E5F;&#x5C31;&#x662F;&#x8BF4;512&#x6B21;&#x8F6E;&#x8BE2;&#x7684;&#x7ED3;&#x679C;&#x90FD;&#x4E3A;&#x7A7A;</span></span><br><span class="line">           selectCnt &gt;= SELECTOR_AUTO_REBUILD_THRESHOLD) {</span><br><span class="line"></span><br><span class="line">    rebuildSelector();	<span class="comment">//&#x8C03;&#x7528;&#x8FD9;&#x4E2A;&#x907F;&#x514D;&#x4E0B;&#x4E00;&#x6B21;&#x7A7A;&#x8F6E;&#x8BE2;&#x7EE7;&#x7EED;&#x53D1;&#x751F;</span></span><br><span class="line">    <span class="comment">//&#x628A;&#x8001;&#x7684;selectedKeys&#x90FD;&#x6CE8;&#x518C;&#x5230;&#x4E00;&#x4E2A;&#x65B0;&#x7684;selector&#x91CC;&#x9762;&#x53BB;,&#x66FF;&#x6362;&#x5F53;&#x524D;&#x7684;selector</span></span><br><span class="line">    </span><br><span class="line">    selector = <span class="keyword">this</span>.selector;</span><br><span class="line">    selector.selectNow();	<span class="comment">//&#x91CD;&#x65B0;&#x8FDB;&#x884C;select,&#x6210;&#x529F;&#x89E3;&#x51B3;</span></span><br><span class="line">    selectCnt = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
-<p>&#x770B;&#x4E00;&#x4E0B;&#x907F;&#x514D;&#x4E0B;&#x4E00;&#x6B21;&#x7A7A;&#x8F6E;&#x8BE2;&#x7EE7;&#x7EED;&#x53D1;&#x751F; &#x7684;<code>rebuildSelector();</code>&#x8C03;&#x7528;:</p>
-<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">rebuildSelector</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="keyword">final</span> Selector oldSelector = selector;</span><br><span class="line">    <span class="keyword">final</span> Selector newSelector;</span><br><span class="line"></span><br><span class="line">    newSelector = openSelector();	<span class="comment">//&#x521B;&#x5EFA;&#x65B0;&#x7684;selector</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (;;) {</span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            <span class="keyword">for</span> (SelectionKey key: oldSelector.keys()) {<span class="comment">//&#x62FF;&#x5230;&#x65E7;&#x7684;key</span></span><br><span class="line">                Object a = key.attachment();<span class="comment">//&#x4E4B;&#x524D;&#x8BB2;&#x8FC7;,&#x662F;netty&#x5305;&#x88C5;&#x7684;channel</span></span><br><span class="line"></span><br><span class="line">                <span class="keyword">int</span> interestOps = key.interestOps();<span class="comment">//&#x6CE8;&#x518C;&#x7684;&#x4E8B;&#x4EF6;</span></span><br><span class="line">                key.cancel();<span class="comment">//&#x53D6;&#x6D88;&#x65E7;&#x7684;</span></span><br><span class="line">                <span class="comment">//&#x521B;&#x5EFA;&#x5230;&#x65B0;&#x7684;&#x4E0A;&#x9762;</span></span><br><span class="line">                SelectionKey newKey = key.channel().register(newSelector, interestOps, a);</span><br><span class="line">                <span class="keyword">if</span> (a <span class="keyword">instanceof</span> AbstractNioChannel) {</span><br><span class="line">                    <span class="comment">//attachment&#x662F;netty&#x5305;&#x88C5;&#x7684;channel&#x7684;&#x8BDD;,&#x52A0;&#x5165;key(&#x4E4B;&#x524D;&#x8BF4;&#x8FC7;)    </span></span><br><span class="line">                    ((AbstractNioChannel) a).selectionKey = newKey;</span><br><span class="line">                }</span><br><span class="line">            }</span><br></pre></td></tr></tbody></table></figure>
 <script>
         document.querySelectorAll('.github-emoji')
           .forEach(el => {
@@ -533,12 +499,17 @@ height:30vh;
     <ul class="post-paginator">
         <li class="next">
             
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2018/12/28/20181228/" title="Netty源码剖析-NioEventLoop执行">
+                    <div class="nextTitle">Netty源码剖析-NioEventLoop执行</div>
+                </a>
+            
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href="/2018/12/25/20181225-1/" title="慕课网-Java读源码之Netty深入剖析-Netty服务端启动的过程">
-                    <div class="prevTitle">慕课网-Java读源码之Netty深入剖析-Netty服务端启动的过程</div>
+                <a href="/2018/12/25/20181225-1/" title="Netty源码剖析-Netty服务端启动的过程">
+                    <div class="prevTitle">Netty源码剖析-Netty服务端启动的过程</div>
                 </a>
             
         </li>
@@ -665,7 +636,7 @@ top:30vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#NioEventLoop"><span class="toc-number">1.</span> <span class="toc-text">NioEventLoop</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#NioEventLoop创建"><span class="toc-number">2.</span> <span class="toc-text">NioEventLoop创建</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ThreadPerTaskExcecutor"><span class="toc-number">2.1.</span> <span class="toc-text">ThreadPerTaskExcecutor</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#newChilld"><span class="toc-number">2.2.</span> <span class="toc-text">newChilld()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#chooserFactory-newChooser"><span class="toc-number">2.3.</span> <span class="toc-text">chooserFactory.newChooser()</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#NioEventLoop执行"><span class="toc-number">3.</span> <span class="toc-text">NioEventLoop执行</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#NioEventLoop-run"><span class="toc-number">3.1.</span> <span class="toc-text">NioEventLoop.run()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#select-方法执行逻辑"><span class="toc-number">3.2.</span> <span class="toc-text">select()方法执行逻辑</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#NioEventLoop"><span class="toc-number">1.</span> <span class="toc-text">NioEventLoop</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#NioEventLoop创建"><span class="toc-number">2.</span> <span class="toc-text">NioEventLoop创建</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ThreadPerTaskExcecutor"><span class="toc-number">2.1.</span> <span class="toc-text">ThreadPerTaskExcecutor</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#newChilld"><span class="toc-number">2.2.</span> <span class="toc-text">newChilld()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#chooserFactory-newChooser"><span class="toc-number">2.3.</span> <span class="toc-text">chooserFactory.newChooser()</span></a></li></ol></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -1229,9 +1200,26 @@ top:30vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 41
+        Total : 42
         </div>
         <!-- search  -->
         
@@ -1251,17 +1239,22 @@ top:30vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-2/">慕课网-Java读源码之Netty深入剖析</a>
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228/">Netty源码剖析-NioEventLoop执行</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-1/">慕课网-Java读源码之Netty深入剖析-Netty服务端启动的过程</a>
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-2/">Netty源码剖析-NioEventLoop创建</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225/">慕课网-Java读源码之Netty深入剖析-Netty基本组件</a>
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-1/">Netty源码剖析-Netty服务端启动的过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225/">Netty源码剖析-Netty基本组件</a>
         </li>
     
     
@@ -1421,12 +1414,12 @@ top:30vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     
@@ -1459,6 +1452,12 @@ top:30vh;
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
         <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
@@ -1475,23 +1474,17 @@ top:30vh;
     
         <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
     
-        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
-    
         <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
+    
+        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
     
         <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
     
-        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
-    
         <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
-    
-        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
     
         <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
     
         <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
-    
-        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
@@ -1526,6 +1519,8 @@ jsonContent:
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
+        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
+    
         <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
     
         <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
@@ -1535,8 +1530,6 @@ jsonContent:
         <span class="sidebar-category-name" data-categories="瞎逼叨"><span class="iconfont-archer">&#xe60a;</span>瞎逼叨</span>
     
         <span class="sidebar-category-name" data-categories="JVM知识点合集"><span class="iconfont-archer">&#xe60a;</span>JVM知识点合集</span>
-    
-        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
     
     </div>
     <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>

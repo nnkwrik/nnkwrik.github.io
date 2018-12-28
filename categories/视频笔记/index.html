@@ -361,15 +361,51 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2018/12/28/20181228/">
+            
+                <span>Netty源码剖析-NioEventLoop执行</span>
+        </a>
+        <div class="abstract-content">
+            NioEventLoop&#x6267;&#x884C;nioEventLoop&#x5728;&#x7EBF;&#x7A0B;&#x88AB;&#x9996;&#x6B21;&#x521B;&#x5EFA;&#x7684;&#x65F6;&#x5019;&#x4F1A;&#x901A;&#x8FC7;run&#x65B9;&#x6CD5;&#x6267;&#x884C; (SingleThreadEventExecutor.this.run()).Netty&#x57FA;&#x672C;&#x7EC4;&#x4EF6;&#x90A3;&#x6B21;&#x7684;&#x7B14;&#x8BB0;&#x91CC;&#x6709;&#x6D89;&#x53CA;&#x5230;.
+NioEventLoop.run()1234567run() -&gt; for(;;)	|	select()[&#x68C0;&#x67E5;&#x662F;&#x5426;&#x6709;io&#x4E8B;&#x4EF6;]	|	processSelectKeys()[&#x5904;&#x7406;io&#x4E8B;&#x4EF6;]	|	runAllTask()[&#x5904;&#x7406;&#x5F02;&#x6B65;&#x4EFB;&#x52A1;&#x961F;&#x5217;,&#x5C31;&#x662F;&#x4E0A;&#x4E00;&#x8282;&#x6700;&#x540E;&#x8BF4;&#x7684;taskQueue]
+&#x5B9E;&#x9645;&#x4EE3;&#x7801;io.netty.channel.nio.NioEventLoop#run
+123456789101112131415161718192021222324252627282930313233@Overrideprotected void run() {    for (;;) {        switch (selectStrategy.calculateStrategy(selectNowSupplier, hasTasks())) {            case SelectStrategy.CONTINUE:                con...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/12/28</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class="abstract-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2018/12/25/20181225-2/">
             
-                <span>慕课网-Java读源码之Netty深入剖析</span>
+                <span>Netty源码剖析-NioEventLoop创建</span>
         </a>
         <div class="abstract-content">
             
 &#x9ED8;&#x8BA4;&#x60C5;&#x51B5;&#x4E0B;,Netty&#x670D;&#x52A1;&#x7AEF;&#x8D77;&#x591A;&#x5C11;&#x7EBF;&#x7A0B;?&#x4F55;&#x65F6;&#x542F;&#x52A8;?
 Netty&#x662F;&#x5982;&#x4F55;&#x89E3;&#x51B3;jdk&#x7A7A;&#x8F6E;&#x8BE2;bug&#x7684;?
-netty&#x5982;&#x4F55;&#x4FDD;&#x8BC1;&#x5F02;&#x6B65;&#x4E32;&#x884C;&#x65E0;&#x6240;&#x5316;?
+netty&#x5982;&#x4F55;&#x4FDD;&#x8BC1;&#x5F02;&#x6B65;&#x4E32;&#x884C;&#x65E0;&#x9501;&#x5316;?
 
 NioEventLoop
 NioEventLoop&#x521B;&#x5EFA; 
@@ -408,7 +444,7 @@ NioEventLoop&#x521B;&#x5EFA;1234567new NioEventLoopGroup()[&#x7EBF;&#x7A0B;&#x65
     <article class="index-post">
         <a class="abstract-title" href="/2018/12/25/20181225-1/">
             
-                <span>慕课网-Java读源码之Netty深入剖析-Netty服务端启动的过程</span>
+                <span>Netty源码剖析-Netty服务端启动的过程</span>
         </a>
         <div class="abstract-content">
             &#x4E00;&#x4E2A;&#x7B80;&#x5355;&#x7684;netty&#x670D;&#x52A1;&#x7AEF;12345678910111213141516171819202122232425262728293031public final class Server {    public static void main(String[] args) throws Exception {        //&#x4E24;&#x79CD;&#x7C7B;&#x578B;&#x7684;event loop        EventLoopGroup bossGroup = new NioEventLoopGroup(1);    //&#x5BF9;&#x5E94;com.imooc.netty.ch2.Server.start,&#x65B0;&#x8FDE;&#x63A5;        EventLoopGroup workerGroup = new NioEventLoopGroup();   //&#x5BF9;&#x5E94;com.imooc.netty.ch2.Client.start&#xFF0C;&#x5BF9;&#x8FDE;&#x63A5;&#x8FDB;&#x884C;&#x903B;&#x8F91;&#x64CD;&#x4F5C;        try {            ServerBootstrap b = new ServerBootstrap();            b.group(bossGroup, workerGroup)//&#x914D;&#x7F6E;&#x4E24;&#x79CD;event loop                    .channel(NioServerSocketChannel.class)//&#x8BBE;&#x7F6E;&#x670D;&#x52A1;&#x7AEF;&#x7684;channel                    .childOption(ChannelOption.TCP_NODELAY, true)//&#x7ED9;&#x6BCF;&#x4E2A;&#x8FDE;&#x63A5;&#x8BBE;&#x7F6E;TC...
@@ -441,7 +477,7 @@ NioEventLoop&#x521B;&#x5EFA;1234567new NioEventLoopGroup()[&#x7EBF;&#x7A0B;&#x65
     <article class="index-post">
         <a class="abstract-title" href="/2018/12/25/20181225/">
             
-                <span>慕课网-Java读源码之Netty深入剖析-Netty基本组件</span>
+                <span>Netty源码剖析-Netty基本组件</span>
         </a>
         <div class="abstract-content">
             Netty&#x57FA;&#x672C;&#x7EC4;&#x4EF6;netty&#x4E2D;&#x4E8E;&#x5BF9;&#x4E8E;&#x539F;&#x59CB;socket&#x76F8;&#x5BF9;&#x5E94;&#x7684;&#x6982;&#x5FF5;
@@ -1122,9 +1158,26 @@ PipeLine
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 41
+        Total : 42
         </div>
         <!-- search  -->
         
@@ -1144,17 +1197,22 @@ PipeLine
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-2/">慕课网-Java读源码之Netty深入剖析</a>
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228/">Netty源码剖析-NioEventLoop执行</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-1/">慕课网-Java读源码之Netty深入剖析-Netty服务端启动的过程</a>
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-2/">Netty源码剖析-NioEventLoop创建</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225/">慕课网-Java读源码之Netty深入剖析-Netty基本组件</a>
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-1/">Netty源码剖析-Netty服务端启动的过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225/">Netty源码剖析-Netty基本组件</a>
         </li>
     
     
@@ -1314,12 +1372,12 @@ PipeLine
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     
@@ -1352,6 +1410,12 @@ PipeLine
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
         <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
@@ -1368,23 +1432,17 @@ PipeLine
     
         <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
     
-        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
-    
         <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
+    
+        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
     
         <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
     
-        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
-    
         <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
-    
-        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
     
         <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
     
         <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
-    
-        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
@@ -1419,6 +1477,8 @@ jsonContent:
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
+        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
+    
         <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
     
         <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
@@ -1428,8 +1488,6 @@ jsonContent:
         <span class="sidebar-category-name" data-categories="瞎逼叨"><span class="iconfont-archer">&#xe60a;</span>瞎逼叨</span>
     
         <span class="sidebar-category-name" data-categories="JVM知识点合集"><span class="iconfont-archer">&#xe60a;</span>JVM知识点合集</span>
-    
-        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
     
     </div>
     <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
