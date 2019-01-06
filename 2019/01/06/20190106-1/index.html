@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="曽生">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="曽生">
+    
+    <meta name="keywords" content="nnkwrik,曽生,曾丽桦">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Netty源码剖析-pipeline事件传播 · 农场主的黑科技.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin="">
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin="">
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"输入关键字 :D","hits_empty":"没有找到相关信息 :(","hits_stats":"找到 ${hits} 个相关信息,耗时 ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'LXR3VBZBS6',
+                apiKey: '17d6d4ab4ba943bab3232eced0eea766',
+                indexName: 'index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">农场主的黑科技.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Netty源码剖析-pipeline事件传播</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href="/">农场主的黑科技.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:30vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/andrew-leu-1113236-unsplash.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Netty源码剖析-pipeline事件传播
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class="post-intro-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">2.4k</span>阅读时长: <span class="post-count reading-time">14 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/01/06</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="&#x4E8B;&#x4EF6;&#x548C;&#x5F02;&#x5E38;&#x7684;&#x4F20;&#x64AD;"><a href="#&#x4E8B;&#x4EF6;&#x548C;&#x5F02;&#x5E38;&#x7684;&#x4F20;&#x64AD;" class="headerlink" title="&#x4E8B;&#x4EF6;&#x548C;&#x5F02;&#x5E38;&#x7684;&#x4F20;&#x64AD;"></a>&#x4E8B;&#x4EF6;&#x548C;&#x5F02;&#x5E38;&#x7684;&#x4F20;&#x64AD;</h1><h2 id="inBound&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;"><a href="#inBound&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;" class="headerlink" title="inBound&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;"></a>inBound&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;</h2><ul>
+<li>&#x4F55;&#x4E3A;inBound&#x4E8B;&#x4EF6;&#x4EE5;&#x53CA;ChannelInboundHandler</li>
+<li>ChannelRead&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;<br>ChannelRead&#x662F;&#x5178;&#x578B;&#x7684;inbound&#x4E8B;&#x4EF6;,&#x4EE5;&#x4ED6;&#x4E3A;&#x4F8B;&#x4E86;&#x89E3;inbound&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;</li>
+<li>SimpleInBoundHandler&#x5904;&#x7406;&#x5668;</li>
+</ul>
+<h3 id="&#x4F55;&#x4E3A;inBound&#x4E8B;&#x4EF6;&#x4EE5;&#x53CA;ChannelInboundHandler"><a href="#&#x4F55;&#x4E3A;inBound&#x4E8B;&#x4EF6;&#x4EE5;&#x53CA;ChannelInboundHandler" class="headerlink" title="&#x4F55;&#x4E3A;inBound&#x4E8B;&#x4EF6;&#x4EE5;&#x53CA;ChannelInboundHandler"></a>&#x4F55;&#x4E3A;inBound&#x4E8B;&#x4EF6;&#x4EE5;&#x53CA;ChannelInboundHandler</h3><p><img src="1546771977032.png" alt="1546771977032"></p>
+<p>ChannelHandler&#x7684;&#x7EE7;&#x627F;&#x5173;&#x7CFB;</p>
+<ul>
+<li><p>ChannelInboundHandlerAdapter,ChannelOutboundHandlerAdapter.<br>&#x7528;&#x6237;&#x4EE3;&#x7801;&#x4E2D;&#x5E38;&#x89C1;.&#x5E73;&#x65F6;&#x81EA;&#x5B9A;&#x4E49;channelHandler&#x65F6;&#x90FD;&#x4F1A;&#x7EE7;&#x627F;&#x4E0E;&#x4ED6;&#x4EEC;</p>
+</li>
+<li><p>ChannelHandler,&#x6240;&#x6709;&#x5904;&#x7406;&#x5668;&#x7684;&#x62BD;&#x8C61;</p>
+</li>
+<li>ChannelHandlerAdapter<br>ChannelHandler&#x7684;&#x9ED8;&#x8BA4;&#x5B9E;&#x73B0;</li>
+<li>ChannelInboundHandler,ChannelOutboundHandler<br>&#x5728;ChannelHandler&#x7684;&#x57FA;&#x7840;&#x4E0A;,&#x81EA;&#x5B9A;&#x4E49;&#x529F;&#x80FD;</li>
+</ul>
+<p><strong>ChannelHandler&#x5B9A;&#x4E49;&#x4E86;&#x54EA;&#x4E9B;&#x529F;&#x80FD;</strong></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ChannelHandler</span> </span>{</span><br><span class="line">	<span class="comment">//&#x56DE;&#x8C03;,handler&#x88AB;&#x6DFB;&#x52A0;&#x5230;pipeline&#x65F6;</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">handlerAdded</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line">    <span class="comment">//handler&#x88AB;pipeline&#x5220;&#x9664;&#x65F6;&#x7684;&#x56DE;&#x8C03;</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">handlerRemoved</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line">	<span class="comment">//&#x51FA;&#x73B0;&#x5F02;&#x5E38;&#x65F6;&#x7684;&#x56DE;&#x8C03;</span></span><br><span class="line">    <span class="meta">@Deprecated</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">exceptionCaught</span><span class="params">(ChannelHandlerContext ctx, Throwable cause)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line"></span><br><span class="line"> 	<span class="comment">//&#x4E00;&#x4E2A;&#x6CE8;&#x89E3;,&#x662F;&#x5426;&#x53EF;&#x4EE5;&#x88AB;&#x591A;&#x4E2A;pipeline&#x6DFB;&#x52A0;</span></span><br><span class="line">    <span class="meta">@Inherited</span></span><br><span class="line">    <span class="meta">@Documented</span></span><br><span class="line">    <span class="meta">@Target</span>(ElementType.TYPE)</span><br><span class="line">    <span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line">    <span class="meta">@interface</span> Sharable {</span><br><span class="line">        <span class="comment">// no value</span></span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p><strong>ChannelInboundHandler&#x5728;ChannelHandler&#x7684;&#x57FA;&#x7840;&#x4E0A;&#x6269;&#x5C55;&#x4E86;&#x4EC0;&#x4E48;</strong></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ChannelInboundHandler</span> <span class="keyword">extends</span> <span class="title">ChannelHandler</span> </span>{</span><br><span class="line">	<span class="comment">//&#x56DE;&#x8C03;,Handler&#x6CE8;&#x518C;&#x5230;nioEventLoop&#x7684;selector&#x4E0A;&#x65F6;</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">channelRegistered</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">channelUnregistered</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//channel&#x7684;&#x6FC0;&#x6D3B;&#x6216;&#x5931;&#x6548;&#x65F6;&#x7684;&#x56DE;&#x8C03;</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">channelActive</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">channelInactive</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//channel&#x8BFB;&#x5230;&#x6570;&#x636E;&#x6216;&#x63A5;&#x6536;&#x5230;&#x8FDE;&#x63A5;&#x65F6;&#x7684;&#x56DE;&#x8C03;</span></span><br><span class="line">    <span class="comment">//&#x5BF9;&#x4E8E;&#x670D;&#x52A1;&#x7AEF;&#x800C;&#x8A00;&#x662F;&#x8FDE;&#x63A5;,&#x5BF9;&#x4E8E;&#x5BA2;&#x6237;&#x7AEF;channel&#x5219;&#x662F;bytebuf&#x7684;&#x6570;&#x636E;</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">channelReadComplete</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//trigger&#x4E00;&#x4E9B;&#x7528;&#x6237;&#x81EA;&#x5B9A;&#x4E49;&#x7684;&#x4E8B;&#x4EF6;</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">userEventTriggered</span><span class="params">(ChannelHandlerContext ctx, Object evt)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//&#x53EF;&#x5199;&#x72B6;&#x6001;&#x53D1;&#x751F;&#x4E86;&#x6539;&#x53D8;</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">channelWritabilityChanged</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//&#x51FA;&#x73B0;&#x5F02;&#x5E38;&#x65F6;&#x7684;&#x56DE;&#x8C03;</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">&quot;deprecation&quot;</span>)</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">exceptionCaught</span><span class="params">(ChannelHandlerContext ctx, Throwable cause)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD9;&#x6B21;&#x7531;ChannelRead&#x4E3A;&#x4F8B;,&#x770B;&#x4E00;&#x4E0B;inbound&#x4E8B;&#x4EF6;&#x662F;&#x5982;&#x4F55;&#x4F20;&#x64AD;&#x7684;. </p>
+<h3 id="ChannelRead&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;"><a href="#ChannelRead&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;" class="headerlink" title="ChannelRead&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;"></a>ChannelRead&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;</h3><p>&#x8FD9;&#x91CC;&#x521B;&#x5EFA;3&#x4E2A;&#x81EA;&#x5B9A;&#x4E49;&#x7684;InboundHandler&#x6D4B;&#x8BD5;ChannelRead&#x4E8B;&#x4EF6;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InBoundHandlerA</span> <span class="keyword">extends</span> <span class="title">ChannelInboundHandlerAdapter</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        System.out.println(<span class="string">&quot;InBoundHandlerA: &quot;</span> + msg);</span><br><span class="line">        ctx.fireChannelRead(msg);</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InBoundHandlerB</span> <span class="keyword">extends</span> <span class="title">ChannelInboundHandlerAdapter</span> </span>{</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        System.out.println(<span class="string">&quot;InBoundHandlerB: &quot;</span> + msg);<span class="comment">//&#x6253;&#x5370;</span></span><br><span class="line">        ctx.fireChannelRead(msg);<span class="comment">//&#x7EE7;&#x7EED;&#x4F20;&#x64AD;</span></span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelActive</span><span class="params">(ChannelHandlerContext ctx)</span> </span>{</span><br><span class="line">        <span class="comment">//channel&#x88AB;&#x6FC0;&#x6D3B;&#x65F6;&#x53D6;&#x5230;pipeline,&#x6FC0;&#x6D3B;channelRead&#x4E8B;&#x4EF6;</span></span><br><span class="line">        ctx.channel().pipeline().fireChannelRead(<span class="string">&quot;hello world&quot;</span>);</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InBoundHandlerC</span> <span class="keyword">extends</span> <span class="title">ChannelInboundHandlerAdapter</span> </span>{</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        System.out.println(<span class="string">&quot;InBoundHandlerC: &quot;</span> + msg);</span><br><span class="line">        ctx.fireChannelRead(msg);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x670D;&#x52A1;&#x7AEF;&#x542F;&#x52A8;&#x4EE3;&#x7801;&#x6DFB;&#x52A0;childHandler&#x7684;&#x90E8;&#x5206;&#x4E3A;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">.childHandler(<span class="keyword">new</span> ChannelInitializer&lt;SocketChannel&gt;() {</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initChannel</span><span class="params">(SocketChannel ch)</span> </span>{</span><br><span class="line">        ch.pipeline().addLast(<span class="keyword">new</span> InBoundHandlerA());</span><br><span class="line">        ch.pipeline().addLast(<span class="keyword">new</span> InBoundHandlerB());</span><br><span class="line">        ch.pipeline().addLast(<span class="keyword">new</span> InBoundHandlerC());</span><br><span class="line">    }</span><br><span class="line">});</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x6B64;&#x65F6;&#x542F;&#x52A8;&#x540E;&#x5728;&#x63A7;&#x5236;&#x53F0;&#x6267;&#x884C;<code>telnet 127.0.0.1 8888</code>,&#x5B83;&#x7684;&#x540E;&#x53F0;&#x8F93;&#x51FA;&#x7ED3;&#x679C;&#x4E3A;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">InBoundHandlerA: hello world</span><br><span class="line">InBoundHandlerB: hello world</span><br><span class="line">InBoundHandlerC: hello world</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5982;&#x679C;&#x628A;&#x6DFB;&#x52A0;childHandler&#x7684;&#x90E8;&#x5206;&#x6539;&#x4E3A;&#x4E0B;&#x9762;&#x7684;&#x987A;&#x5E8F;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ch.pipeline().addLast(<span class="keyword">new</span> InBoundHandlerA());</span><br><span class="line">ch.pipeline().addLast(<span class="keyword">new</span> InBoundHandlerC());</span><br><span class="line">ch.pipeline().addLast(<span class="keyword">new</span> InBoundHandlerB());</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x90A3;&#x4E48;&#x8F93;&#x51FA;&#x662F;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">InBoundHandlerA: hello world</span><br><span class="line">InBoundHandlerC: hello world</span><br><span class="line">InBoundHandlerB: hello world</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x53EF;&#x4EE5;&#x63A8;&#x6D4B;&#x51FA;,inbound&#x548C;&#x6DFB;&#x52A0;&#x987A;&#x5E8F;&#x76F8;&#x5173;.&#x5728;<code>InboundHandlerB</code>&#x7684;<code>channelActive()</code>&#x4E2D;&#x6253;&#x4E2A;&#x65AD;&#x70B9;.&#x770B;&#x4E00;&#x4E0B;&#x5B83;&#x7684;<code>fireChannelRead(&quot;hello world&quot;)</code>&#x7684;&#x903B;&#x8F91;.&#x4F1A;&#x770B;&#x5230;&#x5B83;&#x4F1A;&#x8C03;&#x7528;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> ChannelPipeline <span class="title">fireChannelRead</span><span class="params">(Object msg)</span> </span>{</span><br><span class="line">    AbstractChannelHandlerContext.invokeChannelRead(head, msg);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">}</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">invokeChannelRead</span><span class="params">(<span class="keyword">final</span> AbstractChannelHandlerContext next, Object msg)</span> </span>{</span><br><span class="line">        <span class="keyword">final</span> Object m = next.pipeline.touch(ObjectUtil.checkNotNull(msg, <span class="string">&quot;msg&quot;</span>), next);</span><br><span class="line">        EventExecutor executor = next.executor();</span><br><span class="line">        <span class="keyword">if</span> (executor.inEventLoop()) {<span class="comment">//true</span></span><br><span class="line">            <span class="comment">//&#x6B64;&#x65F6;&#x7684;next&#x4E3A;head</span></span><br><span class="line">            next.invokeChannelRead(m);</span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line">            executor.execute(<span class="keyword">new</span> Runnable() {</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{</span><br><span class="line">                    next.invokeChannelRead(m);</span><br><span class="line">                }</span><br><span class="line">            });</span><br><span class="line">        }</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;,&#x5F53;&#x9047;&#x5230;channelRead&#x4E8B;&#x4EF6;&#x65F6;&#x5B83;&#x4F1A;&#x4ECE;&#x8C03;&#x7528;head&#x7684;invokeChannelRead.&#x7EE7;&#x7EED;&#x770B;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">invokeChannelRead</span><span class="params">(Object msg)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (invokeHandler()) {</span><br><span class="line">        <span class="comment">//&#x8C03;&#x7528;head&#x7684;channelRead()</span></span><br><span class="line">        ((ChannelInboundHandler) handler()).channelRead(<span class="keyword">this</span>, msg);</span><br><span class="line">    } <span class="keyword">else</span> {</span><br><span class="line">        fireChannelRead(msg);</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line">---</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">    <span class="comment">//&#x4E5F;&#x662F;&#x8C03;&#x7528;head&#x7684;fireChannelRead</span></span><br><span class="line">    <span class="comment">// &#x8FD9;&#x91CC;head&#x4F1A;&#x628A;fireChannelRead&#x539F;&#x5C01;&#x4E0D;&#x52A8;&#x7684;&#x8FDB;&#x884C;&#x4F20;&#x64AD;</span></span><br><span class="line">    ctx.fireChannelRead(msg);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD9;&#x4E2A;fireChannelRead&#x662F;<code>io.netty.channel.AbstractChannelHandlerContext#fireChannelRead</code>.&#x5B83;&#x4F1A;&#x8C03;&#x7528;<code>findContextInbound()</code>&#x6765;&#x83B7;&#x53D6;&#x4E0B;&#x4E00;&#x4E2A;inboundHandler</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ChannelHandlerContext <span class="title">fireChannelRead</span><span class="params">(<span class="keyword">final</span> Object msg)</span> </span>{</span><br><span class="line">        <span class="comment">//&#x83B7;&#x53D6;&#x4E0B;&#x4E00;&#x4E2A;inboundHandler</span></span><br><span class="line">        invokeChannelRead(findContextInbound(), msg);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">private</span> AbstractChannelHandlerContext <span class="title">findContextInbound</span><span class="params">()</span> </span>{</span><br><span class="line">        AbstractChannelHandlerContext ctx = <span class="keyword">this</span>;</span><br><span class="line">        <span class="keyword">do</span> {</span><br><span class="line">            ctx = ctx.next;</span><br><span class="line">        } <span class="keyword">while</span> (!ctx.inbound);<span class="comment">//&#x5BFB;&#x627E;&#x4E0B;&#x4E00;&#x4E2A;inbound&#x8282;&#x70B9;</span></span><br><span class="line">        <span class="keyword">return</span> ctx;</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x83B7;&#x53D6;&#x5230;&#x4E0B;&#x4E00;&#x4E2A;inboundHandler,&#x4E5F;&#x5C31;&#x662F;InboundHandlerA&#x540E;&#x5B83;&#x4F1A;&#x8C03;&#x7528;<code>io.netty.channel.AbstractChannelHandlerContext#invokeChannelRead</code>,&#x8FD9;&#x4E2A;&#x548C;&#x4E4B;&#x524D;head&#x8C03;&#x7528;&#x7684;&#x662F;&#x5B8C;&#x5168;&#x76F8;&#x540C;&#x7684;&#x65B9;&#x6CD5;,&#x4ED6;&#x56DE;&#x53BB;&#x8C03;&#x7528;&#x5F53;&#x524D;inboundHandler,&#x4E5F;&#x5C31;&#x662F;InboundHandlerA&#x7684;readChannel&#x65B9;&#x6CD5;,&#x5B83;&#x5C31;&#x662F;&#x6211;&#x4EEC;&#x5728;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x4E2D;&#x5B9A;&#x4E49;&#x7684;&#x90E8;&#x5206;.</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InBoundHandlerA</span> <span class="keyword">extends</span> <span class="title">ChannelInboundHandlerAdapter</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        System.out.println(<span class="string">&quot;InBoundHandlerA: &quot;</span> + msg);</span><br><span class="line">        ctx.fireChannelRead(msg);<span class="comment">//&#x7EE7;&#x7EED;&#x5F80;&#x4E0B;&#x4F20;&#x64AD;</span></span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x7136;&#x540E;<code>InBoundHandlerA</code>&#x7684;<code>channelRead()</code>&#x53C8;&#x4F1A;&#x8C03;&#x7528;&#x4E0B;&#x4E00;&#x4E2A;<code>InBoundHandlerB</code>&#x7684;<code>channelRead()</code>,&#x5B83;&#x53C8;&#x4F1A;&#x63A5;&#x7740;&#x8C03;&#x7528;<code>InBoundHandlerC</code>&#x7684;<code>channelRead()</code></p>
+<p>&#x6B64;&#x65F6;&#x56DE;&#x987E;&#x4E00;&#x4E0B;<code>InBoundHandlerB</code>&#x4E2D;&#x7684;&#x903B;&#x8F91;,&#x4F1A;&#x53D1;&#x73B0;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InBoundHandlerB</span> <span class="keyword">extends</span> <span class="title">ChannelInboundHandlerAdapter</span> </span>{</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        System.out.println(<span class="string">&quot;InBoundHandlerB: &quot;</span> + msg);</span><br><span class="line">        ctx.fireChannelRead(msg);	<span class="comment">//&#x4ECE;&#x5F53;&#x524D;&#x8282;&#x70B9;&#x7EE7;&#x7EED;&#x5F80;&#x4E0B;&#x4F20;&#x64AD;</span></span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelActive</span><span class="params">(ChannelHandlerContext ctx)</span> </span>{</span><br><span class="line">        ctx.channel().pipeline().fireChannelRead(<span class="string">&quot;hello world&quot;</span>);<span class="comment">//&#x4ECE;head&#x8282;&#x70B9;&#x5F00;&#x59CB;&#x5F80;&#x4E0B;&#x4F20;&#x64AD;</span></span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5F53;&#x4F20;&#x64AD;&#x5230;&#x6700;&#x540E;&#x4E00;&#x4E2A;&#x8282;&#x70B9;(C)&#x65F6;,&#x5B83;&#x4F1A;&#x4F20;&#x64AD;&#x5230;&#x6700;&#x540E;&#x7684;Tail&#x8282;&#x70B9;,&#x8C03;&#x7528;&#x5B83;&#x7684;<code>channelRead()</code>.&#x4E4B;&#x524D;&#x8BF4;&#x8FC7;tial&#x662F;&#x7528;&#x6765;&#x505A;&#x4E00;&#x4E9B;&#x6536;&#x5C3E;&#x5DE5;&#x4F5C;,</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">    <span class="comment">//&#x4E8B;&#x4EF6;&#x4E00;&#x76F4;&#x4F20;&#x64AD;&#x5230;tail,</span></span><br><span class="line">    <span class="comment">//tail&#x4F1A;&#x8BA4;&#x4E3A;&#x6CA1;&#x6709;&#x88AB;&#x5904;&#x7406;,&#x8FD9;&#x4E2A;&#x65B9;&#x6CD5;&#x4F1A;&#x6253;&#x5370;&#x4E00;&#x4E2A;logger.debug.&#x6765;&#x63D0;&#x9192;&#x5F00;&#x53D1;&#x8005;</span></span><br><span class="line">    onUnhandledInboundMessage(msg);</span><br><span class="line">}</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onUnhandledInboundMessage</span><span class="params">(Object msg)</span> </span>{</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        logger.debug(</span><br><span class="line">            <span class="string">&quot;Discarded inbound message {} that reached at the tail of the pipeline. &quot;</span> +</span><br><span class="line">            <span class="string">&quot;Please check your pipeline configuration.&quot;</span>, msg);</span><br><span class="line">    } <span class="keyword">finally</span> {</span><br><span class="line">        <span class="comment">//&#x5982;&#x679C;&#x65F6;bytebuf&#x5C31;&#x8FDB;&#x884C;&#x91CA;&#x653E;</span></span><br><span class="line">        ReferenceCountUtil.release(msg);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="SimpleInBoundHandler&#x5904;&#x7406;&#x5668;"><a href="#SimpleInBoundHandler&#x5904;&#x7406;&#x5668;" class="headerlink" title="SimpleInBoundHandler&#x5904;&#x7406;&#x5668;"></a>SimpleInBoundHandler&#x5904;&#x7406;&#x5668;</h3><p>&#x4EE5;&#x4E0B;&#x9762;&#x7684;&#x81EA;&#x5B9A;&#x4E49;Handler&#x4E3A;&#x4F8B;,&#x770B;&#x4E00;&#x4E0B;&#x5B83;&#x7684;&#x4F7F;&#x7528;&#x573A;&#x666F;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AuthHandler</span> <span class="keyword">extends</span> <span class="title">SimpleChannelInboundHandler</span>&lt;<span class="title">ByteBuf</span>&gt; </span>{</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        <span class="comment">//&#x5982;&#x679C;&#x6CA1;&#x6709;&#x628A;&#x8FD9;&#x91CC;&#x7684;ByteBuf&#x4F20;&#x64AD;&#x5230;tail,&#x90A3;&#x4E48;tail&#x8282;&#x70B9;&#x5C31;&#x4E0D;&#x4F1A;&#x5E2E;&#x4F60;&#x91CA;&#x653E;&#x8FD9;&#x6BB5;ByteBuf</span></span><br><span class="line">        <span class="comment">//&#x901A;&#x5E38;&#x8FD9;&#x79CD;&#x60C5;&#x51B5;&#x4E0B;&#x4F60;&#x9700;&#x8981;&#x624B;&#x52A8;&#x8FDB;&#x884C;&#x91CA;&#x653E;,</span></span><br><span class="line">        <span class="comment">//&#x800C;SimpleChannelInboundHandler&#x4F1A;&#x5E2E;&#x4F60;&#x81EA;&#x52A8;&#x91CA;&#x653E;&#x4ED6;&#x4EEC;</span></span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">channelRead0</span><span class="params">(ChannelHandlerContext ctx, ByteBuf password)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        <span class="keyword">if</span> (paas(password)) {</span><br><span class="line">            ctx.pipeline().remove(<span class="keyword">this</span>);</span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line">            ctx.close();</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">paas</span><span class="params">(ByteBuf password)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x770B;&#x4E00;&#x4E0B;<code>SimpleChannelInboundHandler</code>&#x7684;<code>channelRead()</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">    <span class="keyword">boolean</span> release = <span class="keyword">true</span>;</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        <span class="comment">//&#x5982;&#x679C;&#x662F;inbound</span></span><br><span class="line">        <span class="keyword">if</span> (acceptInboundMessage(msg)) {</span><br><span class="line">            <span class="comment">//&#x8F6C;&#x4E3A;bytebuf</span></span><br><span class="line">            I imsg = (I) msg;</span><br><span class="line">            <span class="comment">//&#x62BD;&#x8C61;&#x65B9;&#x6CD5;</span></span><br><span class="line">            <span class="comment">//&#x7EE7;&#x627F;SimpleChannelInboundHandler&#x65F6;&#x4F60;&#x53EF;&#x4EE5;&#x505A;&#x4E00;&#x4E9B;&#x4F60;&#x60F3;&#x5E72;&#x7684;,&#x5E76;&#x4E14;&#x4E0D;&#x7528;&#x8003;&#x8651;&#x91CA;&#x653E;</span></span><br><span class="line">            channelRead0(ctx, imsg);</span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line">            release = <span class="keyword">false</span>;</span><br><span class="line">            ctx.fireChannelRead(msg);</span><br><span class="line">        }</span><br><span class="line">    } <span class="keyword">finally</span> {</span><br><span class="line">        <span class="keyword">if</span> (autoRelease &amp;&amp; release) {</span><br><span class="line">            <span class="comment">//&#x81EA;&#x52A8;&#x91CA;&#x653E;</span></span><br><span class="line">            ReferenceCountUtil.release(msg);</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x4F7F;&#x7528;<code>SimpleChannelInboundHandler</code>&#x65F6;&#x4E0D;&#x9700;&#x8981;&#x7BA1;<code>channelRead()</code>&#x800C;&#x662F;&#x901A;&#x8FC7;<code>channelRead0()</code>&#x6765;&#x505A;&#x539F;&#x672C;&#x5728;<code>channelRead()</code>&#x4E2D;&#x7684;&#x903B;&#x8F91;.&#x5F53;<code>channelRead0()</code>&#x88AB;&#x6267;&#x884C;&#x540E;&#x5B83;&#x4F1A;&#x81EA;&#x52A8;&#x5E2E;&#x4F60;&#x53BB;&#x91CA;&#x653E;</p>
+<h2 id="outBound&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;"><a href="#outBound&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;" class="headerlink" title="outBound&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;"></a>outBound&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;</h2><ul>
+<li>&#x4F55;&#x4E3A;outBound&#x4E8B;&#x4EF6;&#x4EE5;&#x53CA;ChannelOutBoundHandler</li>
+<li>write()&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;<br>&#x5178;&#x578B;&#x7684;outBound&#x4E8B;&#x4EF6;</li>
+</ul>
+<h3 id="&#x4F55;&#x4E3A;outBound&#x4E8B;&#x4EF6;&#x4EE5;&#x53CA;ChannelOutBoundHandler"><a href="#&#x4F55;&#x4E3A;outBound&#x4E8B;&#x4EF6;&#x4EE5;&#x53CA;ChannelOutBoundHandler" class="headerlink" title="&#x4F55;&#x4E3A;outBound&#x4E8B;&#x4EF6;&#x4EE5;&#x53CA;ChannelOutBoundHandler"></a>&#x4F55;&#x4E3A;outBound&#x4E8B;&#x4EF6;&#x4EE5;&#x53CA;ChannelOutBoundHandler</h3><p><strong>ChannelOutboundHandler&#x5728;ChannelHandler&#x7684;&#x57FA;&#x7840;&#x4E0A;&#x6269;&#x5C55;&#x4E86;&#x4EC0;&#x4E48;</strong></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ChannelOutboundHandler</span> <span class="keyword">extends</span> <span class="title">ChannelHandler</span> </span>{</span><br><span class="line">	<span class="comment">//&#x7AEF;&#x53E3;&#x7ED1;&#x5B9A;,&#x670D;&#x52A1;&#x7AEF;&#x542F;&#x52A8;&#x65F6;&#x7684;&#x90A3;&#x4E2A;</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">bind</span><span class="params">(ChannelHandlerContext ctx, SocketAddress localAddress, ChannelPromise promise)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">connect</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            ChannelHandlerContext ctx, SocketAddress remoteAddress,</span></span></span><br><span class="line"><span class="function"><span class="params">            SocketAddress localAddress, ChannelPromise promise)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">disconnect</span><span class="params">(ChannelHandlerContext ctx, ChannelPromise promise)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">close</span><span class="params">(ChannelHandlerContext ctx, ChannelPromise promise)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">deregister</span><span class="params">(ChannelHandlerContext ctx, ChannelPromise promise)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">read</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">write</span><span class="params">(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">flush</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x76F8;&#x5BF9;&#x4E8E;InBounder,outBound&#x66F4;&#x50CF;&#x662F;&#x7528;&#x6237;&#x4E3B;&#x52A8;&#x53D1;&#x8D77;&#x7684;&#x64CD;&#x4F5C;.&#x800C;InBounder&#x66F4;&#x7C7B;&#x4F3C;&#x4E8E;&#x4E8B;&#x4EF6;&#x89E6;&#x53D1;</p>
+<h3 id="write-&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;"><a href="#write-&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;" class="headerlink" title="write()&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;"></a>write()&#x4E8B;&#x4EF6;&#x7684;&#x4F20;&#x64AD;</h3><p>&#x8FD9;&#x91CC;&#x521B;&#x5EFA;3&#x4E2A;&#x81EA;&#x5B9A;&#x4E49;&#x7684;OutboundHandler&#x6D4B;&#x8BD5;write&#x4E8B;&#x4EF6;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OutBoundHandlerA</span> <span class="keyword">extends</span> <span class="title">ChannelOutboundHandlerAdapter</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)</span>  </span>{</span><br><span class="line">        System.out.println(<span class="string">&quot;OutBoundHandlerA: &quot;</span> + msg);</span><br><span class="line">        ctx.write(msg, promise);</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line">---</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OutBoundHandlerB</span> <span class="keyword">extends</span> <span class="title">ChannelOutboundHandlerAdapter</span> </span>{</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)</span> </span>{</span><br><span class="line">        System.out.println(<span class="string">&quot;OutBoundHandlerB: &quot;</span> + msg);</span><br><span class="line">        ctx.write(msg, promise);</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handlerAdded</span><span class="params">(<span class="keyword">final</span> ChannelHandlerContext ctx)</span> </span>{</span><br><span class="line">        <span class="comment">//&#x5B9A;&#x65F6;&#x5668;,&#x6A21;&#x62DF;&#x670D;&#x52A1;&#x7AEF;&#x5904;&#x7406;&#x5B8C;&#x6210;&#x6570;&#x636E;&#x540E;&#x7ED9;&#x5BA2;&#x6237;&#x7AEF;&#x7684;&#x54CD;&#x5E94;</span></span><br><span class="line">        ctx.executor().schedule(() -&gt; {</span><br><span class="line">            ctx.channel().write(<span class="string">&quot;hello world&quot;</span>);</span><br><span class="line">        }, <span class="number">3</span>, TimeUnit.SECONDS);</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line">---</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OutBoundHandlerC</span> <span class="keyword">extends</span> <span class="title">ChannelOutboundHandlerAdapter</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)</span> </span>{</span><br><span class="line">        System.out.println(<span class="string">&quot;OutBoundHandlerC: &quot;</span> + msg);</span><br><span class="line">        ctx.write(msg, promise);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x670D;&#x52A1;&#x7AEF;&#x521B;&#x5EFA;&#x4EE3;&#x7801;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">.childHandler(<span class="keyword">new</span> ChannelInitializer&lt;SocketChannel&gt;() {</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initChannel</span><span class="params">(SocketChannel ch)</span> </span>{</span><br><span class="line">        ch.pipeline().addLast(<span class="keyword">new</span> OutBoundHandlerA());</span><br><span class="line">        ch.pipeline().addLast(<span class="keyword">new</span> OutBoundHandlerB());</span><br><span class="line">        ch.pipeline().addLast(<span class="keyword">new</span> OutBoundHandlerC());</span><br><span class="line">    }</span><br><span class="line">});</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8F93;&#x51FA;&#x4E3A;&#x4EE5;&#x4E0B;,<strong>&#x548C;&#x6DFB;&#x52A0;&#x987A;&#x5E8F;&#x6B63;&#x597D;&#x76F8;&#x53CD;</strong>.&#x4E5F;&#x5C31;&#x662F;&#x8BF4;outBound&#x7684;&#x6DFB;&#x52A0;&#x987A;&#x5E8F;&#x548C;pipeline&#x4E2D;&#x7684;&#x4F20;&#x64AD;&#x987A;&#x5E8F;&#x662F;&#x76F8;&#x53CD;&#x7684; </p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">OutBoundHandlerC: hello world</span><br><span class="line">OutBoundHandlerB: hello world</span><br><span class="line">OutBoundHandlerA: hello world</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E0B;&#x9762;&#x770B;&#x770B;<code>write()</code>&#x7684;&#x6E90;&#x7801;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ChannelFuture <span class="title">write</span><span class="params">(Object msg)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> pipeline.write(msg);</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> ChannelFuture <span class="title">write</span><span class="params">(Object msg)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> tail.write(msg);</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ChannelFuture <span class="title">write</span><span class="params">(Object msg)</span> </span>{</span><br><span class="line">    	<span class="comment">//newPromise()&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x7A7A;&#x7684;&#x56DE;&#x8C03;</span></span><br><span class="line">        <span class="keyword">return</span> write(msg, newPromise());</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD9;&#x4E2A;pipeline&#x7684;write()&#x5B9E;&#x9645;&#x4F1A;&#x8C03;&#x7528;tail&#x7684;write,&#x8FD9;&#x91CC;&#x7684;<code>newPromise()</code>&#x662F;&#x4E00;&#x4E2A;&#x56DE;&#x8C03;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ChannelFuture <span class="title">write</span><span class="params">(<span class="keyword">final</span> Object msg, <span class="keyword">final</span> ChannelPromise promise)</span> </span>{</span><br><span class="line">        write(msg, <span class="keyword">false</span>, promise);<span class="comment">//flash=false</span></span><br><span class="line">        <span class="keyword">return</span> promise;</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(Object msg, <span class="keyword">boolean</span> flush, ChannelPromise promise)</span> </span>{</span><br><span class="line">        AbstractChannelHandlerContext next = findContextOutbound();</span><br><span class="line"><span class="comment">//..</span></span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x901A;&#x8FC7;<code>findContextOutbound()</code>&#x627E;&#x5230;&#x4E0B;&#x4E00;&#x4E2A;&#x4F20;&#x64AD;&#x5BF9;&#x8C61;,&#x770B;&#x4E00;&#x4E0B;&#x5B83;&#x7684;&#x6E90;&#x7801;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> AbstractChannelHandlerContext <span class="title">findContextOutbound</span><span class="params">()</span> </span>{</span><br><span class="line">    AbstractChannelHandlerContext ctx = <span class="keyword">this</span>;</span><br><span class="line">    <span class="keyword">do</span> {</span><br><span class="line">        ctx = ctx.prev;</span><br><span class="line">    } <span class="keyword">while</span> (!ctx.outbound);</span><br><span class="line">    <span class="keyword">return</span> ctx;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x548C;inbound&#x7684;&#x65F6;&#x5019;&#x76F8;&#x4F3C;,&#x901A;&#x8FC7;while&#x627E;&#x524D;&#x9762;&#x90A3;&#x4E2A;outbound&#x8282;&#x70B9;,&#x6B64;&#x65F6;&#x4F1A;&#x8FD4;&#x56DE;&#x6700;&#x540E;&#x6DFB;&#x52A0;&#x7684;C&#x8282;&#x70B9;,&#x7EE7;&#x7EED;&#x770B;&#x8FD9;&#x4E2A;<code>write()</code>&#x7684;&#x903B;&#x8F91;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(Object msg, <span class="keyword">boolean</span> flush, ChannelPromise promise)</span> </span>{</span><br><span class="line">        <span class="comment">//&#x627E;&#x5230;&#x4E0B;&#x4E00;&#x4E2A;&#x8282;&#x70B9;</span></span><br><span class="line">        AbstractChannelHandlerContext next = findContextOutbound();</span><br><span class="line">        <span class="keyword">final</span> Object m = pipeline.touch(msg, next);</span><br><span class="line">        EventExecutor executor = next.executor();</span><br><span class="line">        <span class="keyword">if</span> (executor.inEventLoop()) {<span class="comment">//true</span></span><br><span class="line">            <span class="keyword">if</span> (flush) {<span class="comment">//&#x53C2;&#x6570;&#x4F20;&#x7684;false</span></span><br><span class="line">                next.invokeWriteAndFlush(m, promise);</span><br><span class="line">            } <span class="keyword">else</span> {</span><br><span class="line">                <span class="comment">//&#x6700;&#x7EC8;&#x8C03;&#x7528;&#x8FD9;&#x4E2A;</span></span><br><span class="line">                next.invokeWrite(m, promise);</span><br><span class="line">            }</span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line"><span class="comment">//..</span></span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;<code>write()</code>&#x4F1A;&#x8C03;&#x7528;&#x4E0B;&#x4E00;&#x4E2A;outbound&#x8282;&#x70B9;&#x7684;<code>invokeWrite()</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">invokeWrite</span><span class="params">(Object msg, ChannelPromise promise)</span> </span>{</span><br><span class="line">        <span class="keyword">if</span> (invokeHandler()) {<span class="comment">//true</span></span><br><span class="line">            invokeWrite0(msg, promise);<span class="comment">//&#x8C03;&#x7528;&#x8FD9;&#x4E2A;</span></span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line">            write(msg, promise);</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">invokeWrite0</span><span class="params">(Object msg, ChannelPromise promise)</span> </span>{</span><br><span class="line">    <span class="comment">//&#x62FF;&#x5230;ChannelOutboundHandler(&#x8282;&#x70B9;C)&#x540E;,&#x8C03;&#x7528;&#x5B83;&#x7684;write()&#x65B9;&#x6CD5;</span></span><br><span class="line">            ((ChannelOutboundHandler) handler()).write(<span class="keyword">this</span>, msg, promise);</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E5F;&#x5C31;&#x662F;&#x4F1A;&#x8C03;&#x7528;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x81EA;&#x5B9A;&#x4E49;&#x7684;<code>write()</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OutBoundHandlerC</span> <span class="keyword">extends</span> <span class="title">ChannelOutboundHandlerAdapter</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)</span> </span>{</span><br><span class="line">        System.out.println(<span class="string">&quot;OutBoundHandlerC: &quot;</span> + msg);</span><br><span class="line">        ctx.write(msg, promise);	<span class="comment">//&#x7EE7;&#x7EED;&#x5F80;&#x4E0B;&#x4F20;&#x64AD;</span></span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD9;&#x4E2A;write&#x53C8;&#x4F1A;&#x8C03;&#x7528;<code>io.netty.channel.AbstractChannelHandlerContext#write(java.lang.Object, io.netty.channel.ChannelPromise)</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ChannelFuture <span class="title">write</span><span class="params">(<span class="keyword">final</span> Object msg, <span class="keyword">final</span> ChannelPromise promise)</span> </span>{</span><br><span class="line">        write(msg, <span class="keyword">false</span>, promise);</span><br><span class="line">        <span class="keyword">return</span> promise;</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(Object msg, <span class="keyword">boolean</span> flush, ChannelPromise promise)</span> </span>{</span><br><span class="line">    	<span class="comment">//&#x8FD9;&#x65F6;&#x8FD4;&#x56DE;&#x7684;&#x5C31;&#x662F;&#x8282;&#x70B9;B</span></span><br><span class="line">        AbstractChannelHandlerContext next = findContextOutbound();</span><br><span class="line"><span class="comment">//..</span></span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x540E;&#x9762;&#x8282;&#x70B9;B&#x53C8;&#x4F1A;&#x901A;&#x8FC7;&#x76F8;&#x540C;&#x903B;&#x8F91;&#x8C03;&#x7528;A.A&#x8282;&#x70B9;&#x53C8;&#x4F1A;&#x8C03;&#x7528;&#x76F8;&#x540C;&#x903B;&#x8F91;,&#x4F46;&#x6B64;&#x65F6;&#x8FD4;&#x56DE;&#x7684;next&#x662F;head&#x8282;&#x70B9;.&#x4E5F;&#x5C31;&#x662F;head&#x8282;&#x70B9;&#x7684;wtite()&#x65B9;&#x6CD5;.</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)</span></span>{</span><br><span class="line">    unsafe.write(msg, promise);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x603B;&#x7ED3;&#x4E00;&#x4E0B;&#x5C31;&#x662F;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ctx.channel().write(&quot;hello world&quot;);	//&#x4ECE;tail&#x5F00;&#x59CB;&#x4F20;&#x64AD;</span><br><span class="line">ctx.write(msg, promise);	//&#x4ECE;&#x5F53;&#x524D;&#x8282;&#x70B9;&#x5F00;&#x59CB;&#x5F80;&#x4E0B;&#x4F20;&#x64AD;</span><br></pre></td></tr></tbody></table></figure>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2019/01/06/20190106/" title="Netty源码剖析-pipeline创建">
+                    <div class="prevTitle">Netty源码剖析-pipeline创建</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MDUwMy8xNzAzMA==">
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:nnkwrik@gmail.com" class="iconfont-archer email" title="email"></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/nnkwrik" class="iconfont-archer github" target="_blank" title="github"></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title="wechat">
+                  
+                  <img class="profile-qr" src="/assets/qr.png">
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:30vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#事件和异常的传播"><span class="toc-number">1.</span> <span class="toc-text">事件和异常的传播</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#inBound事件的传播"><span class="toc-number">1.1.</span> <span class="toc-text">inBound事件的传播</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#何为inBound事件以及ChannelInboundHandler"><span class="toc-number">1.1.1.</span> <span class="toc-text">何为inBound事件以及ChannelInboundHandler</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ChannelRead事件的传播"><span class="toc-number">1.1.2.</span> <span class="toc-text">ChannelRead事件的传播</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SimpleInBoundHandler处理器"><span class="toc-number">1.1.3.</span> <span class="toc-text">SimpleInBoundHandler处理器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#outBound事件的传播"><span class="toc-number">1.2.</span> <span class="toc-text">outBound事件的传播</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#何为outBound事件以及ChannelOutBoundHandler"><span class="toc-number">1.2.1.</span> <span class="toc-text">何为outBound事件以及ChannelOutBoundHandler</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#write-事件的传播"><span class="toc-number">1.2.2.</span> <span class="toc-text">write()事件的传播</span></a></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 45
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106-1/">Netty源码剖析-pipeline事件传播</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106/">Netty源码剖析-pipeline创建</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228-1/">Netty源码剖析-新连接接入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228/">Netty源码剖析-NioEventLoop执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-2/">Netty源码剖析-NioEventLoop创建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-1/">Netty源码剖析-Netty服务端启动的过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225/">Netty源码剖析-Netty基本组件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224-3/">高性能MySQL-第5章-创建高性能的索引</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224/">高性能MySQL-第1章-MySQL架构与历史</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-7/">高性能MySQL-第4章-Schema与数据类型优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-6/">🍓 JVM知识点合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-5/">JVM知识点合集-4.Class文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-4/">JVM知识点合集-3.GC算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-3/">JVM知识点合集-2.内存结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-2/">JVM知识点合集-1.类的加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223/">深入理解Java虚拟机-第12章-Java内存模型与线程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222-2/">深入理解Java虚拟机-第8章-虚拟机字节码执行引擎</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222/">深入理解Java虚拟机-第7章-虚拟机类加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181221/">深入理解Java虚拟机-第6章-类文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/19</span><a class="archive-post-title" href="/2018/12/19/20181219/">重构的艺术？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/30</span><a class="archive-post-title" href="/2018/11/30/20181130/">万能的Jackson</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span><a class="archive-post-title" href="/2018/11/20/20181120/">Guava的Cache</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/19</span><a class="archive-post-title" href="/2018/11/19/20181119/">Spring Cloud中使用RabbitMQ的两种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href="/2018/11/12/20181112/">深入理解Java虚拟机-第4章-虚拟机性能监控与故障处理工具</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href="/2018/11/10/20181110/">深入理解Java虚拟机-第3章-垃圾收集器与内存分配策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109-2/">深入理解Java虚拟机-第2章-Java内存区域与内存溢出异常</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109/">深入理解Java虚拟机-第1章-走近Java</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/05</span><a class="archive-post-title" href="/2018/11/05/20181105/">Java并发编程实战-第7章-取消与关闭</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-5/">🍤 并发操作合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-4/">并发操作合集-11.ThreadLocal</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-3/">并发操作合集-10.Executor和线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-2/">并发操作合集-9.并发工具：Semaphore,CountDownLatch,CyclicBarrier</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104/">并发操作合集-8.并发容器：CopyOnWriteArrayList</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181102-3/">并发操作合集-7.并发容器：BlockingQueue</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102-2/">并发操作合集-6.并发容器：ConcurrentHashMap</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102/">并发操作合集-5.原子变量和volatile</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181030-2/">并发操作合集-1.线程的生命周期</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span><a class="archive-post-title" href="/2018/10/30/20181030/">Java并发编程实战-第6章-任务执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/29</span><a class="archive-post-title" href="/2018/10/29/20181029/">Java并发编程实战-第5章-基础构建模块</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href="/2018/10/28/20181028/">Java并发编程实战-第4章-对象的组合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span><a class="archive-post-title" href="/2018/10/27/20181027/">Java并发编程实战-第3章-对象的共享</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/25</span><a class="archive-post-title" href="/2018/10/25/20181025/">Java并发编程实战-第2章-线程安全性</a>
+        </li>
+    
+    </ul></div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发操作合集"><span class="iconfont-archer">&#xe606;</span>并发操作合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM"><span class="iconfont-archer">&#xe606;</span>JVM</span>
+    
+        <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
+    
+        <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
+    
+        <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
+    
+        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
+    
+        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
+    
+        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br>
+    1、请确保node版本大于6.2<br>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
+    
+        <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="框架使用"><span class="iconfont-archer">&#xe60a;</span>框架使用</span>
+    
+        <span class="sidebar-category-name" data-categories="瞎逼叨"><span class="iconfont-archer">&#xe60a;</span>瞎逼叨</span>
+    
+        <span class="sidebar-category-name" data-categories="JVM知识点合集"><span class="iconfont-archer">&#xe60a;</span>JVM知识点合集</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "曽生"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

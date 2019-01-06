@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="曽生">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="曽生">
+    
+    <meta name="keywords" content="nnkwrik,曽生,曾丽桦">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Netty源码剖析-pipeline创建 · 农场主的黑科技.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin="">
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin="">
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"输入关键字 :D","hits_empty":"没有找到相关信息 :(","hits_stats":"找到 ${hits} 个相关信息,耗时 ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'LXR3VBZBS6',
+                apiKey: '17d6d4ab4ba943bab3232eced0eea766',
+                indexName: 'index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">农场主的黑科技.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Netty源码剖析-pipeline创建</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href="/">农场主的黑科技.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:30vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/andrew-leu-1113236-unsplash.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Netty源码剖析-pipeline创建
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class="post-intro-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">2k</span>阅读时长: <span class="post-count reading-time">12 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/01/06</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <ul>
+<li>netty&#x5982;&#x4F55;&#x5224;&#x65AD;ChannelHandler&#x7C7B;&#x578B;&#x7684;&#xFF1F;</li>
+<li>&#x5BF9;&#x4E8E;ChannelHandler&#x7684;&#x6DFB;&#x52A0;&#x5E94;&#x8BE5;&#x9075;&#x5FAA;&#x4EC0;&#x4E48;&#x6837;&#x7684;&#x987A;&#x5E8F;&#xFF1F;</li>
+<li>&#x7528;&#x6237;&#x624B;&#x52A8;&#x89E6;&#x53D1;&#x4E8B;&#x4EF6;&#x4F20;&#x64AD;&#xFF0C;&#x4E0D;&#x540C;&#x7684;&#x89E6;&#x53D1;&#x65B9;&#x5F0F;&#x6709;&#x4EC0;&#x4E48;&#x6837;&#x7684;&#x533A;&#x522B;&#xFF1F;</li>
+</ul>
+<h1 id="pipeline&#x77E5;&#x8BC6;&#x70B9;"><a href="#pipeline&#x77E5;&#x8BC6;&#x70B9;" class="headerlink" title="pipeline&#x77E5;&#x8BC6;&#x70B9;"></a>pipeline&#x77E5;&#x8BC6;&#x70B9;</h1><ul>
+<li><p>pipeline&#x7684;&#x521D;&#x59CB;&#x5316;</p>
+<p>&#x670D;&#x52A1;&#x7AEF;channel&#x6216;&#x5BA2;&#x6237;&#x7AEF;channel&#x5728;&#x4EC0;&#x4E48;&#x65F6;&#x5019;&#x521D;&#x59CB;&#x5316;pipeline&#xFF1F;&#x521D;&#x59CB;&#x5316;&#x65F6;&#x4F1A;&#x505A;&#x4EC0;&#x4E48;</p>
+</li>
+<li><p>&#x6DFB;&#x52A0;&#x5220;&#x9664;ChannelHandler </p>
+</li>
+<li><p>&#x4E8B;&#x4EF6;&#x548C;&#x5F02;&#x5E38;&#x7684;&#x4F20;&#x64AD;<br>&#x8BFB;&#x5199;&#x4E8B;&#x4EF6;&#x5982;&#x4F55;&#x5728;pipeline&#x4E2D;&#x8FDB;&#x884C;&#x4F20;&#x64AD;</p>
+</li>
+</ul>
+<h1 id="pipeline&#x521D;&#x59CB;&#x5316;"><a href="#pipeline&#x521D;&#x59CB;&#x5316;" class="headerlink" title="pipeline&#x521D;&#x59CB;&#x5316;"></a>pipeline&#x521D;&#x59CB;&#x5316;</h1><ul>
+<li>pipeline&#x5728;&#x521B;&#x5EFA;Channel&#x7684;&#x65F6;&#x5019;&#x88AB;&#x521B;&#x5EFA;</li>
+<li>pipeline&#x8282;&#x70B9;&#x6570;&#x636E;&#x7ED3;&#x6784;&#xFF1A;ChannelHandlerContext</li>
+<li>Pipeline&#x4E2D;&#x7684;&#x4E24;&#x5927;&#x54E8;&#x5175;&#xFF1A;head&#x548C;tail</li>
+</ul>
+<h2 id="pipeline&#x5728;&#x521B;&#x5EFA;Channel&#x7684;&#x65F6;&#x5019;&#x88AB;&#x521B;&#x5EFA;"><a href="#pipeline&#x5728;&#x521B;&#x5EFA;Channel&#x7684;&#x65F6;&#x5019;&#x88AB;&#x521B;&#x5EFA;" class="headerlink" title="pipeline&#x5728;&#x521B;&#x5EFA;Channel&#x7684;&#x65F6;&#x5019;&#x88AB;&#x521B;&#x5EFA;"></a>pipeline&#x5728;&#x521B;&#x5EFA;Channel&#x7684;&#x65F6;&#x5019;&#x88AB;&#x521B;&#x5EFA;</h2><p>&#x5728;nettyChannel&#x7684;&#x521B;&#x5EFA;&#x8FC7;&#x7A0B;&#x4E2D;&#xFF0C;&#x65E0;&#x8BBA;&#x662F;&#x5BA2;&#x6237;&#x7AEF;&#x8FD8;&#x662F;&#x670D;&#x52A1;&#x7AEF;&#xFF0C;&#x6700;&#x7EC8;&#x4F1A;&#x8C03;&#x7528;&#x8FD9;&#x4E2A;&#x7236;&#x7C7B;&#x6784;&#x9020;&#x5668;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">AbstractChannel</span><span class="params">(Channel parent)</span> </span>{</span><br><span class="line">        <span class="keyword">this</span>.parent = parent;</span><br><span class="line">        id = newId();</span><br><span class="line">        unsafe = newUnsafe();</span><br><span class="line">        pipeline = newChannelPipeline();	<span class="comment">//&#x521B;&#x5EFA;pipeline&#xFF0C;&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x4E00;&#x4E2A;channel&#x5BF9;&#x5E94;&#x4E00;&#x4E2A;pipeline</span></span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> DefaultChannelPipeline <span class="title">newChannelPipeline</span><span class="params">()</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> DefaultChannelPipeline(<span class="keyword">this</span>);	<span class="comment">//this&#x4E5F;&#x5C31;&#x662F;&#x5F53;&#x524D;&#x7684;nettyChannel</span></span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x770B;&#x4E00;&#x4E0B;<code>DefaultChannelPipeline</code>&#x7684;&#x521B;&#x5EFA;&#x8FC7;&#x7A0B;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">  <span class="function"><span class="keyword">protected</span> <span class="title">DefaultChannelPipeline</span><span class="params">(Channel channel)</span> </span>{</span><br><span class="line">      <span class="keyword">this</span>.channel = ObjectUtil.checkNotNull(channel, <span class="string">&quot;channel&quot;</span>);<span class="comment">//&#x628A;&#x5F53;&#x524D;&#x7684;nettyChannel&#x4FDD;&#x5B58;</span></span><br><span class="line">      succeededFuture = <span class="keyword">new</span> SucceededChannelFuture(channel, <span class="keyword">null</span>);</span><br><span class="line">      voidPromise =  <span class="keyword">new</span> VoidChannelPromise(channel, <span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">      <span class="comment">//&#x521B;&#x5EFA;&#x8FD9;&#x4E24;&#x4E2A;&#x8282;&#x70B9;</span></span><br><span class="line">      tail = <span class="keyword">new</span> TailContext(<span class="keyword">this</span>);</span><br><span class="line">      head = <span class="keyword">new</span> HeadContext(<span class="keyword">this</span>);</span><br><span class="line"><span class="comment">//&#x628A;&#x8FD9;&#x4E24;&#x4E2A;&#x8282;&#x70B9;&#x53D8;&#x6210;&#x53CC;&#x5411;&#x94FE;&#x8868;&#x7684;&#x7ED3;&#x6784;</span></span><br><span class="line">      head.next = tail;</span><br><span class="line">      tail.prev = head;</span><br><span class="line">  }</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="pipeline&#x8282;&#x70B9;&#x6570;&#x636E;&#x7ED3;&#x6784;&#xFF1A;ChannelHandlerContext"><a href="#pipeline&#x8282;&#x70B9;&#x6570;&#x636E;&#x7ED3;&#x6784;&#xFF1A;ChannelHandlerContext" class="headerlink" title="pipeline&#x8282;&#x70B9;&#x6570;&#x636E;&#x7ED3;&#x6784;&#xFF1A;ChannelHandlerContext"></a>pipeline&#x8282;&#x70B9;&#x6570;&#x636E;&#x7ED3;&#x6784;&#xFF1A;ChannelHandlerContext</h2><p><code>io.netty.channel.ChannelHandlerContext</code>&#x63A5;&#x53E3;,pipeline&#x4E2D;&#x6BCF;&#x4E00;&#x4E2A;&#x8282;&#x70B9;&#x90FD;&#x662F;&#x8FD9;&#x4E2A;&#x63A5;&#x53E3;&#x7684;&#x5B9E;&#x73B0;,&#x5305;&#x62EC;&#x521A;&#x624D;&#x7684;head&#x548C;tail.</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ChannelHandlerContext</span> <span class="keyword">extends</span> </span></span><br><span class="line"><span class="class">                                        <span class="title">AttributeMap</span>,	//&#x53EF;&#x4EE5;&#x5B58;&#x50A8;&#x5C5E;&#x6027;</span></span><br><span class="line"><span class="class">                                        <span class="title">ChannelInboundInvoker</span>,	//&#x7528;&#x4E8E;&#x4E8B;&#x4EF6;&#x4F20;&#x64AD;(&#x8BFB;)</span></span><br><span class="line"><span class="class">                                        <span class="title">ChannelOutboundInvoker</span> </span>{<span class="comment">//&#x7528;&#x4E8E;&#x4E8B;&#x4EF6;&#x4F20;&#x64AD;(&#x5199;)</span></span><br><span class="line">	<span class="comment">//&#x5F53;&#x524D;&#x8282;&#x70B9;&#x5C5E;&#x4E8E;&#x90A3;&#x4E2A;channel</span></span><br><span class="line">    <span class="function">Channel <span class="title">channel</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="comment">//&#x54EA;&#x4E00;&#x4E2A;nioEventLoop&#x4F1A;&#x6267;&#x884C;&#x8FD9;&#x4E2A;&#x8282;&#x70B9;</span></span><br><span class="line">    <span class="function">EventExecutor <span class="title">executor</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="comment">//&#x8282;&#x70B9;&#x5904;&#x7406;&#x5668;&#x540D;&#x79F0; </span></span><br><span class="line">    <span class="function">String <span class="title">name</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="comment">//&#x8282;&#x70B9;&#x5904;&#x7406;&#x5668;</span></span><br><span class="line">    <span class="function">ChannelHandler <span class="title">handler</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="comment">//&#x8BE5;&#x8282;&#x70B9;&#x662F;&#x5426;&#x88AB;&#x79FB;&#x9664;</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isRemoved</span><span class="params">()</span></span>;</span><br><span class="line">                                            </span><br><span class="line">	<span class="comment">//&#x4E8B;&#x4EF6;&#x4F20;&#x64AD;&#x76F8;&#x5173;,inbound,outbound</span></span><br><span class="line">                                   </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelHandlerContext <span class="title">fireChannelRegistered</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelHandlerContext <span class="title">fireChannelUnregistered</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelHandlerContext <span class="title">fireChannelActive</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelHandlerContext <span class="title">fireChannelInactive</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelHandlerContext <span class="title">fireExceptionCaught</span><span class="params">(Throwable cause)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelHandlerContext <span class="title">fireUserEventTriggered</span><span class="params">(Object evt)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelHandlerContext <span class="title">fireChannelRead</span><span class="params">(Object msg)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelHandlerContext <span class="title">fireChannelReadComplete</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelHandlerContext <span class="title">fireChannelWritabilityChanged</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelHandlerContext <span class="title">read</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function">ChannelHandlerContext <span class="title">flush</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//&#x5F53;&#x524D;&#x8282;&#x70B9;&#x7684;pipeline&#x662F;&#x54EA;&#x4E00;&#x4E2A;</span></span><br><span class="line">    <span class="function">ChannelPipeline <span class="title">pipeline</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="comment">//&#x9700;&#x8981;&#x5206;&#x914D;&#x5185;&#x5B58;&#x65F6;(bytebuf),&#x4F7F;&#x7528;&#x54EA;&#x4E00;&#x4E2A;&#x5185;&#x5B58;&#x5206;&#x914D;&#x5668;</span></span><br><span class="line">    <span class="function">ByteBufAllocator <span class="title">alloc</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="comment">//&#x5C5E;&#x6027;&#x5B58;&#x50A8;</span></span><br><span class="line">    <span class="meta">@Deprecated</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    &lt;T&gt; <span class="function">Attribute&lt;T&gt; <span class="title">attr</span><span class="params">(AttributeKey&lt;T&gt; key)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Deprecated</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    &lt;T&gt; <span class="function"><span class="keyword">boolean</span> <span class="title">hasAttr</span><span class="params">(AttributeKey&lt;T&gt; key)</span></span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x901A;&#x5E38;&#x60C5;&#x51B5;&#x4E0B;,&#x5B83;&#x5C24;<code>io.netty.channel.AbstractChannelHandlerContext</code>&#x5B9E;&#x73B0;</p>
+<h2 id="Pipeline&#x4E2D;&#x7684;&#x4E24;&#x5927;&#x54E8;&#x5175;&#xFF1A;head&#x548C;tail"><a href="#Pipeline&#x4E2D;&#x7684;&#x4E24;&#x5927;&#x54E8;&#x5175;&#xFF1A;head&#x548C;tail" class="headerlink" title="Pipeline&#x4E2D;&#x7684;&#x4E24;&#x5927;&#x54E8;&#x5175;&#xFF1A;head&#x548C;tail"></a>Pipeline&#x4E2D;&#x7684;&#x4E24;&#x5927;&#x54E8;&#x5175;&#xFF1A;head&#x548C;tail</h2><p>&#x5728;&#x51E0;&#x7AE0;&#x524D;&#x521B;&#x5EFA;pipeline&#x65F6;&#x540C;&#x65F6;&#x521B;&#x5EFA;&#x4E86;tail&#x548C;head</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tail = <span class="keyword">new</span> TailContext(<span class="keyword">this</span>);</span><br><span class="line">head = <span class="keyword">new</span> HeadContext(<span class="keyword">this</span>);</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E0B;&#x9762;&#x5206;&#x522B;&#x770B;&#x4E00;&#x4E0B;&#x5B83;&#x4EEC;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">TailContext</span> <span class="keyword">extends</span> <span class="title">AbstractChannelHandlerContext</span> //&#x6EE1;&#x8DB3;<span class="title">pipeline</span>&#x8282;&#x70B9;&#x7684;&#x6570;&#x636E;&#x7ED3;&#x6784;</span></span><br><span class="line"><span class="class">						<span class="keyword">implements</span> <span class="title">ChannelInboundHandler</span> </span>{	<span class="comment">//&#x4F20;&#x64AD;inbound&#x4E8B;&#x4EF6;</span></span><br><span class="line">    TailContext(DefaultChannelPipeline pipeline) {</span><br><span class="line">        <span class="keyword">super</span>(pipeline, <span class="keyword">null</span>, TAIL_NAME, <span class="keyword">true</span>, <span class="keyword">false</span>);</span><br><span class="line">        setAddComplete();	<span class="comment">//&#x8BBE;&#x7F6E;&#x4E3A;&#x5DF2;&#x6DFB;&#x52A0;&#x8BE5;&#x8282;&#x70B9;</span></span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8DDF;super&#x6784;&#x9020;&#x51FD;&#x6570;&#x5230;<code>AbstractChannelHandlerContext</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">AbstractChannelHandlerContext(DefaultChannelPipeline pipeline, EventExecutor executor, String name,</span><br><span class="line">                              <span class="keyword">boolean</span> inbound, <span class="keyword">boolean</span> outbound) {</span><br><span class="line">    <span class="keyword">this</span>.name = ObjectUtil.checkNotNull(name, <span class="string">&quot;name&quot;</span>);</span><br><span class="line">    <span class="keyword">this</span>.pipeline = pipeline;<span class="comment">//pipeline</span></span><br><span class="line">    <span class="keyword">this</span>.executor = executor;<span class="comment">//nio&#x5904;&#x7406;&#x5668;,&#x8FD9;&#x91CC;&#x4F20;&#x5165;&#x7684;&#x65F6;null</span></span><br><span class="line">    <span class="keyword">this</span>.inbound = inbound;<span class="comment">//true</span></span><br><span class="line">    <span class="keyword">this</span>.outbound = outbound;<span class="comment">//false</span></span><br><span class="line"></span><br><span class="line">    ordered = executor == <span class="keyword">null</span> || executor <span class="keyword">instanceof</span> OrderedEventExecutor;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;tail&#x662F;&#x4E00;&#x4E2A;inbound&#x7684;&#x5904;&#x7406;&#x5668;.</p>
+<p>&#x7EE7;&#x7EED;&#x770B;<code>TailContext</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">    <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">TailContext</span> <span class="keyword">extends</span> <span class="title">AbstractChannelHandlerContext</span> <span class="keyword">implements</span> <span class="title">ChannelInboundHandler</span> </span>{</span><br><span class="line"><span class="comment">//..</span></span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> ChannelHandler <span class="title">handler</span><span class="params">()</span> </span>{</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;	<span class="comment">//&#x81EA;&#x5DF1;&#x4E0D;&#x4EC5;&#x662F;&#x8282;&#x70B9;,&#x4E5F;&#x5305;&#x542B;&#x4E86;&#x5904;&#x7406;&#x903B;&#x8F91;</span></span><br><span class="line">        }</span><br><span class="line">        <span class="comment">//&#x4E4B;&#x540E;&#x7684;channelRegistered,channelActive&#x7B49;&#x65B9;&#x6CD5;&#x90FD;&#x4E3A;&#x7A7A;</span></span><br><span class="line">        <span class="comment">//..</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">exceptionCaught</span><span class="params">(ChannelHandlerContext ctx, Throwable cause)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">            onUnhandledInboundException(cause);<span class="comment">//&#x5BF9;&#x5F02;&#x5E38;&#x7684;&#x5904;&#x7406;,&#x4EC5;&#x662F;&#x901A;&#x8FC7;loggr&#x8F93;&#x51FA;warn</span></span><br><span class="line">        }</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">            onUnhandledInboundMessage(msg);<span class="comment">//&#x4F20;&#x5165;&#x7684;inboundMessage&#x6CA1;&#x6709;&#x88AB;&#x5904;&#x7406;&#x8C03;&#x7528;&#x5B83;,&#x4EC5;&#x662F;&#x901A;&#x8FC7;loggr&#x8F93;&#x51FA;debug</span></span><br><span class="line">        }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4ECE;&#x4E0A;&#x9762;&#x53EF;&#x4EE5;&#x770B;&#x51FA;,tail&#x4E3B;&#x8981;&#x662F;&#x505A;&#x4E00;&#x4E9B;&#x6536;&#x5C3E;&#x7684;&#x4FE1;&#x606F;,&#x53EA;&#x4F1A;&#x5BF9;&#x672A;&#x5B8C;&#x5584;&#x7684;&#x90E8;&#x5206;&#x8F93;&#x51FA;logger&#x8FDB;&#x884C;&#x63D0;&#x9192;&#x7A0B;&#x5E8F;&#x5458;.</p>
+<p>&#x770B;&#x5B8C;tail&#x540E;&#x6765;&#x770B;head</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">HeadContext</span> <span class="keyword">extends</span> <span class="title">AbstractChannelHandlerContext</span></span></span><br><span class="line"><span class="class">                            <span class="keyword">implements</span> <span class="title">ChannelOutboundHandler</span>, </span></span><br><span class="line"><span class="class">                                        <span class="title">ChannelInboundHandler</span> </span>{</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> Unsafe unsafe;</span><br><span class="line"></span><br><span class="line">        HeadContext(DefaultChannelPipeline pipeline) {</span><br><span class="line">            <span class="comment">//&#x6700;&#x540E;&#x7684;&#x53C2;&#x6570;&#x4E3A;true,&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x662F;&#x5904;&#x7406;outbound&#x7684;&#x8282;&#x70B9;</span></span><br><span class="line">            <span class="keyword">super</span>(pipeline, <span class="keyword">null</span>, HEAD_NAME, <span class="keyword">false</span>, <span class="keyword">true</span>);	</span><br><span class="line">            unsafe = pipeline.channel().unsafe();	<span class="comment">//&#x4FDD;&#x5B58;channel&#x7684;unsafe</span></span><br><span class="line">            setAddComplete();	<span class="comment">//&#x8BBE;&#x7F6E;&#x4E3A;&#x5DF2;&#x6DFB;&#x52A0;&#x8BE5;&#x8282;&#x70B9;</span></span><br><span class="line">        }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x770B;&#x4E00;&#x4E0B;&#x5B83;&#x6709;&#x54EA;&#x4E9B;&#x65B9;&#x6CD5;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">HeadContext</span> <span class="keyword">extends</span> <span class="title">AbstractChannelHandlerContext</span></span></span><br><span class="line"><span class="class">            <span class="keyword">implements</span> <span class="title">ChannelOutboundHandler</span>, <span class="title">ChannelInboundHandler</span> </span>{</span><br><span class="line">		<span class="comment">//...</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> ChannelHandler <span class="title">handler</span><span class="params">()</span> </span>{</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;<span class="comment">//&#x548C;tail&#x76F8;&#x540C;,&#x81EA;&#x8EAB;&#x5305;&#x542B;&#x4E86;&#x5904;&#x7406;&#x903B;&#x8F91;</span></span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        <span class="comment">//&#x540E;&#x9762;&#x7684;bind,connect,disconnect&#x7B49;&#x90FD;&#x662F;&#x548C;&#x8BFB;&#x5199;&#x76F8;&#x5173;&#x7684;&#x64CD;&#x4F5C;,&#x5982;&#x4E0B;&#x9762;.&#x90FD;&#x4F1A;&#x59D4;&#x6258;unsafe&#x8FDB;&#x884C;&#x64CD;&#x4F5C;</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">bind</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">                ChannelHandlerContext ctx, SocketAddress localAddress, ChannelPromise promise)</span></span></span><br><span class="line"><span class="function">                <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">            unsafe.bind(localAddress, promise);<span class="comment">//&#x59D4;&#x6258;unsafe&#x8FDB;&#x884C;&#x8BFB;&#x5199;&#x64CD;&#x4F5C;</span></span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">		<span class="comment">//&#x518D;&#x540E;&#x9762;&#x7684;&#x4E00;&#x4E9B;&#x65B9;&#x6CD5;,&#x5982;&#x4E0B;&#x9762;.&#x5B83;&#x90FD;&#x4F1A;&#x628A;&#x8FD9;&#x4E2A;&#x4E8B;&#x4EF6;&#x7EE7;&#x7EED;&#x5F80;&#x4E0B;&#x4F20;&#x64AD;</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelActive</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">            ctx.fireChannelActive();<span class="comment">//&#x628A;&#x8FD9;&#x4E2A;&#x4E8B;&#x4EF6;&#x7EE7;&#x7EED;&#x5F80;&#x4E0B;&#x4F20;&#x64AD;</span></span><br><span class="line"></span><br><span class="line">            readIfIsAutoRead();	<span class="comment">//&#x9996;&#x6B21;&#x8FDE;&#x63A5;&#x65F6;&#x4F1A;&#x89E6;&#x53D1;channelActive,&#x901A;&#x8FC7;&#x8FD9;&#x884C;&#x53BB;&#x6CE8;&#x518C;&#x4E00;&#x4E2A;&#x8BFB;&#x4E8B;&#x4EF6;</span></span><br><span class="line">            <span class="comment">//&#x89E6;&#x53D1;&#x5BF9;&#x5E94;nioeventloop&#x7684;selector&#x7684;&#x8BFB;&#x4E8B;&#x4EF6;</span></span><br><span class="line">        }</span><br></pre></td></tr></tbody></table></figure>
+<p>head&#x8282;&#x70B9;&#x7684;&#x5DE5;&#x4F5C;:1.&#x628A;&#x4E8B;&#x4EF6;&#x539F;&#x5C01;&#x4E0D;&#x52A8;&#x7684;&#x8FDB;&#x884C;&#x4F20;&#x64AD;,2.&#x628A;&#x8BFB;&#x5199;&#x64CD;&#x4F5C;&#x59D4;&#x6258;&#x7ED9;unsafe</p>
+<h1 id="&#x6DFB;&#x52A0;ChannelHandler"><a href="#&#x6DFB;&#x52A0;ChannelHandler" class="headerlink" title="&#x6DFB;&#x52A0;ChannelHandler"></a>&#x6DFB;&#x52A0;ChannelHandler</h1><p>&#x56DE;&#x987E;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x4E2D;&#x662F;&#x5982;&#x4F55;&#x6DFB;&#x52A0;ChannelHandler&#x7684;?</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">.childHandler(<span class="keyword">new</span> ChannelInitializer&lt;SocketChannel&gt;() {</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initChannel</span><span class="params">(SocketChannel ch)</span> </span>{</span><br><span class="line">	     <span class="comment">//&#x8C03;&#x7528;&#x8FD9;&#x4E2A;addLast&#x6DFB;&#x52A0;&#x7684;ChannelHandler</span></span><br><span class="line">        <span class="comment">//&#x901A;&#x5E38;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x4F1A;&#x7EE7;&#x627F;&#x8FD9;&#x4E24;&#x4E2A;ChannelHandler,&#x521B;&#x5EFA;&#x81EA;&#x5B9A;&#x4E49;&#x7684;ChannelHandler</span></span><br><span class="line">		ch.pipeline().addLast(<span class="keyword">new</span> ChannelInboundHandlerAdapter());</span><br><span class="line">        ch.pipeline().addLast(<span class="keyword">new</span> ChannelOutboundHandlerAdapter());</span><br><span class="line">    }</span><br><span class="line">})</span><br></pre></td></tr></tbody></table></figure>
+<p><strong>&#x8FD9;&#x91CC;&#x7684;<code>addLast()</code>&#x4F1A;&#x505A;&#x4E9B;&#x4EC0;&#x4E48;?</strong></p>
+<ul>
+<li>&#x5224;&#x65AD;&#x662F;&#x5426;&#x91CD;&#x590D;&#x6DFB;&#x52A0;</li>
+<li>&#x521B;&#x5EFA;&#x8282;&#x70B9;&#x5E76;&#x6DFB;&#x52A0;&#x81F3;&#x94FE;&#x8868;<br>&#x628A;&#x8FD9;&#x4E2A;ChannelHandler&#x5305;&#x88C5;&#x6210;ChannelHandlerContext,&#x6DFB;&#x52A0;&#x5230;&#x94FE;&#x8868;</li>
+<li>&#x56DE;&#x8C03;&#x6DFB;&#x52A0;&#x5B8C;&#x6210;&#x4E8B;&#x4EF6;<br>&#x544A;&#x8BC9;&#x7528;&#x6237;&#x6DFB;&#x52A0;&#x5B8C;&#x6210;</li>
+</ul>
+<h2 id="&#x5224;&#x65AD;&#x662F;&#x5426;&#x91CD;&#x590D;&#x6DFB;&#x52A0;"><a href="#&#x5224;&#x65AD;&#x662F;&#x5426;&#x91CD;&#x590D;&#x6DFB;&#x52A0;" class="headerlink" title="&#x5224;&#x65AD;&#x662F;&#x5426;&#x91CD;&#x590D;&#x6DFB;&#x52A0;"></a>&#x5224;&#x65AD;&#x662F;&#x5426;&#x91CD;&#x590D;&#x6DFB;&#x52A0;</h2><p>&#x8FDB;&#x5230;<code>addLast</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> ChannelPipeline <span class="title">addLast</span><span class="params">(ChannelHandler... handlers)</span> </span>{<span class="comment">//&#x652F;&#x6301;&#x591A;&#x4E2A;handler</span></span><br><span class="line">        <span class="keyword">return</span> addLast(<span class="keyword">null</span>, handlers);</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> ChannelPipeline <span class="title">addLast</span><span class="params">(EventExecutorGroup executor, ChannelHandler... handlers)</span> </span>{</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (ChannelHandler h: handlers) {</span><br><span class="line">            <span class="comment">//executor &#x4E3A; null</span></span><br><span class="line">            addLast(executor, <span class="keyword">null</span>, h);	<span class="comment">//&#x5BF9;&#x6BCF;&#x4E2A;handler&#x8C03;&#x7528;&#x8FD9;&#x4E2A;</span></span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> ChannelPipeline <span class="title">addLast</span><span class="params">(EventExecutorGroup group, String name, ChannelHandler handler)</span> </span>{</span><br><span class="line">        <span class="keyword">final</span> AbstractChannelHandlerContext newCtx;</span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>) {</span><br><span class="line">            <span class="comment">//1.&#x5224;&#x65AD;&#x662F;&#x5426;&#x91CD;&#x590D;&#x6DFB;&#x52A0;</span></span><br><span class="line">            checkMultiplicity(handler);</span><br><span class="line">			<span class="comment">//...</span></span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x770B;&#x4E00;&#x4E0B;<code>checkMultiplicity</code>&#x662F;&#x5982;&#x4F55;&#x5224;&#x65AD;&#x7684;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">checkMultiplicity</span><span class="params">(ChannelHandler handler)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (handler <span class="keyword">instanceof</span> ChannelHandlerAdapter) {<span class="comment">//&#x662F;&#x5426;&#x662F;ChannelHandlerAdapter&#x7684;&#x5B9E;&#x4F8B;</span></span><br><span class="line">        <span class="comment">//&#x662F;</span></span><br><span class="line">        ChannelHandlerAdapter h = (ChannelHandlerAdapter) handler;</span><br><span class="line">        <span class="comment">//isSharable()&#x5B9E;&#x9645;&#x4E0A;&#x5C31;&#x662F;&#x53BB;&#x67E5;&#x770B;&#x81EA;&#x5B9A;&#x4E49;ChannelHandler&#x7C7B;&#x4E0A;&#x662F;&#x5426;&#x6709;Sharable&#x6CE8;&#x89E3;</span></span><br><span class="line">        <span class="comment">//&#x6709;&#x8FD9;&#x4E2A;Sharable&#x6CE8;&#x89E3;&#x6CE8;&#x89E3;&#x65F6;&#x8868;&#x793A;&#x5B83;&#x662F;&#x53EF;&#x4EE5;&#x591A;&#x6B21;&#x88AB;&#x6DFB;&#x52A0;&#x7684;.</span></span><br><span class="line">        <span class="keyword">if</span> (!h.isSharable() &amp;&amp; h.added) {<span class="comment">//&#x662F;&#x5426;&#x662F;&#x975E;&#x5171;&#x4EAB;&#x7684;&#x5E76;&#x4E14;&#x662F;&#x6DFB;&#x52A0;&#x8FC7;&#x7684;</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">//&#x629B;&#x5F02;&#x5E38;</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ChannelPipelineException(</span><br><span class="line">                    h.getClass().getName() +</span><br><span class="line">                    <span class="string">&quot; is not a @Sharable handler, so can&apos;t be added or removed multiple times.&quot;</span>);</span><br><span class="line">        }</span><br><span class="line">        h.added = <span class="keyword">true</span>;	<span class="comment">//&#x8BBE;&#x7F6E;&#x4E3A;&#x5DF2;&#x6DFB;&#x52A0;</span></span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="&#x521B;&#x5EFA;&#x8282;&#x70B9;&#x5E76;&#x6DFB;&#x52A0;&#x81F3;&#x94FE;&#x8868;"><a href="#&#x521B;&#x5EFA;&#x8282;&#x70B9;&#x5E76;&#x6DFB;&#x52A0;&#x81F3;&#x94FE;&#x8868;" class="headerlink" title="&#x521B;&#x5EFA;&#x8282;&#x70B9;&#x5E76;&#x6DFB;&#x52A0;&#x81F3;&#x94FE;&#x8868;"></a>&#x521B;&#x5EFA;&#x8282;&#x70B9;&#x5E76;&#x6DFB;&#x52A0;&#x81F3;&#x94FE;&#x8868;</h2><p>&#x7EE7;&#x7EED;&#x770B;<code>addLast</code>&#x7684;&#x4E0B;&#x4E00;&#x6B65;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"> <span class="meta">@Override</span></span><br><span class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> ChannelPipeline <span class="title">addLast</span><span class="params">(EventExecutorGroup group, String name, ChannelHandler handler)</span> </span>{</span><br><span class="line">     <span class="keyword">final</span> AbstractChannelHandlerContext newCtx;</span><br><span class="line">     <span class="keyword">synchronized</span> (<span class="keyword">this</span>) {</span><br><span class="line">         <span class="comment">//1.&#x5224;&#x65AD;&#x662F;&#x5426;&#x91CD;&#x590D;&#x6DFB;&#x52A0;</span></span><br><span class="line">         checkMultiplicity(handler);</span><br><span class="line"><span class="comment">//2.&#x521B;&#x5EFA;&#x8282;&#x70B9;</span></span><br><span class="line">         <span class="comment">//group&#x662F;null</span></span><br><span class="line">         <span class="comment">//filterName():&#x5224;&#x65AD;&#x4F60;&#x4F20;&#x5165;&#x7684;name&#x662F;&#x5426;&#x6709;&#x91CD;&#x590D;,&#x7528;pipeline&#x5F00;&#x59CB;&#x904D;&#x5386;.&#x5982;&#x679C;&#x6709;&#x91CD;&#x590D;&#x7684;&#x5219;&#x629B;&#x5F02;&#x5E38;</span></span><br><span class="line">         <span class="comment">//handler&#x662F;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x4F20;&#x5165;&#x7684;&#x81EA;&#x5B9A;&#x4E49;ChannelHandler</span></span><br><span class="line">         newCtx = newContext(group, filterName(name, handler), handler);</span><br><span class="line"> }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FDB;&#x5230;&#x8FD9;&#x4E2A;<code>newContext()</code>,&#x5B83;&#x4F1A;&#x521B;&#x5EFA;ChannelHandlerContext&#x5BF9;&#x7528;&#x6237;&#x4F20;&#x5165;&#x7684;initChannel&#x8FDB;&#x884C;&#x5206;&#x88C5;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> AbstractChannelHandlerContext <span class="title">newContext</span><span class="params">(EventExecutorGroup group, String name, ChannelHandler handler)</span> </span>{</span><br><span class="line">    <span class="comment">//&#x521B;&#x5EFA;ChannelHandlerContext</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> DefaultChannelHandlerContext(<span class="keyword">this</span>, <span class="comment">//&#x5F53;&#x524D;pipeLine</span></span><br><span class="line">                                            childExecutor(group), <span class="comment">//null</span></span><br><span class="line">                                            name, <span class="comment">//&#x540D;&#x79F0;</span></span><br><span class="line">                                            handler);<span class="comment">//&#x7528;&#x6237;&#x4EE3;&#x7801;&#x4F20;&#x5165;&#x7684;&#x81EA;&#x5B9A;&#x4E49;ChannelHandler</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E4B;&#x540E;,&#x5B83;&#x4F1A;&#x8C03;&#x7528;<code>addLast0()</code>&#x6765;&#x6DFB;&#x52A0;&#x5230;&#x94FE;&#x8868;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1.&#x5224;&#x65AD;&#x662F;&#x5426;&#x91CD;&#x590D;&#x6DFB;&#x52A0;</span></span><br><span class="line">name = filterName(name, handler);</span><br><span class="line"><span class="comment">//2.&#x521B;&#x5EFA;&#x8282;&#x70B9;</span></span><br><span class="line">newCtx = newContext(group, name, handler);</span><br><span class="line"><span class="comment">//3.&#x628A;&#x65B0;&#x8282;&#x70B9;&#x6DFB;&#x52A0;&#x81F3;&#x94FE;&#x8868;</span></span><br><span class="line">addLast0(newCtx);</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x770B;&#x4E00;&#x4E0B;<code>addFirst0</code>&#x7684;&#x6B65;&#x9AA4;.&#x5B9E;&#x9645;&#x5C31;&#x662F;&#x628A;&#x5B83;&#x63D2;&#x5165;&#x5230;&#x53CC;&#x5411;&#x94FE;&#x8868;&#x4E2D;tail&#x7684;&#x524D;&#x9762;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">addLast0</span><span class="params">(AbstractChannelHandlerContext newCtx)</span> </span>{</span><br><span class="line">    AbstractChannelHandlerContext prev = tail.prev;</span><br><span class="line">    newCtx.prev = prev;</span><br><span class="line">    newCtx.next = tail;</span><br><span class="line">    prev.next = newCtx;</span><br><span class="line">    tail.prev = newCtx;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="&#x56DE;&#x8C03;&#x6DFB;&#x52A0;&#x5B8C;&#x6210;&#x4E8B;&#x4EF6;"><a href="#&#x56DE;&#x8C03;&#x6DFB;&#x52A0;&#x5B8C;&#x6210;&#x4E8B;&#x4EF6;" class="headerlink" title="&#x56DE;&#x8C03;&#x6DFB;&#x52A0;&#x5B8C;&#x6210;&#x4E8B;&#x4EF6;"></a>&#x56DE;&#x8C03;&#x6DFB;&#x52A0;&#x5B8C;&#x6210;&#x4E8B;&#x4EF6;</h2><p>&#x7EE7;&#x7EED;&#x770B;<code>addLast</code>&#x7684;&#x6B65;&#x9AA4;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> ChannelPipeline <span class="title">addLast</span><span class="params">(EventExecutorGroup group, String name, ChannelHandler handler)</span> </span>{</span><br><span class="line">    <span class="keyword">final</span> AbstractChannelHandlerContext newCtx;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) {</span><br><span class="line">        <span class="comment">//..</span></span><br><span class="line">        EventExecutor executor = newCtx.executor();</span><br><span class="line">        <span class="keyword">if</span> (!executor.inEventLoop()) {</span><br><span class="line">            <span class="comment">//&#x5982;&#x679C;&#x4E0D;&#x5728;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;.&#x628A;&#x5B83;&#x653E;&#x5165;&#x4EFB;&#x52A1;&#x961F;&#x5217;.&#x5C31;&#x662F;&#x4E4B;&#x524D;&#x7684;mpscQueue</span></span><br><span class="line">            newCtx.setAddPending();</span><br><span class="line">            executor.execute(<span class="keyword">new</span> Runnable() {</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{</span><br><span class="line">                    callHandlerAdded0(newCtx);</span><br><span class="line">                }</span><br><span class="line">            });</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="comment">//&#x5982;&#x679C;&#x65F6;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;,&#x5C31;&#x76F4;&#x63A5;&#x6267;&#x884C;</span></span><br><span class="line">    callHandlerAdded0(newCtx);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x662F;&#x901A;&#x8FC7;<code>callHandlerAdded0</code>&#x6267;&#x884C;&#x56DE;&#x8C03;&#x7684;.&#x770B;&#x4E00;&#x4E0B;&#x6E90;&#x7801;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">callHandlerAdded0</span><span class="params">(<span class="keyword">final</span> AbstractChannelHandlerContext ctx)</span> </span>{</span><br><span class="line">    ctx.handler().handlerAdded(ctx);<span class="comment">//&#x5B9E;&#x9645;&#x5C31;&#x662F;&#x8C03;&#x7528;ChannelInitializer&#x7684;handlerAdded&#x65B9;&#x6CD5;</span></span><br><span class="line">    ctx.setAddComplete();	<span class="comment">//&#x628A;&#x72B6;&#x6001;&#x8BBE;&#x7F6E;&#x4E3A;&#x5DF2;&#x6DFB;&#x52A0;&#x5B8C;&#x6BD5;,ADD_COMPLETE </span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>ChannelInitializer&#x7684;handlerAdded&#x65B9;&#x6CD5;&#x5177;&#x4F53;&#x505A;&#x4E86;&#x4EC0;&#x4E48;?</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handlerAdded</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        <span class="keyword">if</span> (ctx.channel().isRegistered()) {	<span class="comment">//&#x5DF2;&#x88AB;&#x6DFB;&#x52A0;&#x5230;pipeline</span></span><br><span class="line">            initChannel(ctx);</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">initChannel</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        <span class="keyword">if</span> (initMap.putIfAbsent(ctx, Boolean.TRUE) == <span class="keyword">null</span>) { <span class="comment">// Guard against re-entrance.</span></span><br><span class="line">            <span class="comment">//&#x8FD8;&#x672A;&#x88AB;&#x6267;&#x884C;&#x8FC7;</span></span><br><span class="line">            <span class="keyword">try</span> {</span><br><span class="line">                <span class="comment">//&#x8FD9;&#x4E2A;initChannel&#x5C31;&#x662F;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x4E2D;&#x91CD;&#x8F7D;&#x7684;&#x90A3;&#x4E2A;&#x65B9;&#x6CD5;</span></span><br><span class="line">                initChannel((C) ctx.channel());</span><br><span class="line">            } <span class="keyword">finally</span> {</span><br><span class="line">                remove(ctx);<span class="comment">//&#x6267;&#x884C;&#x5B8C;&#x6210;&#x540E;&#x901A;&#x8FC7;remove&#x628A;&#x8FD9;&#x4E2A;&#x8282;&#x70B9;&#x8FDB;&#x884C;&#x5220;&#x9664;</span></span><br><span class="line">            }</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2019/01/06/20190106-1/" title="Netty源码剖析-pipeline事件传播">
+                    <div class="nextTitle">Netty源码剖析-pipeline事件传播</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2018/12/28/20181228-1/" title="Netty源码剖析-新连接接入">
+                    <div class="prevTitle">Netty源码剖析-新连接接入</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MDUwMy8xNzAzMA==">
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:nnkwrik@gmail.com" class="iconfont-archer email" title="email"></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/nnkwrik" class="iconfont-archer github" target="_blank" title="github"></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title="wechat">
+                  
+                  <img class="profile-qr" src="/assets/qr.png">
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:30vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#pipeline知识点"><span class="toc-number">1.</span> <span class="toc-text">pipeline知识点</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#pipeline初始化"><span class="toc-number">2.</span> <span class="toc-text">pipeline初始化</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#pipeline在创建Channel的时候被创建"><span class="toc-number">2.1.</span> <span class="toc-text">pipeline在创建Channel的时候被创建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pipeline节点数据结构：ChannelHandlerContext"><span class="toc-number">2.2.</span> <span class="toc-text">pipeline节点数据结构：ChannelHandlerContext</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Pipeline中的两大哨兵：head和tail"><span class="toc-number">2.3.</span> <span class="toc-text">Pipeline中的两大哨兵：head和tail</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#添加ChannelHandler"><span class="toc-number">3.</span> <span class="toc-text">添加ChannelHandler</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#判断是否重复添加"><span class="toc-number">3.1.</span> <span class="toc-text">判断是否重复添加</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建节点并添加至链表"><span class="toc-number">3.2.</span> <span class="toc-text">创建节点并添加至链表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#回调添加完成事件"><span class="toc-number">3.3.</span> <span class="toc-text">回调添加完成事件</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 45
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106-1/">Netty源码剖析-pipeline事件传播</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106/">Netty源码剖析-pipeline创建</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228-1/">Netty源码剖析-新连接接入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228/">Netty源码剖析-NioEventLoop执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-2/">Netty源码剖析-NioEventLoop创建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-1/">Netty源码剖析-Netty服务端启动的过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225/">Netty源码剖析-Netty基本组件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224-3/">高性能MySQL-第5章-创建高性能的索引</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224/">高性能MySQL-第1章-MySQL架构与历史</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-7/">高性能MySQL-第4章-Schema与数据类型优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-6/">🍓 JVM知识点合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-5/">JVM知识点合集-4.Class文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-4/">JVM知识点合集-3.GC算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-3/">JVM知识点合集-2.内存结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-2/">JVM知识点合集-1.类的加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223/">深入理解Java虚拟机-第12章-Java内存模型与线程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222-2/">深入理解Java虚拟机-第8章-虚拟机字节码执行引擎</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222/">深入理解Java虚拟机-第7章-虚拟机类加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181221/">深入理解Java虚拟机-第6章-类文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/19</span><a class="archive-post-title" href="/2018/12/19/20181219/">重构的艺术？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/30</span><a class="archive-post-title" href="/2018/11/30/20181130/">万能的Jackson</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span><a class="archive-post-title" href="/2018/11/20/20181120/">Guava的Cache</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/19</span><a class="archive-post-title" href="/2018/11/19/20181119/">Spring Cloud中使用RabbitMQ的两种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href="/2018/11/12/20181112/">深入理解Java虚拟机-第4章-虚拟机性能监控与故障处理工具</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href="/2018/11/10/20181110/">深入理解Java虚拟机-第3章-垃圾收集器与内存分配策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109-2/">深入理解Java虚拟机-第2章-Java内存区域与内存溢出异常</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109/">深入理解Java虚拟机-第1章-走近Java</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/05</span><a class="archive-post-title" href="/2018/11/05/20181105/">Java并发编程实战-第7章-取消与关闭</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-5/">🍤 并发操作合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-4/">并发操作合集-11.ThreadLocal</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-3/">并发操作合集-10.Executor和线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-2/">并发操作合集-9.并发工具：Semaphore,CountDownLatch,CyclicBarrier</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104/">并发操作合集-8.并发容器：CopyOnWriteArrayList</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181102-3/">并发操作合集-7.并发容器：BlockingQueue</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102-2/">并发操作合集-6.并发容器：ConcurrentHashMap</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102/">并发操作合集-5.原子变量和volatile</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181030-2/">并发操作合集-1.线程的生命周期</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span><a class="archive-post-title" href="/2018/10/30/20181030/">Java并发编程实战-第6章-任务执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/29</span><a class="archive-post-title" href="/2018/10/29/20181029/">Java并发编程实战-第5章-基础构建模块</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href="/2018/10/28/20181028/">Java并发编程实战-第4章-对象的组合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span><a class="archive-post-title" href="/2018/10/27/20181027/">Java并发编程实战-第3章-对象的共享</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/25</span><a class="archive-post-title" href="/2018/10/25/20181025/">Java并发编程实战-第2章-线程安全性</a>
+        </li>
+    
+    </ul></div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发操作合集"><span class="iconfont-archer">&#xe606;</span>并发操作合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM"><span class="iconfont-archer">&#xe606;</span>JVM</span>
+    
+        <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
+    
+        <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
+    
+        <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
+    
+        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
+    
+        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
+    
+        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br>
+    1、请确保node版本大于6.2<br>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
+    
+        <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="框架使用"><span class="iconfont-archer">&#xe60a;</span>框架使用</span>
+    
+        <span class="sidebar-category-name" data-categories="瞎逼叨"><span class="iconfont-archer">&#xe60a;</span>瞎逼叨</span>
+    
+        <span class="sidebar-category-name" data-categories="JVM知识点合集"><span class="iconfont-archer">&#xe60a;</span>JVM知识点合集</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "曽生"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
