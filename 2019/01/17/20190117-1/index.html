@@ -22,7 +22,7 @@
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>高性能MySQL-第4章-Schema与数据类型优化 · 农场主的黑科技.</title>
+    <title>校招准备视频笔记-设计模式 · 农场主的黑科技.</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -232,7 +232,7 @@
                 <a href="/">农场主的黑科技.</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">高性能MySQL-第4章-Schema与数据类型优化</a>
+                <a href="#" class="post-name">校招准备视频笔记-设计模式</a>
             </div>
     </div>
     
@@ -262,7 +262,7 @@ height:30vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            高性能MySQL-第4章-Schema与数据类型优化
+            校招准备视频笔记-设计模式
             <!-- 404 -->
             
         </h1>
@@ -281,20 +281,20 @@ height:30vh;
                 
                     <div class="post-intro-tags">
     
-        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
     
-        <a class="post-tag" href="javascript:void(0);" data-tags="《高性能MySQL》">《高性能MySQL》</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java校招面试】">【Java校招面试】</a>
     
 </div>
                 
                 
                     <div class="post-intro-read">
-                        <span>字数统计: <span class="post-count word-count">2.4k</span>阅读时长: <span class="post-count reading-time">14 min</span></span>
+                        <span>字数统计: <span class="post-count word-count">355</span>阅读时长: <span class="post-count reading-time">2 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
                     <span class="post-intro-calander iconfont-archer">&#xe676;</span>
-                    <span class="post-intro-time">2018/12/23</span>
+                    <span class="post-intro-time">2019/01/17</span>
                     
                     <span class="shareWrapper">
                         <span class="iconfont-archer shareIcon">&#xe71d;</span>
@@ -413,138 +413,54 @@ height:30vh;
         <div class="container container-unloaded">
             <main class="main post-page">
     <article class="article-entry">
-        <h1 id="MySQL&#x6570;&#x636E;&#x7C7B;&#x578B;"><a href="#MySQL&#x6570;&#x636E;&#x7C7B;&#x578B;" class="headerlink" title="MySQL&#x6570;&#x636E;&#x7C7B;&#x578B;"></a>MySQL&#x6570;&#x636E;&#x7C7B;&#x578B;</h1><p>&#x8BE5;&#x5982;&#x4F55;&#x9009;&#x62E9;&#x6570;&#x636E;&#x7C7B;&#x578B;&#xFF1F;</p>
+        <ul>
+<li>&#x8BBE;&#x8BA1;&#x6A21;&#x5F0F;&#x7B80;&#x4ECB;</li>
+<li>&#x518D;&#x8C08;Singleton</li>
+<li>&#x53D8;&#x7EE7;&#x627F;&#x5173;&#x7CFB;&#x4E3A;&#x7EC4;&#x5408;&#x5173;&#x7CFB;</li>
+<li>&#x5982;&#x4F55;&#x521B;&#x5EFA;&#x5BF9;&#x8C61;</li>
+</ul>
+<h2 id="Singleton"><a href="#Singleton" class="headerlink" title="Singleton"></a>Singleton</h2><p><strong>&#x4F18;&#x7F3A;&#x70B9;</strong></p>
 <ul>
-<li>&#x66F4;&#x5C0F;&#x7684;&#x901A;&#x5E38;&#x66F4;&#x597D;&#xFF1A;&#x4E00;&#x822C;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x5E94;&#x8BE5;&#x5C3D;&#x91CF;&#x4F7F;&#x7528;&#x53EF;&#x4EE5;&#x6B63;&#x786E;&#x5B58;&#x50A8;&#x6570;&#x636E;&#x7684;&#x6700;&#x5C0F;&#x6570;&#x636E;&#x7C7B;&#x578B;&#x3002;&#x66F4;&#x5C0F;&#x7684;&#x6570;&#x636E;&#x7C7B;&#x578B;&#x901A;&#x5E38;&#x66F4;&#x5FEB;&#xFF0C;&#x56E0;&#x4E3A;&#x5B83;&#x4EEC;&#x5360;&#x7528;&#x66F4;&#x5C11;&#x7684;&#x78C1;&#x76D8;&#x3001;&#x5185;&#x5B58;&#x548C;cpu&#x7F13;&#x5B58;&#xFF0C;&#x5E76;&#x4E14;&#x5904;&#x7406;&#x65F6;&#x9700;&#x8981;&#x7684;cpu&#x5468;&#x671F;&#x4E5F;&#x66F4;&#x5C11;&#x3002;</li>
-<li><p>&#x7B80;&#x5355;&#x5C31;&#x597D;&#xFF1A;&#x7B80;&#x5355;&#x6570;&#x636E;&#x7C7B;&#x578B;&#x7684;&#x64CD;&#x4F5C;&#x901A;&#x5E38;&#x9700;&#x8981;&#x66F4;&#x5C11;&#x7684;cpu&#x5468;&#x671F;&#xFF0C;&#x4F8B;&#x5982;&#x6574;&#x578B;&#x6BD4;&#x5B57;&#x7B26;&#x64CD;&#x4F5C;&#x4EE3;&#x4EF7;&#x66F4;&#x4F4E;&#xFF0C;&#x56E0;&#x4E3A;&#x5B57;&#x7B26;&#x96C6;&#x548C;&#x6821;&#x5BF9;&#x89C4;&#x5219;&#xFF08;&#x6392;&#x5E8F;&#x89C4;&#x5219;&#xFF09;&#x4F7F;&#x5B57;&#x7B26;&#x6BD4;&#x8F83;&#x6BD4;&#x6574;&#x578B;&#x6BD4;&#x8F83;&#x66F4;&#x590D;&#x6742;&#xFF0C;&#x4F7F;&#x7528;&#x6574;&#x578B;&#x5B58;&#x50A8;IP&#x5730;&#x5740;&#x3002;</p>
+<li>&#x786E;&#x4FDD;&#x5168;&#x5C40;&#x6700;&#x591A;&#x53EA;&#x6709;&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;.</li>
+<li>&#x7528;&#x4E8E;:&#x6784;&#x9020;&#x7F13;&#x6162;&#x7684;&#x5BF9;&#x8C61;,&#x9700;&#x8981;&#x7EDF;&#x4E00;&#x7BA1;&#x7406;&#x7684;&#x8D44;&#x6E90;</li>
+<li>&#x7F3A;&#x70B9;:&#x5F88;&#x591A;&#x5168;&#x5C40;&#x72B6;&#x6001;,&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x6027;</li>
+</ul>
+<p><strong>Singleton&#x7684;&#x521B;&#x5EFA;</strong></p>
+<ul>
+<li>&#x53CC;&#x91CD;&#x9501;&#x6A21;&#x5F0F; ,&#x5728;&#x5E76;&#x53D1;&#x73AF;&#x5883;&#x4E0B;&#x4F7F;&#x7528;</li>
+<li>&#x4F5C;&#x4E3A;Java&#x7C7B;&#x7684;&#x9759;&#x6001;&#x53D8;&#x91CF;,<br>&#x4E5F;&#x5C31;&#x662F;&#x997F;&#x6C49;&#x5F0F;,&#x7F3A;&#x70B9;&#x5728;&#x4E8E;&#x7C7B;&#x52A0;&#x8F7D;&#x65F6;&#x5C31;&#x4F1A;&#x88AB;&#x521B;&#x5EFA;,&#x6D6A;&#x8D39;&#x8D44;&#x6E90;</li>
+<li>&#x4F7F;&#x7528;&#x6846;&#x67B6;&#x63D0;&#x4F9B;&#x7684;&#x80FD;&#x529B;<br>Spring&#x4E2D;&#x7684;DI</li>
+</ul>
+<h2 id="&#x53D8;&#x7EE7;&#x627F;&#x5173;&#x7CFB;&#x4E3A;&#x7EC4;&#x5408;&#x5173;&#x7CFB;"><a href="#&#x53D8;&#x7EE7;&#x627F;&#x5173;&#x7CFB;&#x4E3A;&#x7EC4;&#x5408;&#x5173;&#x7CFB;" class="headerlink" title="&#x53D8;&#x7EE7;&#x627F;&#x5173;&#x7CFB;&#x4E3A;&#x7EC4;&#x5408;&#x5173;&#x7CFB;"></a>&#x53D8;&#x7EE7;&#x627F;&#x5173;&#x7CFB;&#x4E3A;&#x7EC4;&#x5408;&#x5173;&#x7CFB;</h2><p><strong>&#x7EE7;&#x627F;&#x5173;&#x7CFB;</strong></p>
+<ul>
+<li>&#x63CF;&#x8FF0;is-a&#x5173;&#x7CFB;,&#x5BF9;&#x7ED3;&#x6784;&#x8981;&#x6C42;&#x9AD8;</li>
+<li>&#x4E0D;&#x8981;&#x7528;&#x7EE7;&#x627F;&#x5173;&#x7CFB;&#x6765;&#x5B9E;&#x73B0;&#x590D;&#x7528;,&#x7528;&#x8BBE;&#x8BA1;&#x6A21;&#x5F0F;&#x5B9E;&#x73B0;&#x590D;&#x7528;</li>
+</ul>
+<p><strong>&#x5982;&#x679C;Employee&#x5347;&#x7EA7;&#x6210;&#x4E86;Manager</strong></p>
+<p>&#x73B0;&#x5728;&#x7684;&#x5173;&#x7CFB;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Class Manager extends Employee{</span><br></pre></td></tr></tbody></table></figure>
+<p>-&gt;<strong>&#x72B6;&#x6001;&#x6A21;&#x5F0F;</strong></p>
+<p><img src="1547728084499.png" alt="1547728084499"></p>
+<p><strong>&#x88C5;&#x9970;&#x5668;&#x6A21;&#x5F0F;</strong></p>
+<p><img src="1547729231346.png" alt="1547729231346"></p>
+<h2 id="&#x5982;&#x4F55;&#x521B;&#x5EFA;&#x5BF9;&#x8C61;"><a href="#&#x5982;&#x4F55;&#x521B;&#x5EFA;&#x5BF9;&#x8C61;" class="headerlink" title="&#x5982;&#x4F55;&#x521B;&#x5EFA;&#x5BF9;&#x8C61;"></a>&#x5982;&#x4F55;&#x521B;&#x5EFA;&#x5BF9;&#x8C61;</h2><p><strong>&#x4F7F;&#x7528;new&#x6765;&#x521B;&#x5EFA;&#x7684;&#x7F3A;&#x70B9;</strong></p>
+<ul>
+<li>&#x7F16;&#x8BD1;&#x65F6;&#x5FC5;&#x987B;&#x51B3;&#x5B9A;&#x521B;&#x5EFA;&#x54EA;&#x4E2A;&#x7C7B;&#x7684;&#x5BF9;&#x8C61;</li>
+<li>&#x53C2;&#x6570;&#x7684;&#x610F;&#x4E49;&#x4E0D;&#x660E;&#x786E;</li>
+</ul>
+<p><strong>&#x62BD;&#x8C61;&#x5DE5;&#x5382;&#x521B;&#x5EFA;</strong></p>
+<ul>
+<li><code>task = new LogginTask(new CodingTask());</code></li>
+<li><code>task = taskFactory.createCodingTask();</code>//&#x66F4;&#x597D;,&#x66F4;&#x62BD;&#x8C61;</li>
+</ul>
+<p><strong>&#x5EFA;&#x9020;&#x8005;&#x6A21;&#x5F0F;&#x521B;&#x5EFA;</strong></p>
+<ul>
+<li><code>employee = new Employee(oldEmployee.getName,15000)</code>//&#x53C2;&#x6570;&#x4E0D;&#x660E;&#x786E;</li>
+<li><p><code>Employee.fromExisting(oldEmployee).withSalary(15000).build()</code> //&#x66F4;&#x597D;</p>
 </li>
-<li><p>&#x5C3D;&#x91CF;&#x907F;&#x514D;NULL&#xFF1A;&#x901A;&#x5E38;&#x60C5;&#x51B5;&#x4E0B;&#x6700;&#x597D;&#x5236;&#x5B9A;&#x5217;&#x4E3A;NOT NULL&#xFF0C;&#x9664;&#x975E;&#x771F;&#x7684;&#x9700;&#x8981;&#x5B58;&#x50A8;NULL&#x503C;&#x3002;&#x5982;&#x679C;&#x67E5;&#x8BE2;&#x4E2D;&#x5305;&#x542B;&#x53EF;&#x4E3A;NULL&#x7684;&#x5217;&#xFF0C;&#x5BF9;mysql&#x6765;&#x8BF4;&#x66F4;&#x96BE;&#x4F18;&#x5316;&#xFF0C;&#x56E0;&#x4E3A;&#x53EF;&#x4E3A;NULL&#x7684;&#x5217;&#x4F7F;&#x5F97;&#x7D22;&#x5F15;&#x3001;&#x7D22;&#x5F15;&#x7EDF;&#x8BA1;&#x548C;&#x503C;&#x6BD4;&#x8F83;&#x90FD;&#x66F4;&#x590D;&#x6742;&#x3002;</p>
+<li><p>&#x5F80;&#x5F80;&#x914D;&#x5408;&#x4E0D;&#x53EF;&#x53D8;&#x5BF9;&#x8C61;&#x4F7F;&#x7528;</p>
 </li>
 </ul>
-<p>&#x5F88;&#x591A;MySQL&#x7684;&#x6570;&#x636E;&#x7C7B;&#x578B;&#x53EF;&#x4EE5;&#x5B58;&#x50A8;&#x76F8;&#x540C;&#x7C7B;&#x578B;&#x7684;&#x6570;&#x636E;&#xFF0C;&#x53EA;&#x662F;&#x5B58;&#x50A8;&#x7684;&#x957F;&#x5EA6;&#x548C;&#x8303;&#x56F4;&#x4E0D;&#x4E00;&#x6837;&#x3001;&#x5141;&#x8BB8;&#x7684;&#x7CBE;&#x5EA6;&#x4E0D;&#x540C;&#xFF0C;&#x6216;&#x8005;&#x9700;&#x8981;&#x7684;&#x7269;&#x7406;&#x7A7A;&#x95F4;&#xFF08;&#x78C1;&#x76D8;&#x548C;&#x5185;&#x5B58;&#x7A7A;&#x95F4;&#xFF09;&#x4E0D;&#x540C;&#x3002;&#x5982;DATETIME&#x548C;TIMESTAMP&#x3002;</p>
-<p>&#x5173;&#x4E8E;&#x522B;&#x540D;&#xFF1A;MYSQL&#x4E3A;&#x4E86;&#x517C;&#x5BB9;&#x6027;&#x652F;&#x6301;&#x5F88;&#x591A;&#x522B;&#x540D;&#xFF0C;&#x4F8B;&#x5982;integer&#x3001;bool&#x3001;numeric&#x3002;&#x5982;&#x679C;&#x5EFA;&#x8868;&#x7684;&#x65F6;&#x5019;&#x91C7;&#x7528;&#x6570;&#x636E;&#x7C7B;&#x578B;&#x7684;&#x522B;&#x540D;&#xFF0C;&#x7136;&#x540E;&#x7528;show create table&#x68C0;&#x67E5;&#xFF0C;&#x4F1A;&#x53D1;&#x73B0;mysql&#x62A5;&#x544A;&#x7684;&#x662F;&#x57FA;&#x672C;&#x7C7B;&#x578B;&#xFF0C;&#x800C;&#x4E0D;&#x662F;&#x522B;&#x540D;&#x3002;&#x8FD9;&#x4E5F;&#x4E0D;&#x4F1A;&#x5F71;&#x54CD;&#x6027;&#x80FD;</p>
-<h2 id="&#x6574;&#x6570;&#x7C7B;&#x578B;"><a href="#&#x6574;&#x6570;&#x7C7B;&#x578B;" class="headerlink" title="&#x6574;&#x6570;&#x7C7B;&#x578B;"></a>&#x6574;&#x6570;&#x7C7B;&#x578B;</h2><p>&#x4E24;&#x79CD;&#x7C7B;&#x578B;&#x7684;&#x6570;&#x5B57;&#xFF1A;<code>&#x6574;&#x6570;</code>&#x548C;<code>&#x5B9E;&#x6570;</code>&#xFF0C;&#x5173;&#x4E8E;&#x6574;&#x6570;&#xFF1A;</p>
-<ul>
-<li>&#x7C7B;&#x578B;&#xFF1A;TINYINT&#xFF0C;SMALLINT&#xFF0C;MEDIUMINT&#xFF0C;INT&#xFF0C;BITGINT&#x3002;&#x672C;&#x522B;&#x662F;16,24,32,64&#x4F4D;&#x5B58;&#x50A8;&#x7A7A;&#x95F4;</li>
-<li>&#x53EF;&#x9009;UNSIGNED&#x5C5E;&#x6027;&#xFF0C;&#x4E0D;&#x5141;&#x8BB8;&#x8D1F;&#x503C;&#xFF0C;&#x53EF;&#x4EE5;&#x63D0;&#x9AD8;&#x4E0A;&#x9650;&#x5927;&#x5C0F;</li>
-<li>&#x53EF;&#x4EE5;&#x6307;&#x5B9A;&#x5BBD;&#x5EA6;&#xFF0C;&#x5982;INT&#xFF08;11&#xFF09;&#xFF0C;&#x4F46;&#x6CA1;&#x6709;&#x5B9E;&#x9645;&#x610F;&#x4E49;&#xFF0C;&#x4E0D;&#x4F1A;&#x9650;&#x5236;&#x5408;&#x6CD5;&#x8303;&#x56F4;&#x3002;&#x53EA;&#x662F;&#x65B9;&#x4FBF;&#x4EA4;&#x4E92;&#x5DE5;&#x5177;&#x663E;&#x793A;&#x5B57;&#x7B26;&#x4E2A;&#x6570;&#xFF0C;&#x5B9E;&#x9645;&#x4E0A;INT&#xFF08;1&#xFF09;&#x548C;INT&#xFF08;20&#xFF09;&#x662F;&#x4E00;&#x6837;&#x7684;&#x3002;</li>
-</ul>
-<h2 id="&#x5B9E;&#x6570;&#x7C7B;&#x578B;"><a href="#&#x5B9E;&#x6570;&#x7C7B;&#x578B;" class="headerlink" title="&#x5B9E;&#x6570;&#x7C7B;&#x578B;"></a>&#x5B9E;&#x6570;&#x7C7B;&#x578B;</h2><p>&#x5B9E;&#x6570;&#x662F;&#x5E26;&#x6709;&#x5C0F;&#x6570;&#x90E8;&#x5206;&#x7684;&#x6570;&#x5B57;&#x3002;&#x4F46;&#x4E5F;&#x4E0D;&#x53EA;&#x5C0F;&#x6570;&#xFF0C;&#x4E5F;&#x53EF;&#x4EE5;&#x7528;DECIMAL&#x5B58;&#x6BD4;BIGINT&#x8FD8;&#x5927;&#x7684;&#x6570;&#x3002;</p>
-<ul>
-<li>FLOAT&#x548C;DOUBLE&#x652F;&#x6301;&#x6807;&#x51C6;&#x6D6E;&#x70B9;&#x8FD0;&#x7B97;</li>
-<li>DECIMAL&#x5B58;&#x50A8;&#x7CBE;&#x786E;&#x7684;&#x5C0F;&#x6570;&#xFF0C;MYSQL5.0&#x4E4B;&#x540E;&#x652F;&#x6301;DECIMAL&#x7684;&#x7CBE;&#x51C6;&#x8BA1;&#x7B97;&#xFF0C;&#x7136;&#x800C;CPU&#x672C;&#x8EAB;&#x662F;&#x53EA;&#x652F;&#x6301;&#x6D6E;&#x70B9;&#x8BA1;&#x7B97;&#x7684;&#xFF0C;&#x6240;&#x4EE5;&#x6BD4;&#x8D77;DECIMAL&#xFF0C;&#x6D6E;&#x70B9;&#x8BA1;&#x7B97;&#x901F;&#x5EA6;&#x66F4;&#x5FEB;&#x3002;&#x6700;&#x591A;&#x5B58;65&#x4E2A;&#x6570;&#x5B57;</li>
-<li>&#x6D6E;&#x70B9;&#x548C;DECIMAL&#x90FD;&#x80FD;&#x5236;&#x5B9A;&#x7CBE;&#x5EA6;&#x3002;&#x5982;DECIMAL(18,9)&#x5C0F;&#x6570;&#x70B9;&#x4E24;&#x8FB9;&#x5404;&#x5B58;9&#x4E2A;&#x6570;&#x5B57;</li>
-</ul>
-<h2 id="&#x5B57;&#x7B26;&#x4E32;&#x7C7B;&#x578B;"><a href="#&#x5B57;&#x7B26;&#x4E32;&#x7C7B;&#x578B;" class="headerlink" title="&#x5B57;&#x7B26;&#x4E32;&#x7C7B;&#x578B;"></a>&#x5B57;&#x7B26;&#x4E32;&#x7C7B;&#x578B;</h2><p>VARCHAR&#x548C;CHAR&#x662F;&#x4E24;&#x79CD;&#x6700;&#x4E3B;&#x8981;&#x7684;&#x5B57;&#x7B26;&#x4E32;&#x7C7B;&#x578B;&#x3002;</p>
-<h3 id="VARCHAR"><a href="#VARCHAR" class="headerlink" title="VARCHAR"></a>VARCHAR</h3><ul>
-<li><p>varchar&#x7C7B;&#x578B;&#x9009;&#x7528;&#x4E8E;&#x5B58;&#x50A8;&#x53EF;&#x53D8;&#x957F;&#x5B57;&#x7B26;&#x4E32;&#xFF0C;&#x9700;&#x8981;&#x4F7F;&#x7528;1&#x6216;&#x8005;2&#x4E2A;&#x989D;&#x5916;&#x5B57;&#x8282;&#x8BB0;&#x5F55;&#x5B57;&#x7B26;&#x4E32;&#x7684;&#x957F;&#x5EA6;&#xFF0C;&#x6BD4;&#x5B9A;&#x957F;&#x7C7B;&#x578B;&#x66F4;&#x8282;&#x7701;&#x7A7A;&#x95F4;&#xFF0C;&#x56E0;&#x4E3A;&#x5B83;&#x4EC5;&#x4F7F;&#x7528;&#x5FC5;&#x8981;&#x7684;&#x7A7A;&#x95F4;&#xFF08;&#x4F8B;&#x5982;&#x8D8A;&#x77ED;&#x7684;&#x5B57;&#x7B26;&#x4E32;&#x4F7F;&#x7528;&#x8D8A;&#x5C11;&#x7684;&#x7A7A;&#x95F4;&#xFF09;&#x3002;</p>
-</li>
-<li><p>&#x7531;&#x4E8E;VARCHAR&#x884C;&#x662F;&#x53D8;&#x957F;&#x7684;&#xFF0C;&#x5728;UPDATE&#x65F6;&#x53EF;&#x80FD;&#x4F7F;&#x884C;&#x53D8;&#x5F97;&#x6BD4;&#x539F;&#x6765;&#x66F4;&#x957F;&#x3002;</p>
-</li>
-<li><p>varchar&#x7684;&#x4F7F;&#x7528;&#x573A;&#x666F;&#xFF1A;</p>
-<ul>
-<li>&#x5B57;&#x7B26;&#x4E32;&#x5217;&#x7684;&#x6700;&#x5927;&#x957F;&#x5EA6;&#x6BD4;&#x5E73;&#x5747;&#x957F;&#x5EA6;&#x5927;&#x5F88;&#x591A;&#xFF1B;</li>
-<li>&#x5217;&#x7684;&#x66F4;&#x65B0;&#x5F88;&#x5C11;&#xFF0C;&#x6240;&#x4EE5;&#x788E;&#x7247;&#x4E0D;&#x662F;&#x95EE;&#x9898;&#xFF1B;</li>
-<li>&#x4F7F;&#x7528;&#x4E86;&#x50CF;utf-8&#x8FD9;&#x6837;&#x590D;&#x6742;&#x7684;&#x5B57;&#x7B26;&#x96C6;&#xFF0C;&#x6BCF;&#x4E2A;&#x5B57;&#x7B26;&#x90FD;&#x4F7F;&#x7528;&#x4E0D;&#x540C;&#x7684;&#x5B57;&#x8282;&#x6570;&#x8FDB;&#x884C;&#x5B58;&#x50A8;&#x3002;</li>
-</ul>
-</li>
-</ul>
-<h3 id="CHAR"><a href="#CHAR" class="headerlink" title="CHAR"></a>CHAR</h3><ul>
-<li>CHAR&#x7C7B;&#x578B;&#x662F;&#x5B9A;&#x957F;&#x7684;&#xFF0C;MySQL&#x603B;&#x662F;&#x6839;&#x636E;&#x5B9A;&#x4E49;&#x7684;&#x5B57;&#x7B26;&#x4E32;&#x957F;&#x5EA6;&#x5206;&#x914D;&#x8DB3;&#x591F;&#x7684;&#x7A7A;&#x95F4;</li>
-<li>&#x6839;&#x636E;&#x9700;&#x8981;&#x91C7;&#x7528;&#x7A7A;&#x683C;&#x8FDB;&#x884C;&#x586B;&#x5145;&#x4EE5;&#x65B9;&#x4FBF;&#x6BD4;&#x8F83;</li>
-<li>char&#x7684;&#x4F7F;&#x7528;&#x573A;&#x666F;&#xFF1A;<ul>
-<li>&#x5B58;&#x50A8;&#x5F88;&#x77ED;&#x7684;&#x5B57;&#x7B26;&#x4E32;&#xFF0C;&#x6216;&#x8005;&#x6240;&#x6709;&#x503C;&#x90FD;&#x63A5;&#x8FD1;&#x540C;&#x4E00;&#x4E2A;&#x957F;&#x5EA6;&#x3002;&#x5982;MD5</li>
-<li>&#x7ECF;&#x5E38;&#x66F4;&#x65B0;&#x7684;&#x6570;&#x636E;</li>
-<li>&#x975E;&#x5E38;&#x77ED;&#x7684;&#x5217;&#xFF08;&#x56E0;&#x4E3A;VARCHAR&#x9700;&#x8981;&#x7559;&#x51FA;&#x4F4D;&#x7F6E;&#x8BB0;&#x5F55;&#x957F;&#x5EA6;&#xFF09;</li>
-</ul>
-</li>
-</ul>
-<p>&#x7C7B;&#x4F3C;&#x7684;&#x8FD8;&#x6709;BINARY&#x548C;VARBINARY&#x5B58;&#x50A8;&#x4E8C;&#x8FDB;&#x5236;&#xFF0C;&#x89C4;&#x5219;&#x548C;&#x8FD9;&#x4E24;&#x4E2A;&#x76F8;&#x4F3C;&#xFF0C;&#x76F8;&#x6BD4;&#x8F83;&#x4E8C;&#x8FDB;&#x5236;&#x5B57;&#x7B26;&#x4E32;&#x65F6;&#x53EF;&#x4EE5;&#x7528;&#x3002;</p>
-<blockquote>
-<p>&#x65E2;&#x7136;VARCHAR(5)&#x548C;VARCHAT(200)&#x5B58;&#x2019;hello&#x2019;&#x7684;&#x7A7A;&#x95F4;&#x5F00;&#x9500;&#x662F;&#x4E00;&#x6837;&#x7684;&#xFF0C;&#x90A3;&#x4E48;&#x7528;&#x66F4;&#x77ED;&#x7684;&#x5217;&#x6709;&#x4EC0;&#x4E48;&#x4F18;&#x52BF;?</p>
-<p>&#x4ECE;&#x5B58;&#x50A8;&#x7A7A;&#x95F4;&#x800C;&#x8A00;&#x662F;&#x4E00;&#x6837;&#x7684;&#xFF0C;&#x4F46;&#x540E;&#x8005;&#x4F1A;&#x6D88;&#x8017;&#x66F4;&#x591A;&#x7684;<strong>&#x5185;&#x5B58;</strong>&#x3002;&#x56E0;&#x4E3A;MySQL&#x5148;&#x5206;&#x914D;&#x8FD9;&#x4E2A;&#x56FA;&#x5B9A;&#x5927;&#x5C0F;&#x7684;&#x5185;&#x5B58;&#x5757;&#x3002;</p>
-<p>&#x6240;&#x4EE5;&#x6700;&#x597D;&#x662F;&#x5206;&#x914D;&#x771F;&#x6B63;&#x9700;&#x8981;&#x7684;&#x7A7A;&#x95F4;&#x3002;</p>
-</blockquote>
-<h2 id="&#x679A;&#x4E3E;"><a href="#&#x679A;&#x4E3E;" class="headerlink" title="&#x679A;&#x4E3E;"></a>&#x679A;&#x4E3E;</h2><p>&#x6709;&#x65F6;&#x5019;&#x53EF;&#x4EE5;&#x7528;&#x679A;&#x4E3E;&#x4EE3;&#x66FF;&#x5B57;&#x7B26;&#x4E32;&#x7C7B;&#x578B;&#xFF0C;&#x4F7F;&#x5176;&#x66F4;&#x7D27;&#x51D1;&#xFF0C;&#x4F1A;&#x53E6;&#x5916;&#x751F;&#x6210;&#x4E00;&#x4E2A;&#x679A;&#x4E3E;&#x7684;&#x67E5;&#x8BE2;&#x8868;&#x3002;&#x5982;</p>
-<p><img src="1545636839892.png" alt="1545636839892"></p>
-<p>&#x8FD9;&#x4E09;&#x884C;&#x5B9E;&#x9645;&#x5B58;&#x50A8;&#x7684;&#x662F;&#x6574;&#x6570;&#xFF1A;</p>
-<p><img src="1545636897861.png" alt="1545636897861"></p>
-<p>&#x800C;&#x53D6;&#x51FA;&#x6765;&#x7684;&#x65F6;&#x5019;&#x5219;&#x662F;</p>
-<p><img src="1545637211148.png" alt="1545637211148"></p>
-<h2 id="BLOB&#x548C;TEXT&#x7C7B;&#x578B;"><a href="#BLOB&#x548C;TEXT&#x7C7B;&#x578B;" class="headerlink" title="BLOB&#x548C;TEXT&#x7C7B;&#x578B;"></a>BLOB&#x548C;TEXT&#x7C7B;&#x578B;</h2><p>blob&#x548C;text&#x90FD;&#x662F;&#x4E3A;&#x4E86;&#x5B58;&#x50A8;&#x5F88;&#x5927;&#x7684;&#x6570;&#x636E;&#x800C;&#x8BBE;&#x8BA1;&#x7684;&#x5B57;&#x7B26;&#x4E32;&#x6570;&#x636E;&#x7C7B;&#x578B;&#xFF0C;&#x5206;&#x522B;&#x91C7;&#x7528;&#x4E8C;&#x8FDB;&#x5236;&#x548C;&#x5B57;&#x7B26;&#x4E32;&#x65B9;&#x5F0F;&#x5B58;&#x50A8;&#x3002;</p>
-<ul>
-<li>&#x5F53;BLOB&#x548C;TEXT&#x503C;&#x592A;&#x5927;&#x65F6;&#xFF0C;InnoDB&#x4F1A;&#x5728;&#x5916;&#x90E8;&#x533A;&#x57DF;&#x5B58;&#x50A8;&#x503C;&#xFF0C;&#x6240;&#x4EE5;&#x5C3D;&#x91CF;&#x907F;&#x514D;&#x4F7F;&#x7528;</li>
-<li>blob&#x548C;text&#x5217;&#x8FDB;&#x884C;&#x6392;&#x5E8F;&#x4E8E;&#x5176;&#x4ED6;&#x7C7B;&#x578B;&#x662F;&#x4E0D;&#x540C;&#x7684;&#xFF1A;&#x5B83;&#x53EA;&#x5BF9;&#x6BCF;&#x4E2A;&#x5217;&#x7684;&#x6700;&#x524D;max_sort_length&#x5B57;&#x8282;&#x800C;&#x4E0D;&#x662F;&#x6574;&#x4E2A;&#x5B57;&#x7B26;&#x4E32;&#x6392;&#x5E8F;&#x3002;</li>
-<li>&#x65E0;&#x6CD5;&#x5C06;&#x6574;&#x4F53;&#x8FDB;&#x884C;&#x7D22;&#x5F15;</li>
-</ul>
-<h2 id="&#x65E5;&#x671F;&#x548C;&#x65F6;&#x95F4;&#x7C7B;&#x578B;"><a href="#&#x65E5;&#x671F;&#x548C;&#x65F6;&#x95F4;&#x7C7B;&#x578B;" class="headerlink" title="&#x65E5;&#x671F;&#x548C;&#x65F6;&#x95F4;&#x7C7B;&#x578B;"></a>&#x65E5;&#x671F;&#x548C;&#x65F6;&#x95F4;&#x7C7B;&#x578B;</h2><p>&#x80FD;&#x5B58;&#x50A8;&#x7684;&#x6700;&#x5C0F;&#x65F6;&#x95F4;&#x7C92;&#x5EA6;&#x4E3A;&#x79D2;&#x3002;&#x6709;DATETIME&#x548C;TIMESTAMP</p>
-<ul>
-<li>DATETIME&#xFF1A;YYYYMMDDHHMMSS&#x7684;&#x683C;&#x5F0F;&#xFF0C;&#x65F6;&#x533A;&#x65E0;&#x5173;&#x3002;8&#x5B57;&#x8282;&#x5B58;&#x50A8;&#x7A7A;&#x95F4;</li>
-<li>TIMESTAMP&#xFF1A;4&#x5B57;&#x8282;&#x5B58;&#x50A8;&#x7A7A;&#x95F4;&#xFF0C;&#x4F9D;&#x8D56;&#x4E8E;&#x65F6;&#x533A;&#x3002;&#x9ED8;&#x8BA4;&#x5C31;&#x662F;NOT NULL&#xFF0C;&#x6CA1;&#x63D2;&#x5165;&#x65F6;&#x4F1A;&#x662F;&#x5F53;&#x524D;&#x65F6;&#x95F4;&#x3002;</li>
-<li>TIMESTAMP&#x4F18;&#x4E8E;DATETIME</li>
-<li>&#x5982;&#x679C;&#x60F3;&#x5B58;&#x6BEB;&#x79D2;&#x7EA7;&#xFF0C;&#x53EA;&#x80FD;&#x7528;BIGINT&#x7B49;&#x4EE3;&#x66FF;</li>
-</ul>
-<h2 id="&#x5982;&#x4F55;&#x9009;&#x62E9;id&#x5217;&#x7684;&#x7C7B;&#x578B;"><a href="#&#x5982;&#x4F55;&#x9009;&#x62E9;id&#x5217;&#x7684;&#x7C7B;&#x578B;" class="headerlink" title="&#x5982;&#x4F55;&#x9009;&#x62E9;id&#x5217;&#x7684;&#x7C7B;&#x578B;"></a>&#x5982;&#x4F55;&#x9009;&#x62E9;id&#x5217;&#x7684;&#x7C7B;&#x578B;</h2><p>&#x5E94;&#x8BE5;&#x5C3D;&#x53EF;&#x80FD;&#x9009;&#x62E9;&#x5C55;&#x5C0F;&#x7684;&#xFF0C;&#x4E0B;&#x9762;&#x662F;&#x4E00;&#x4E9B;&#x6280;&#x5DE7;&#xFF1A;</p>
-<ul>
-<li>&#x6574;&#x6570;&#x7C7B;&#x578B;&#xFF1A;&#x901A;&#x5E38;&#x662F;&#x6807;&#x8BC6;&#x5217;&#x6700;&#x597D;&#x7684;&#x9009;&#x62E9;&#xFF0C;&#x56E0;&#x4E3A;&#x5B83;&#x4EEC;&#x5F88;&#x5FEB;&#x5E76;&#x4E14;&#x53EF;&#x4EE5;&#x4F7F;&#x7528;auto_increment</li>
-<li>enum&#x548C;set&#x7C7B;&#x578B;&#xFF1A;&#x9700;&#x8981;&#x907F;&#x514D;&#xFF0C;&#x9002;&#x5408;&#x7528;&#x4E8E;&#x5B58;&#x50A8;&#x56FA;&#x5B9A;&#x4FE1;&#x606F;&#xFF0C;&#x5982;&#x6027;&#x522B;&#xFF0C;&#x7C7B;&#x578B;&#x3002;</li>
-<li>&#x5B57;&#x7B26;&#x4E32;&#x7C7B;&#x578B;&#xFF1A;&#x5C3D;&#x53EF;&#x80FD;&#x907F;&#x514D;&#xFF0C;&#x6162;&#xFF0C;&#x8017;&#x7A7A;&#x95F4;&#xFF0C;&#x7279;&#x522B;&#x662F;MD5&#x8FD9;&#x79CD;&#x968F;&#x673A;&#x7684;&#xFF08;&#x5206;&#x5E03;&#x5E7F;&#xFF09;</li>
-</ul>
-<h1 id="&#x8303;&#x5F0F;&#x548C;&#x53CD;&#x8303;&#x5F0F;"><a href="#&#x8303;&#x5F0F;&#x548C;&#x53CD;&#x8303;&#x5F0F;" class="headerlink" title="&#x8303;&#x5F0F;&#x548C;&#x53CD;&#x8303;&#x5F0F;"></a>&#x8303;&#x5F0F;&#x548C;&#x53CD;&#x8303;&#x5F0F;</h1><p>&#x4EC0;&#x4E48;&#x662F;&#x8303;&#x5F0F;&#xFF1F;<strong>&#x8303;&#x5F0F;&#x5C31;&#x662F;&#x4FE1;&#x606F;&#x5197;&#x4F59;</strong></p>
-<p>&#x6709;&#x8FD9;&#x4E48;&#x4E00;&#x5F20;&#x8868;&#xFF0C;&#x5217;&#x5206;&#x522B;&#x662F;&#x201C;&#x5458;&#x5DE5;&#xFF0C;&#x90E8;&#x95E8;&#xFF0C;&#x9886;&#x5BFC;&#x201D;</p>
-<p><img src="1545637419485.png" alt="1545637419485"></p>
-<p>&#x8FD9;&#x4E48;&#x8BBE;&#x8BA1;&#x7684;&#x7F3A;&#x70B9;</p>
-<ul>
-<li>&#x6CA1;&#x6709;&#x5458;&#x5DE5;&#x5C31;&#x4E0D;&#x77E5;&#x9053;&#x90E8;&#x95E8;&#x4FE1;&#x606F;</li>
-<li>&#x5982;&#x679C;&#x9886;&#x5BFC;&#x6539;&#x53D8;&#xFF0C;&#x90A3;&#x4E48;&#x9700;&#x8981;&#x6539;&#x53D8;&#x591A;&#x884C;</li>
-</ul>
-<p>&#x8303;&#x5F0F;&#x7684;&#x7ED3;&#x679C;&#xFF0C;&#x6539;&#x4E3A;&#x201C;&#x5458;&#x5DE5;&#x8868;&#x201D;&#x548C;&#x201C;&#x90E8;&#x95E8;&#x8868;&#x201D;&#xFF1A;</p>
-<p>&#x5458;&#x5DE5;&#x8868;&#xFF1A;</p>
-<p><img src="1545637558764.png" alt="1545637558764"></p>
-<p>&#x90E8;&#x95E8;&#x8868;&#xFF1A;</p>
-<p><img src="1545637569852.png" alt="1545637569852"></p>
-<h2 id="&#x8303;&#x5F0F;&#x7684;&#x4F18;&#x70B9;&#x548C;&#x7F3A;&#x70B9;"><a href="#&#x8303;&#x5F0F;&#x7684;&#x4F18;&#x70B9;&#x548C;&#x7F3A;&#x70B9;" class="headerlink" title="&#x8303;&#x5F0F;&#x7684;&#x4F18;&#x70B9;&#x548C;&#x7F3A;&#x70B9;"></a>&#x8303;&#x5F0F;&#x7684;&#x4F18;&#x70B9;&#x548C;&#x7F3A;&#x70B9;</h2><p>&#x4F18;&#x70B9;&#xFF1A;</p>
-<ul>
-<li>&#x8303;&#x5F0F;&#x5316;&#x7684;&#x66F4;&#x65B0;&#x64CD;&#x4F5C;&#x901A;&#x5E38;&#x6BD4;&#x53CD;&#x8303;&#x5F0F;&#x5316;&#x8981;&#x5FEB;</li>
-<li>&#x91CD;&#x590D;&#x6570;&#x636E;&#x5C11;&#xFF0C;&#x6240;&#x4EE5;&#x53EA;&#x9700;&#x8981;&#x4FEE;&#x6539;&#x66F4;&#x5C11;&#x7684;&#x6570;&#x636E;</li>
-<li>&#x8868;&#x66F4;&#x5C0F;&#xFF0C;&#x53EF;&#x4EE5;&#x66F4;&#x597D;&#x5730;&#x653E;&#x5728;&#x5185;&#x5B58;&#x91CC;&#xFF0C;&#x6240;&#x4EE5;&#x6267;&#x884C;&#x64CD;&#x4F5C;&#x4F1A;&#x66F4;&#x5FEB;</li>
-<li>&#x51CF;&#x5C11;DISTINCT&#x6216;&#x8005;GROUP BY&#x8BED;&#x53E5;&#x3002;&#x6BD4;&#x5982;&#x4ECE;&#x4E0A;&#x9762;&#x6539;&#x9020;&#x524D;&#x7684;&#x8868;&#x8FDB;&#x884C;&#x67E5;&#x8BE2;&#x65F6;&#x53EF;&#x80FD;&#x9700;&#x8981;GROUP BY &#x90E8;&#x95E8;&#xFF0C;&#x8303;&#x5F0F;&#x540E;&#x5219;&#x4E0D;&#x9700;&#x8981;</li>
-</ul>
-<p>&#x7F3A;&#x70B9;&#xFF1A;</p>
-<ul>
-<li>&#x67E5;&#x8BE2;&#x9700;&#x8981;&#x5173;&#x8054;&#xFF0C;&#x8F83;&#x591A;&#x7684;&#x5173;&#x8054;&#x53EF;&#x80FD;&#x4F7F;&#x5F97;&#x4E00;&#x4E9B;&#x7D22;&#x5F15;&#x7B56;&#x7565;&#x65E0;&#x6548;</li>
-</ul>
-<h2 id="&#x53CD;&#x8303;&#x5F0F;&#x7684;&#x4F18;&#x70B9;&#x548C;&#x7F3A;&#x70B9;"><a href="#&#x53CD;&#x8303;&#x5F0F;&#x7684;&#x4F18;&#x70B9;&#x548C;&#x7F3A;&#x70B9;" class="headerlink" title="&#x53CD;&#x8303;&#x5F0F;&#x7684;&#x4F18;&#x70B9;&#x548C;&#x7F3A;&#x70B9;"></a>&#x53CD;&#x8303;&#x5F0F;&#x7684;&#x4F18;&#x70B9;&#x548C;&#x7F3A;&#x70B9;</h2><p>&#x4F18;&#x70B9;&#xFF1A;</p>
-<ul>
-<li>&#x90FD;&#x5728;&#x4E00;&#x5F20;&#x8868;&#xFF0C;&#x4E0D;&#x9700;&#x8981;&#x5173;&#x8054;</li>
-</ul>
-<p>&#x7F3A;&#x70B9;&#xFF1A;</p>
-<ul>
-<li>update&#x64CD;&#x4F5C;&#x7684;&#x4EE3;&#x4EF7;&#x9AD8;&#xFF0C;&#x9700;&#x8981;&#x66F4;&#x65B0;&#x591A;&#x4E2A;&#x8868;</li>
-</ul>
-<h1 id="&#x7F13;&#x5B58;&#x8868;&#x548C;&#x6C47;&#x603B;&#x8868;"><a href="#&#x7F13;&#x5B58;&#x8868;&#x548C;&#x6C47;&#x603B;&#x8868;" class="headerlink" title="&#x7F13;&#x5B58;&#x8868;&#x548C;&#x6C47;&#x603B;&#x8868;"></a>&#x7F13;&#x5B58;&#x8868;&#x548C;&#x6C47;&#x603B;&#x8868;</h1><p>&#x6709;&#x65F6;&#x63D0;&#x5347;&#x6027;&#x80FD;&#x7684;&#x6700;&#x597D;&#x65B9;&#x6CD5;&#x662F;&#x5728;&#x540C;&#x4E00;&#x5F20;&#x8868;&#x4E2D;&#x4FDD;&#x5B58;&#x884D;&#x751F;&#x7684;&#x5197;&#x4F59;&#x6570;&#x636E;&#x3002;&#x6BD4;&#x5982;&#xFF0C;&#x60F3;&#x8981;&#x663E;&#x793A;&#x4E00;&#x4E2A;&#x7528;&#x6237;&#x53D1;&#x4E86;&#x591A;&#x5C11;&#x6D88;&#x606F;&#x65F6;&#xFF0C;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;&#x8BA1;&#x7B97;&#x663E;&#x793A;&#xFF0C;&#x4E5F;&#x53EF;&#x4EE5;&#x5EFA;&#x7ACB;&#x4E00;&#x4E2A;&#x7C7B;&#x4F3C;<code>num_messages</code>&#x6765;&#x8BB0;&#x5F55;&#xFF0C;&#x540E;&#x8005;&#x7684;&#x8FD9;&#x79CD;&#x65B9;&#x5F0F;&#x5C31;&#x662F;&#x5197;&#x4F59;&#x6570;&#x636E;&#xFF0C;&#x8FD9;&#x662F;&#x53CD;&#x8303;&#x5F0F;&#x7684;&#x3002;</p>
-<p>&#x5982;&#x679C;&#x8981;&#x66F4;&#x4F18;&#x96C5;&#x7684;&#x5B9E;&#x73B0;&#x524D;&#x8005;&#xFF0C;&#x5728;&#x5141;&#x8BB8;&#x5C11;&#x91CF;&#x810F;&#x6570;&#x636E;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#x53EF;&#x4EE5;&#x9009;&#x62E9;&#x7F13;&#x5B58;&#x8868;&#x548C;&#x6C47;&#x603B;&#x8868;&#x3002;</p>
-<p>&#x7F13;&#x5B58;&#x8868;&#x548C;&#x6C47;&#x603B;&#x8868;&#x662F;&#x4EC0;&#x4E48;&#xFF1F;</p>
-<ul>
-<li><strong>&#x7F13;&#x5B58;&#x8868;</strong>&#xFF1A;&#x80FD;&#x6BD4;&#x8F83;&#x7B80;&#x5355;&#x5730;&#x83B7;&#x53D6;&#x6570;&#x636E;&#x7684;&#x8868;&#xFF0C;&#x4E5F;&#x5C31;&#x662F;&#x5197;&#x4F59;<br>&#x7F13;&#x5B58;&#x8868;&#x5C31;&#x662F;&#x5BF9;&#x7279;&#x5B9A;&#x7684;&#x884C;&#x8FDB;&#x884C;&#x7F13;&#x5B58;&#xFF0C;&#x80FD;&#x591F;&#x5145;&#x5206;&#x7684;&#x5229;&#x7528;&#x7D22;&#x5F15;&#x3002;</li>
-<li><strong>&#x6C47;&#x603B;&#x8868;</strong> &#xFF1A; &#x9700;&#x8981;&#x7528;GROUP BY&#x83B7;&#x53D6;&#x805A;&#x5408;&#x6570;&#x636E;&#x7684;&#x8868;&#xFF0C;&#x903B;&#x8F91;&#x4E0A;&#x4E0D;&#x662F;&#x5197;&#x4F59;<br>&#x5728;&#x4E0A;&#x9762;&#x7684;&#x4F8B;&#x5B50;&#x4E2D;&#xFF0C;&#x6BCF;&#x5C0F;&#x65F6;&#x751F;&#x6210;&#x4E00;&#x5F20;&#x6C47;&#x603B;&#x8868;&#xFF0C;&#x51CF;&#x5C11;&#x7EF4;&#x62A4;&#x6B21;&#x6570;&#xFF0C;&#x4F46;&#x8BA1;&#x6570;&#x5668;&#x4E0D;&#x662F;&#x51C6;&#x786E;&#x7684;&#x3002;</li>
-</ul>
-<h2 id="&#x8BA1;&#x6570;&#x5668;&#x8868;"><a href="#&#x8BA1;&#x6570;&#x5668;&#x8868;" class="headerlink" title="&#x8BA1;&#x6570;&#x5668;&#x8868;"></a>&#x8BA1;&#x6570;&#x5668;&#x8868;</h2><p>&#x7528;&#x6765;&#x7F13;&#x5B58;&#x4E00;&#x4E2A;&#x7528;&#x6237;&#x7684;&#x597D;&#x53CB;&#x6570;&#xFF0C;&#x6587;&#x4EF6;&#x4E0B;&#x8F7D;&#x6B21;&#x6570;&#x7B49;&#x3002;&#x8FD9;&#x6837;&#x7684;&#x8868;&#x5C0F;&#x4E14;&#x5FEB;</p>
-<h1 id="&#x52A0;&#x5FEB;&#x66F4;&#x6539;&#x8868;&#x7ED3;&#x6784;&#x65F6;&#x7684;&#x901F;&#x5EA6;"><a href="#&#x52A0;&#x5FEB;&#x66F4;&#x6539;&#x8868;&#x7ED3;&#x6784;&#x65F6;&#x7684;&#x901F;&#x5EA6;" class="headerlink" title="&#x52A0;&#x5FEB;&#x66F4;&#x6539;&#x8868;&#x7ED3;&#x6784;&#x65F6;&#x7684;&#x901F;&#x5EA6;"></a>&#x52A0;&#x5FEB;&#x66F4;&#x6539;&#x8868;&#x7ED3;&#x6784;&#x65F6;&#x7684;&#x901F;&#x5EA6;</h1><p>&#x901A;&#x5E38;&#x7528;ALTER TABLE&#x4FEE;&#x6539;&#x8868;&#x7ED3;&#x6784;&#x65F6;&#xFF0C;&#x662F;&#x7528;&#x65B0;&#x7684;&#x7ED3;&#x6784;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x7A7A;&#x8868;&#xFF0C;&#x4ECE;&#x65E7;&#x8868;&#x4E2D;&#x67E5;&#x51FA;&#x6240;&#x6709;&#x6570;&#x636E;&#x63D2;&#x5165;&#x65B0;&#x8868;&#xFF0C;&#x7136;&#x540E;&#x5220;&#x9664;&#x65E7;&#x8868;&#x7684;&#x65B9;&#x5F0F;&#xFF0C;&#x975E;&#x5E38;&#x8017;&#x65F6;&#xFF0C;&#x5BFC;&#x81F4;&#x670D;&#x52A1;&#x4E2D;&#x65AD;&#x3002;</p>
-<p>&#x4E24;&#x79CD;&#x89E3;&#x51B3;&#x65B9;&#x6848;&#xFF1A;</p>
-<ul>
-<li>&#x5148;&#x5728;&#x6D4B;&#x8BD5;&#x670D;&#x52A1;&#x5668;&#x4E2D;&#x8FDB;&#x884C;&#x64CD;&#x4F5C;&#x540E;&#xFF0C;&#x4E0E;&#x4E3B;&#x5E93;&#x8FDB;&#x884C;&#x5207;&#x6362;</li>
-<li>&#x5F71;&#x5B50;&#x62F7;&#x8D1D;&#xFF1A;&#x521B;&#x5EFA;&#x4E00;&#x5F20;&#x65B0;&#x8868;&#xFF0C;&#x5B8C;&#x6210;&#x64CD;&#x4F5C;&#x540E;&#xFF0C;&#x91CD;&#x547D;&#x540D;&#x6210;&#x4E3B;&#x8868;&#x3002;</li>
-</ul>
-<h2 id="&#x4E0D;&#x9700;&#x8981;&#x91CD;&#x5EFA;&#x8868;"><a href="#&#x4E0D;&#x9700;&#x8981;&#x91CD;&#x5EFA;&#x8868;" class="headerlink" title="&#x4E0D;&#x9700;&#x8981;&#x91CD;&#x5EFA;&#x8868;"></a>&#x4E0D;&#x9700;&#x8981;&#x91CD;&#x5EFA;&#x8868;</h2><p>&#x5982;&#x4F55;&#x907F;&#x514D;&#x91CD;&#x5EFA;&#x8868;&#x7684;&#x64CD;&#x4F5C;&#xFF0C;&#x53EA;&#x7528;&#x6539;.frm&#x6587;&#x4EF6;&#x7684;&#x8BDD;&#x901F;&#x5EA6;&#x5FEB;&#xFF0C;&#x54EA;&#x4E9B;&#x65F6;&#x5019;&#x53EA;&#x9700;&#x8981;&#x66F4;&#x6539;.frm&#xFF1F;</p>
-<ul>
-<li>&#x79FB;&#x9664;&#x4E00;&#x4E2A;&#x5217;&#x7684;AUTO_INCREMENT&#x5C5E;&#x6027;</li>
-<li>&#x589E;&#x52A0;&#xFF0C;&#x79FB;&#x9664;&#x6216;&#x66F4;&#x6539;ENUM&#x548C;SET&#x5E38;&#x91CF;</li>
-</ul>
-<p>&#x6BD4;&#x5982;&#x4F7F;&#x7528; alter comlum&#x6539;&#x53D8;&#x5217;&#x7684;&#x9ED8;&#x8BA4;&#x503C;&#xFF1A;</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">alert table tablename</span><br><span class="line">alert column col1 set default 5;</span><br></pre></td></tr></tbody></table></figure>
-<p>&#x8FD9;&#x4E2A;&#x8BED;&#x53E5;&#x4F1A;&#x76F4;&#x63A5;&#x4FEE;&#x6539;.frm&#x6587;&#x4EF6;&#x800C;&#x4E0D;&#x6D89;&#x53CA;&#x8868;&#x6570;&#x636E;&#xFF0C;&#x6240;&#x4EE5;&#x8FD9;&#x4E2A;&#x64CD;&#x4F5C;&#x662F;&#x975E;&#x5E38;&#x5FEB;&#x7684;&#x3002;</p>
-<p>&#x53C2;&#x8003;&#xFF1A;<a href="https://blog.csdn.net/xifeijian/article/details/45286787" target="_blank" rel="noopener">&#x300A;&#x9AD8;&#x6027;&#x80FD;MySQL&#x300B;&#x8BFB;&#x4E66;&#x7B14;&#x8BB0;&#xFF0D;&#xFF0D;Schema&#x4E0E;&#x6570;&#x636E;&#x7C7B;&#x578B;&#x4F18;&#x5316;</a></p>
 <script>
         document.querySelectorAll('.github-emoji')
           .forEach(el => {
@@ -571,17 +487,12 @@ height:30vh;
     <ul class="post-paginator">
         <li class="next">
             
-                <div class="nextSlogan">Next Post</div>
-                <a href="/2018/12/24/20181224/" title="高性能MySQL-第1章-MySQL架构与历史">
-                    <div class="nextTitle">高性能MySQL-第1章-MySQL架构与历史</div>
-                </a>
-            
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href="/2018/12/23/20181223-6/" title="🍓 JVM知识点合集-目录">
-                    <div class="prevTitle">🍓 JVM知识点合集-目录</div>
+                <a href="/2019/01/17/20190117/" title="校招准备视频笔记-面向对象">
+                    <div class="prevTitle">校招准备视频笔记-面向对象</div>
                 </a>
             
         </li>
@@ -708,7 +619,7 @@ top:30vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#MySQL数据类型"><span class="toc-number">1.</span> <span class="toc-text">MySQL数据类型</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#整数类型"><span class="toc-number">1.1.</span> <span class="toc-text">整数类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#实数类型"><span class="toc-number">1.2.</span> <span class="toc-text">实数类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#字符串类型"><span class="toc-number">1.3.</span> <span class="toc-text">字符串类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#VARCHAR"><span class="toc-number">1.3.1.</span> <span class="toc-text">VARCHAR</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CHAR"><span class="toc-number">1.3.2.</span> <span class="toc-text">CHAR</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#枚举"><span class="toc-number">1.4.</span> <span class="toc-text">枚举</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BLOB和TEXT类型"><span class="toc-number">1.5.</span> <span class="toc-text">BLOB和TEXT类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#日期和时间类型"><span class="toc-number">1.6.</span> <span class="toc-text">日期和时间类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#如何选择id列的类型"><span class="toc-number">1.7.</span> <span class="toc-text">如何选择id列的类型</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#范式和反范式"><span class="toc-number">2.</span> <span class="toc-text">范式和反范式</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#范式的优点和缺点"><span class="toc-number">2.1.</span> <span class="toc-text">范式的优点和缺点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#反范式的优点和缺点"><span class="toc-number">2.2.</span> <span class="toc-text">反范式的优点和缺点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#缓存表和汇总表"><span class="toc-number">3.</span> <span class="toc-text">缓存表和汇总表</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#计数器表"><span class="toc-number">3.1.</span> <span class="toc-text">计数器表</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#加快更改表结构时的速度"><span class="toc-number">4.</span> <span class="toc-text">加快更改表结构时的速度</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#不需要重建表"><span class="toc-number">4.1.</span> <span class="toc-text">不需要重建表</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Singleton"><span class="toc-number">1.</span> <span class="toc-text">Singleton</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#变继承关系为组合关系"><span class="toc-number">2.</span> <span class="toc-text">变继承关系为组合关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#如何创建对象"><span class="toc-number">3.</span> <span class="toc-text">如何创建对象</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
