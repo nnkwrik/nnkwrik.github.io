@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="曽生">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="曽生">
+    
+    <meta name="keywords" content="nnkwrik,曽生,曾丽桦">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Netty源码剖析-ByteBuf · 农场主的黑科技.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin="">
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin="">
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"输入关键字 :D","hits_empty":"没有找到相关信息 :(","hits_stats":"找到 ${hits} 个相关信息,耗时 ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'LXR3VBZBS6',
+                apiKey: '17d6d4ab4ba943bab3232eced0eea766',
+                indexName: 'index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">农场主的黑科技.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Netty源码剖析-ByteBuf</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href="/">农场主的黑科技.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:30vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/andrew-leu-1113236-unsplash.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Netty源码剖析-ByteBuf
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class="post-intro-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">2.3k</span>阅读时长: <span class="post-count reading-time">14 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/01/07</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <ul>
+<li>&#x5185;&#x5B58;&#x7684;&#x7C7B;&#x522B;&#x6709;&#x54EA;&#x4E9B;</li>
+<li>&#x5982;&#x4F55;&#x51CF;&#x5C11;&#x591A;&#x7EBF;&#x7A0B;&#x5185;&#x5B58;&#x5206;&#x914D;&#x4E4B;&#x95F4;&#x7684;&#x7ADE;&#x4E89;</li>
+<li>&#x4E0D;&#x540C;&#x5927;&#x5C0F;&#x7684;&#x5185;&#x5B58;&#x662F;&#x5982;&#x4F55;&#x8FDB;&#x884C;&#x5206;&#x914D;&#x7684;</li>
+</ul>
+<h1 id="ByteBuf"><a href="#ByteBuf" class="headerlink" title="ByteBuf"></a>ByteBuf</h1><ul>
+<li>&#x5185;&#x5B58;&#x4E0E;&#x5185;&#x5B58;&#x7BA1;&#x7406;&#x5668;&#x7684;&#x62BD;&#x8C61;</li>
+<li>&#x4E0D;&#x540C;&#x89C4;&#x683C;&#x5927;&#x5C0F;&#x548C;&#x4E0D;&#x540C;&#x7C7B;&#x522B;&#x7684;&#x5185;&#x5B58;&#x7684;&#x5206;&#x914D;&#x7B56;&#x7565;</li>
+<li>&#x5185;&#x5B58;&#x7684;&#x56DE;&#x6536;&#x8FC7;&#x7A0B;</li>
+</ul>
+<h1 id="ByteBuf&#x7ED3;&#x6784;&#x4EE5;&#x53CA;&#x91CD;&#x8981;API"><a href="#ByteBuf&#x7ED3;&#x6784;&#x4EE5;&#x53CA;&#x91CD;&#x8981;API" class="headerlink" title="ByteBuf&#x7ED3;&#x6784;&#x4EE5;&#x53CA;&#x91CD;&#x8981;API"></a>ByteBuf&#x7ED3;&#x6784;&#x4EE5;&#x53CA;&#x91CD;&#x8981;API</h1><h2 id="ByteBuf&#x7684;&#x7ED3;&#x6784;"><a href="#ByteBuf&#x7684;&#x7ED3;&#x6784;" class="headerlink" title="ByteBuf&#x7684;&#x7ED3;&#x6784;"></a>ByteBuf&#x7684;&#x7ED3;&#x6784;</h2><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">*      +-------------------+------------------+------------------+</span><br><span class="line">*      | discardable bytes |  readable bytes  |  writable bytes  |</span><br><span class="line">    		&#x65E0;&#x6548;&#x7684;				&#x53EF;&#x4EE5;&#x8BFB;&#x7684;&#x7A7A;&#x95F4;			&#x53EF;&#x4EE5;&#x5199;&#x7684;&#x7A7A;&#x95F4;</span><br><span class="line">*      +-------------------+------------------+------------------+</span><br><span class="line">*      |                   |                  |                  |</span><br><span class="line">*      <span class="number">0</span>      &lt;=      readerIndex   &lt;=   writerIndex    &lt;=    capacity</span><br></pre></td></tr></tbody></table></figure>
+<p>ByteBuf&#x4E2D;&#x4E09;&#x4E2A;&#x91CD;&#x8981;&#x7684;&#x6307;&#x9488;</p>
+<ul>
+<li>readIndex..&#x8868;&#x660E;&#x8BFB;&#x6570;&#x636E;&#x4ECE;&#x8FD9;&#x4E2A;&#x6307;&#x9488;&#x5F00;&#x59CB;</li>
+<li>writeIndex..&#x8868;&#x660E;&#x5982;&#x679C;&#x8981;&#x5199;&#x6570;&#x636E;&#x7684;&#x8BDD;&#x5C31;&#x4ECE;&#x8FD9;&#x4E2A;&#x6307;&#x9488;&#x5F00;&#x59CB;&#x5199;</li>
+<li>capacity </li>
+<li><code>maxCapacity()</code>&#x53EF;&#x6269;&#x5BB9;&#x7684;&#x6700;&#x5927;&#x5BB9;&#x91CF;,&#x5F53;capacity&#x4E0D;&#x591F;&#x65F6;&#x5C31;&#x4F1A;&#x8FDB;&#x884C;&#x6269;&#x5BB9;.&#x8981;&#x662F;&#x5927;&#x4E8E;<code>maxCapacity()</code>&#x5C31;&#x62D2;&#x7EDD;</li>
+</ul>
+<h2 id="read-write-set&#x65B9;&#x6CD5;"><a href="#read-write-set&#x65B9;&#x6CD5;" class="headerlink" title="read,write,set&#x65B9;&#x6CD5;"></a>read,write,set&#x65B9;&#x6CD5;</h2><p>&#x63D0;&#x4F9B;&#x4E86;&#x5F88;&#x591A;read&#x5F00;&#x5934;&#x7684;&#x65B9;&#x6CD5;,&#x5982;<code>readInt();</code></p>
+<ul>
+<li><code>readByte()</code>&#x4ECE;readerIndex&#x5F00;&#x59CB;&#x5F80;&#x540E;&#x8BFB;1&#x4E2A;&#x5B57;&#x8282;</li>
+<li><code>readInt();</code>&#x4ECE;readerIndex&#x5F00;&#x59CB;&#x5F80;&#x540E;&#x8BFB;4&#x4E2A;&#x5B57;&#x8282;&#x2026;</li>
+</ul>
+<p>write&#x7684;API&#x4E5F;&#x548C;read&#x76F8;&#x540C;,&#x4ECE;&#x6307;&#x9488;&#x5F00;&#x59CB;&#x5F80;&#x540E;&#x8BBE;&#x7F6E;.</p>
+<p>&#x9664;&#x4E86;&#x8FD9;&#x4E24;&#x4E2A;&#x4E4B;&#x5916;&#x8FD8;&#x6709;set&#x7684;API&#x5982;<code>setInt();</code>,&#x5B83;&#x7684;&#x529F;&#x80FD;&#x662F;&#x628A;&#x7B2C;&#x51E0;&#x4E2A;&#x7D22;&#x5F15;&#x8BBE;&#x7F6E;&#x6210;&#x76EE;&#x7684;&#x7684;&#x503C; </p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuf <span class="title">setByte</span><span class="params">(<span class="keyword">int</span> index, <span class="keyword">int</span> value)</span></span>;</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5B83;&#x4E0D;&#x4F1A;&#x79FB;&#x52A8;&#x4EFB;&#x4F55;&#x6307;&#x9488; </p>
+<h2 id="mark&#x548C;reset&#x65B9;&#x6CD5;"><a href="#mark&#x548C;reset&#x65B9;&#x6CD5;" class="headerlink" title="mark&#x548C;reset&#x65B9;&#x6CD5;"></a>mark&#x548C;reset&#x65B9;&#x6CD5;</h2><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuf <span class="title">markReaderIndex</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuf <span class="title">resetReaderIndex</span><span class="params">()</span></span>;</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x901A;&#x8FC7;read&#x7684;API&#x8BFB;&#x53D6;&#x6570;&#x636E;&#x65F6;,&#x6307;&#x9488;&#x4F1A;&#x5411;&#x540E;&#x79FB;&#x52A8;.&#x5982;&#x679C;&#x4E0D;&#x60F3;&#x8FD9;&#x6837;  &#x53EF;&#x4EE5;&#x5728;read&#x4E4B;&#x524D;&#x5148;&#x7528;mark&#x8BB0;&#x5F55;&#x6307;&#x9488;&#x4F4D;&#x7F6E;,read&#x5B8C;&#x540E;&#x7528;reset&#x590D;&#x539F;&#x6307;&#x9488;.<code>markWriterIndex()</code>&#x4E5F;&#x540C;&#x7406;</p>
+<h2 id="&#x5176;&#x4ED6;&#x5E38;&#x7528;API"><a href="#&#x5176;&#x4ED6;&#x5E38;&#x7528;API" class="headerlink" title="&#x5176;&#x4ED6;&#x5E38;&#x7528;API"></a>&#x5176;&#x4ED6;&#x5E38;&#x7528;API</h2><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">int</span> <span class="title">readableBytes</span><span class="params">()</span></span>;<span class="comment">//this.writerIndex - this.readerIndex </span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">int</span> <span class="title">writableBytes</span><span class="params">()</span></span>;<span class="comment">//this.capacity - this.writerIndex</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">int</span> <span class="title">maxWritableBytes</span><span class="params">()</span></span>;<span class="comment">//this.maxCapacity - this.writerIndex</span></span><br></pre></td></tr></tbody></table></figure>
+<h1 id="ByteBuf&#x5206;&#x7C7B;"><a href="#ByteBuf&#x5206;&#x7C7B;" class="headerlink" title="ByteBuf&#x5206;&#x7C7B;"></a>ByteBuf&#x5206;&#x7C7B;</h1><p><img src="1547806307918.png" alt="1547806307918"></p>
+<h2 id="AbstractByteBuf"><a href="#AbstractByteBuf" class="headerlink" title="AbstractByteBuf"></a>AbstractByteBuf</h2><p>&#x57FA;&#x672C;&#x9AA8;&#x67B6;&#x7684;&#x5B9E;&#x73B0;,&#x8BFB;&#x5199;&#x7684;&#x5177;&#x4F53;&#x5B9E;&#x73B0;&#x65B9;&#x6CD5;&#x4ECD;&#x662F;&#x62BD;&#x8C61;,&#x8FD9;&#x4E9B;&#x62BD;&#x8C61;&#x65B9;&#x6CD5;&#x4E3A;<code>_</code>&#x5F00;&#x5934;</p>
+<p>&#x4FDD;&#x5B58;&#x8BFB;&#x5199;&#x6307;&#x9488;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> readerIndex;</span><br><span class="line"><span class="keyword">int</span> writerIndex;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> markedReaderIndex;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> markedWriterIndex;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> maxCapacity;</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4ED6;&#x5B9E;&#x73B0;&#x7684;readByte</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">byte</span> <span class="title">readByte</span><span class="params">()</span> </span>{</span><br><span class="line">    checkReadableBytes0(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">int</span> i = readerIndex;<span class="comment">//&#x83B7;&#x53D6;&#x5F53;&#x524D;&#x5199;&#x6307;&#x9488;</span></span><br><span class="line">    <span class="keyword">byte</span> b = _getByte(i);<span class="comment">//&#x4ECE;&#x8FD9;&#x4E2A;&#x5199;&#x6307;&#x9488;&#x8BFB;&#x4E00;&#x4E2A;&#x5B57;&#x8282;,&#x8FD9;&#x91CC;&#x662F;&#x62BD;&#x8C61;&#x65B9;&#x6CD5;</span></span><br><span class="line">    readerIndex = i + <span class="number">1</span>;<span class="comment">//&#x5199;&#x6307;&#x9488;&#x540E;&#x79FB;</span></span><br><span class="line">    <span class="keyword">return</span> b;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5B83;&#x5B9E;&#x73B0;&#x7684;writeByte</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ByteBuf <span class="title">writeByte</span><span class="params">(<span class="keyword">int</span> value)</span> </span>{</span><br><span class="line">    <span class="comment">//&#x4FDD;&#x8BC1;&#x80FD;&#x5199;</span></span><br><span class="line">    ensureAccessible();</span><br><span class="line">    ensureWritable0(<span class="number">1</span>);</span><br><span class="line">    <span class="comment">//&#x8FD9;&#x91CC;&#x662F;&#x62BD;&#x8C61;&#x65B9;&#x6CD5;,&#x8868;&#x793A;&#x5199;&#x5165;&#x6307;&#x9488;&#x7684;&#x4F4D;&#x7F6E;,&#x5199;&#x5B8C;&#x540E;&#x6307;&#x9488;&#x540E;&#x79FB;</span></span><br><span class="line">    _setByte(writerIndex++, value);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="ByteBuf&#x5B9E;&#x73B0;&#x7684;&#x5206;&#x7C7B;"><a href="#ByteBuf&#x5B9E;&#x73B0;&#x7684;&#x5206;&#x7C7B;" class="headerlink" title="ByteBuf&#x5B9E;&#x73B0;&#x7684;&#x5206;&#x7C7B;"></a>ByteBuf&#x5B9E;&#x73B0;&#x7684;&#x5206;&#x7C7B;</h2><h3 id="Pooled&#x548C;Unpooled"><a href="#Pooled&#x548C;Unpooled" class="headerlink" title="Pooled&#x548C;Unpooled"></a>Pooled&#x548C;Unpooled</h3><p>Pooled:&#x628A;&#x9884;&#x5148;&#x5728;&#x5185;&#x5B58;&#x4E2D;&#x8BBE;&#x7F6E;&#x597D;&#x7684;&#x5185;&#x5B58;&#x5C01;&#x88C5;&#x4E3A;ByteBuf<br>Unpooled:&#x76F4;&#x63A5;&#x8C03;&#x7528;&#x7CFB;&#x7EDF;&#x7684;API&#x5411;&#x64CD;&#x4F5C;&#x7CFB;&#x7EDF;&#x7533;&#x8BF7;&#x4E00;&#x5757;&#x5185;&#x5B58; </p>
+<h3 id="Unsafe&#x548C;&#x975E;Unsafe"><a href="#Unsafe&#x548C;&#x975E;Unsafe" class="headerlink" title="Unsafe&#x548C;&#x975E;Unsafe"></a>Unsafe&#x548C;&#x975E;Unsafe</h3><p>Unsafe:&#x53EF;&#x4EE5;&#x62FF;&#x5230;&#x5BF9;&#x8C61;&#x7684;&#x5185;&#x5B58;&#x5730;&#x5740;,&#x901A;&#x8FC7;&#x5185;&#x5B58;&#x5730;&#x5740;&#x8FDB;&#x884C;&#x8BFB;&#x5199;&#x64CD;&#x4F5C;.&#x76F4;&#x63A5;&#x8C03;&#x7528;JDK&#x7684;Unsafe&#x5BF9;ByteBuf&#x8FDB;&#x884C;&#x8BFB;&#x5199;<br>&#x975E;Unsafe:&#x4E0D;&#x4F9D;&#x8D56;JDK&#x7684;Unsafe&#x5BF9;&#x8C61;<br>&#x5982;<code>PooledUnsafeHeapByteBuf#_getByte</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">byte</span> <span class="title">_getByte</span><span class="params">(<span class="keyword">int</span> index)</span> </span>{</span><br><span class="line">        <span class="comment">//&#x901A;&#x8FC7;&#x5185;&#x5B58;&#x53BB;&#x53D6;&#x503C;</span></span><br><span class="line">        <span class="comment">//memory:ByteBuf&#x5206;&#x914D;&#x5185;&#x5B58;&#x7684;&#x9996;&#x5730;&#x5740;,index:&#x504F;&#x79FB;&#x5730;&#x5740;</span></span><br><span class="line">        <span class="keyword">return</span> UnsafeByteBufUtil.getByte(memory, idx(index));</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">byte</span> <span class="title">getByte</span><span class="params">(<span class="keyword">byte</span>[] data, <span class="keyword">int</span> index)</span> </span>{</span><br><span class="line">    	<span class="comment">//&#x6700;&#x7EC8;&#x8C03;&#x7528;Unsafe&#x5BF9;&#x8C61;&#x83B7;&#x53D6;</span></span><br><span class="line">        <span class="keyword">return</span> UNSAFE.getByte(data, BYTE_ARRAY_BASE_OFFSET + index);</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>  &#x76F8;&#x53CD;<code>PooledHeapByteBuf#_getByte</code> </p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">byte</span> <span class="title">_getByte</span><span class="params">(<span class="keyword">int</span> index)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> HeapByteBufUtil.getByte(memory, idx(index));</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">byte</span> <span class="title">getByte</span><span class="params">(<span class="keyword">byte</span>[] memory, <span class="keyword">int</span> index)</span> </span>{</span><br><span class="line">    <span class="comment">//&#x76F4;&#x63A5;&#x901A;&#x8FC7;&#x6570;&#x7EC4;&#x4FDD;&#x5B58;</span></span><br><span class="line">        <span class="keyword">return</span> memory[index];</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="Heap&#x548C;Direct"><a href="#Heap&#x548C;Direct" class="headerlink" title="Heap&#x548C;Direct"></a>Heap&#x548C;Direct</h3><p><strong>Heap:&#x5728;&#x5BF9;&#x4E0A;&#x8FDB;&#x884C;&#x5185;&#x5B58;&#x5206;&#x914D;.GC&#x7BA1;&#x7406;</strong><br><strong>Direct:&#x901A;&#x8FC7;JDK&#x7684;API&#x5728;JVM&#x5916;&#x5206;&#x914D;,&#x6CA1;&#x6709;GC</strong><br>UnpooledHeapByteBuf&#x4E2D; </p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">byte</span>[] array;<span class="comment">//&#x901A;&#x8FC7;&#x6570;&#x7EC4;&#x64CD;&#x4F5C;</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x800C;UnpooledDirectByteBuf&#x4E2D;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> ByteBuffer buffer;<span class="comment">//ByteBuf&#x5BF9;&#x8C61;,&#x8FD9;&#x4E2A;&#x662F;JDK&#x5E95;&#x5C42;&#x7684;ByteBuf</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5B83;&#x7684;_getByte()</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">byte</span> <span class="title">_getByte</span><span class="params">(<span class="keyword">int</span> index)</span> </span>{</span><br><span class="line">    <span class="keyword">return</span> buffer.get(index);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD9;&#x4E2A;JDK&#x7684;ByteBuffer&#x662F;&#x5982;&#x4F55;&#x5206;&#x914D;&#x7684;?</p>
+<p>&#x5728;UnpooledDirectByteBuf&#x7684;&#x6784;&#x9020;&#x65B9;&#x6CD5;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">UnpooledDirectByteBuf</span><span class="params">(ByteBufAllocator alloc, <span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span> </span>{</span><br><span class="line">        <span class="keyword">this</span>.alloc = alloc;</span><br><span class="line">        setByteBuffer(ByteBuffer.allocateDirect(initialCapacity));<span class="comment">//JDK&#x63D0;&#x4F9B;&#x7684;API </span></span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ByteBuffer <span class="title">allocateDirect</span><span class="params">(<span class="keyword">int</span> capacity)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> DirectByteBuffer(capacity);<span class="comment">//&#x5206;&#x914D;&#x5806;&#x5916;&#x5185;&#x5B58;</span></span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<h1 id="ByteBufAllocator&#x5206;&#x6790;"><a href="#ByteBufAllocator&#x5206;&#x6790;" class="headerlink" title="ByteBufAllocator&#x5206;&#x6790;"></a>ByteBufAllocator&#x5206;&#x6790;</h1><h2 id="ByteBufAllocator&#x529F;&#x80FD;"><a href="#ByteBufAllocator&#x529F;&#x80FD;" class="headerlink" title="ByteBufAllocator&#x529F;&#x80FD;"></a>ByteBufAllocator&#x529F;&#x80FD;</h2><p>&#x6240;&#x6709;&#x7C7B;&#x578B;&#x7684;ByteBuf&#x6700;&#x7EC8;&#x90FD;&#x662F;&#x7531;ByteBufAllocator&#x5206;&#x914D;&#x51FA;&#x6765;,&#x5B83;&#x76F8;&#x5F53;&#x4E8E;Netty&#x4E2D;&#x7684;&#x5185;&#x5B58;&#x7BA1;&#x7406;&#x5668;.</p>
+<p>&#x770B;&#x4E00;&#x4E0B;&#x5B83;&#x6709;&#x54EA;&#x4E9B;&#x529F;&#x80FD;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ByteBufAllocator</span> </span>{</span><br><span class="line"></span><br><span class="line">    ByteBufAllocator DEFAULT = ByteBufUtil.DEFAULT_ALLOCATOR;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//&#x5206;&#x914D;&#x4E00;&#x5757;&#x5185;&#x5B58;.&#x4F9D;&#x8D56;&#x4E8E;Direct&#x6216;heap&#x7684;&#x5177;&#x4F53;&#x5B9E;&#x73B0;</span></span><br><span class="line">    <span class="function">ByteBuf <span class="title">buffer</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">ByteBuf <span class="title">buffer</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span></span>;</span><br><span class="line">    <span class="function">ByteBuf <span class="title">buffer</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span></span>;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//&#x5206;&#x914D;&#x4E00;&#x5757;&#x5185;&#x5B58;,&#x503E;&#x5411;&#x4E8E;io,&#x63A8;&#x8350;&#x7528;Direct&#x5B9E;&#x73B0;</span></span><br><span class="line">    <span class="function">ByteBuf <span class="title">ioBuffer</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">ByteBuf <span class="title">ioBuffer</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span></span>;</span><br><span class="line">    <span class="function">ByteBuf <span class="title">ioBuffer</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span></span>;</span><br><span class="line">	</span><br><span class="line">     <span class="comment">//&#x5728;&#x5806;&#x4E0A;&#x5206;&#x914D;&#x4E00;&#x5757;&#x5185;&#x5B58;</span></span><br><span class="line">    <span class="function">ByteBuf <span class="title">heapBuffer</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">ByteBuf <span class="title">heapBuffer</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span></span>;</span><br><span class="line">    <span class="function">ByteBuf <span class="title">heapBuffer</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//&#x5728;&#x5806;&#x5916;&#x5206;&#x914D;&#x4E00;&#x5757;&#x5185;&#x5B58;</span></span><br><span class="line">    <span class="function">ByteBuf <span class="title">directBuffer</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">ByteBuf <span class="title">directBuffer</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span></span>;</span><br><span class="line">    <span class="function">ByteBuf <span class="title">directBuffer</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span></span>;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//&#x5141;&#x8BB8;&#x4E0D;&#x5355;&#x72EC;&#x57FA;&#x4E8E;&#x5806;&#x6216;&#x5806;&#x5916;&#x5B9E;&#x73B0;&#x7684;&#x65B9;&#x5F0F;&#x5206;&#x914D;&#x5185;&#x5B58;,&#x53EF;&#x4EE5;&#x628A;&#x4E24;&#x4E2A;ByteBuf&#x5408;&#x5E76;&#x5230;&#x4E00;&#x8D77;&#x6210;compositeBuffer</span></span><br><span class="line">    <span class="comment">//&#x7528;&#x5F97;&#x5C11;</span></span><br><span class="line">    <span class="function">CompositeByteBuf <span class="title">compositeBuffer</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">CompositeByteBuf <span class="title">compositeBuffer</span><span class="params">(<span class="keyword">int</span> maxNumComponents)</span></span>;</span><br><span class="line">    <span class="function">CompositeByteBuf <span class="title">compositeHeapBuffer</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">CompositeByteBuf <span class="title">compositeHeapBuffer</span><span class="params">(<span class="keyword">int</span> maxNumComponents)</span></span>;</span><br><span class="line">    <span class="function">CompositeByteBuf <span class="title">compositeDirectBuffer</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">CompositeByteBuf <span class="title">compositeDirectBuffer</span><span class="params">(<span class="keyword">int</span> maxNumComponents)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isDirectBufferPooled</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">calculateNewCapacity</span><span class="params">(<span class="keyword">int</span> minNewCapacity, <span class="keyword">int</span> maxCapacity)</span></span>;</span><br><span class="line"> }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x53EF;&#x4EE5;&#x770B;&#x5230;ByteBufAllocator&#x53EA;&#x533A;&#x5206;&#x4E86;Direct&#x6216;heap,&#x6CA1;&#x6709;&#x8BF4;&#x9053;&#x5176;&#x4ED6;&#x7684;&#x51E0;&#x79CD;&#x5206;&#x7C7B;&#x65B9;&#x5F0F;</p>
+<h2 id="AbstractByteBufAllocator&#x62BD;&#x8C61;&#x5B9E;&#x73B0;"><a href="#AbstractByteBufAllocator&#x62BD;&#x8C61;&#x5B9E;&#x73B0;" class="headerlink" title="AbstractByteBufAllocator&#x62BD;&#x8C61;&#x5B9E;&#x73B0;"></a>AbstractByteBufAllocator&#x62BD;&#x8C61;&#x5B9E;&#x73B0;</h2><p> &#x5982;buffer()&#x7684;&#x5B9E;&#x73B0;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ByteBuf <span class="title">buffer</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (directByDefault) {</span><br><span class="line">        <span class="keyword">return</span> directBuffer();</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> heapBuffer();</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x540C;&#x65F6;&#x5177;&#x5907;direct&#x548C;heap&#x5206;&#x914D;&#x7684;&#x4E24;&#x79CD;&#x529F;&#x80FD;,&#x4E0B;&#x9762;&#x662F;<code>directBuffer()</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ByteBuf <span class="title">directBuffer</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span> </span>{</span><br><span class="line">        <span class="keyword">if</span> (initialCapacity == <span class="number">0</span> &amp;&amp; maxCapacity == <span class="number">0</span>) {</span><br><span class="line">            <span class="keyword">return</span> emptyBuf;</span><br><span class="line">        }</span><br><span class="line">        validate(initialCapacity, maxCapacity);</span><br><span class="line">        <span class="keyword">return</span> newDirectBuffer(initialCapacity, maxCapacity);<span class="comment">//&#x800C;&#x8FD9;&#x4E2A;&#x90E8;&#x5206;&#x662F;&#x62BD;&#x8C61;&#x7684;</span></span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> ByteBuf <span class="title">newDirectBuffer</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> ByteBuf <span class="title">newHeapBuffer</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span></span>;</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x5177;&#x4F53;new&#x51FA;&#x6765;&#x7684;DirectBuffer&#x662F;pooled&#x8FD8;&#x662F;unpooled,&#x662F;&#x7531;&#x5B50;&#x7C7B;&#x5B9E;&#x73B0;.&#x5B9E;&#x73B0;&#x8FD9;&#x4E2A;&#x65B9;&#x6CD5;&#x7684;&#x7C7B;&#x6709;</p>
+<ul>
+<li>PooledByteBufAllocator</li>
+<li>UnPooledByteBufAllocator</li>
+</ul>
+<p>&#x53CD;&#x4E4B;,AbstractByteBufAllocator&#x5DF2;&#x7ECF;&#x5B9E;&#x73B0;&#x4E86;&#x8FD9;&#x4E24;&#x4E2A;&#x65B9;&#x6CD5;&#x4E4B;&#x5916;&#x7684;&#x6240;&#x6709;&#x65B9;&#x6CD5;</p>
+<h2 id="ByteBufAllocator&#x4E24;&#x5927;&#x5B50;&#x7C7B;"><a href="#ByteBufAllocator&#x4E24;&#x5927;&#x5B50;&#x7C7B;" class="headerlink" title="ByteBufAllocator&#x4E24;&#x5927;&#x5B50;&#x7C7B;"></a>ByteBufAllocator&#x4E24;&#x5927;&#x5B50;&#x7C7B;</h2><p><img src="1547810810218.png" alt="1547810810218"></p>
+<p>&#x56DE;&#x987E;&#x4E00;&#x4E0B;</p>
+<ul>
+<li>Pooled:&#x4ECE;&#x5DF2;&#x7ECF;&#x5206;&#x914D;&#x597D;&#x7684;&#x5185;&#x5B58;&#x4E2D;&#x53D6;&#x4E00;&#x6BB5;</li>
+<li>UnPlooed:&#x76F4;&#x63A5;&#x8C03;&#x7528;&#x7CFB;&#x7EDF;API&#x5206;&#x914D;&#x4E00;&#x5757;&#x65B0;&#x7684;&#x5185;&#x5B58;</li>
+</ul>
+<p>&#x90A3;&#x4E48;unsafe&#x548C;&#x975E;unsafe&#x662F;&#x4EC0;&#x4E48;&#x8C01;&#x5B9E;&#x73B0;&#x7684;</p>
+<p>&#x5BF9;&#x4E8E;unsafe,netty&#x4F1A;&#x81EA;&#x52A8;&#x5224;&#x522B;.&#x5982;&#x8FC7;&#x80FD;&#x62FF;&#x5230;unsafe&#x5BF9;&#x8C61;&#x5C31;&#x5206;&#x914D;unsafe&#x7684;byteBuf,&#x5982;&#x679C;&#x62FF;&#x4E0D;&#x5230;&#x5219;&#x4F1A;&#x5206;&#x914D;&#x975E;unsafe&#x7684;byteBuf</p>
+<p>&#x6BD4;&#x5982;UnpooledByteBufAllocator&#x662F;&#x8FD9;&#x6837;&#x5B9E;&#x73B0;newHeapBuffer&#x7684;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> ByteBuf <span class="title">newHeapBuffer</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span> </span>{</span><br><span class="line">    <span class="comment">//&#x5224;&#x65AD;&#x662F;&#x5426;&#x6709;unsafe&#x5BF9;&#x8C61;,&#x7136;&#x540E;&#x8FD4;&#x56DE;&#x76F8;&#x5E94;&#x7684;ByteBuf</span></span><br><span class="line">    <span class="keyword">return</span> PlatformDependent.hasUnsafe() ? <span class="keyword">new</span> UnpooledUnsafeHeapByteBuf(<span class="keyword">this</span>, initialCapacity, maxCapacity)</span><br><span class="line">        : <span class="keyword">new</span> UnpooledHeapByteBuf(<span class="keyword">this</span>, initialCapacity, maxCapacity);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="UnpooledByteBufAllocator&#x5206;&#x6790;"><a href="#UnpooledByteBufAllocator&#x5206;&#x6790;" class="headerlink" title="UnpooledByteBufAllocator&#x5206;&#x6790;"></a>UnpooledByteBufAllocator&#x5206;&#x6790;</h2><h3 id="Heap&#x5185;&#x5B58;&#x5206;&#x914D;"><a href="#Heap&#x5185;&#x5B58;&#x5206;&#x914D;" class="headerlink" title="Heap&#x5185;&#x5B58;&#x5206;&#x914D;"></a>Heap&#x5185;&#x5B58;&#x5206;&#x914D;</h3><p><code>UnpooledByteBufAllocator#newHeapBuffer</code>&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> ByteBuf <span class="title">newHeapBuffer</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span> </span>{</span><br><span class="line">    <span class="comment">//netty&#x81EA;&#x52A8;&#x5224;&#x65AD;&#x662F;&#x5426;&#x521B;&#x5EFA;unsafe </span></span><br><span class="line">    <span class="keyword">return</span> PlatformDependent.hasUnsafe() ? <span class="keyword">new</span> UnpooledUnsafeHeapByteBuf(<span class="keyword">this</span>, initialCapacity, maxCapacity)<span class="comment">//&#x5148;&#x770B;&#x8FD9;&#x4E2A;</span></span><br><span class="line">        : <span class="keyword">new</span> UnpooledHeapByteBuf(<span class="keyword">this</span>, initialCapacity, maxCapacity);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5173;&#x4E8E;UnpooledUnsafeHeapByteBuf&#x7684;&#x521B;&#x5EFA;,&#x53EF;&#x4EE5;&#x770B;&#x5230;<code>UnpooledUnsafeHeapByteBuf</code>&#x662F;<code>UnpooledHeapByteBuf</code>&#x7684;&#x5B50;&#x7C7B;,&#x800C;&#x4ED6;&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">UnpooledUnsafeHeapByteBuf(ByteBufAllocator alloc, <span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity) {</span><br><span class="line">    <span class="keyword">super</span>(alloc, initialCapacity, maxCapacity);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x5B83;&#x7684;&#x521B;&#x5EFA;&#x8FC7;&#x7A0B;&#x548C;<code>UnpooledHeapByteBuf</code>&#x662F;&#x5B8C;&#x5168;&#x76F8;&#x540C;&#x7684;,&#x4ED6;&#x4EEC;&#x90FD;&#x9700;&#x8981;&#x53BB;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x6570;&#x7EC4;&#x4F5C;&#x4E3A;&#x5B58;&#x50A8;&#x7A7A;&#x95F4;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">UnpooledHeapByteBuf</span><span class="params">(ByteBufAllocator alloc,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  <span class="keyword">int</span> initialCapacity,//&#x521D;&#x59CB;&#x7684;capacity,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  <span class="keyword">int</span> maxCapacity)</span> </span>{	<span class="comment">//&#x6700;&#x591A;&#x53EF;&#x4EE5;&#x6269;&#x5BB9;&#x5230;&#x591A;&#x5C11;capacity</span></span><br><span class="line">        <span class="comment">//0,0 = readIndex,writeIndex</span></span><br><span class="line">        <span class="keyword">this</span>(alloc, <span class="keyword">new</span> <span class="keyword">byte</span>[initialCapacity], <span class="number">0</span>, <span class="number">0</span>, maxCapacity);</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">UnpooledHeapByteBuf</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            ByteBufAllocator alloc, <span class="keyword">byte</span>[] initialArray, <span class="keyword">int</span> readerIndex, <span class="keyword">int</span> writerIndex, <span class="keyword">int</span> maxCapacity)</span> </span>{</span><br><span class="line">        <span class="keyword">super</span>(maxCapacity);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">this</span>.alloc = alloc;</span><br><span class="line">        setArray(initialArray);<span class="comment">//&#x628A;&#x65B0;&#x521B;&#x5EFA;&#x7684;byte&#x6570;&#x7EC4;&#x4FDD;&#x5B58;&#x5230;&#x6210;&#x5458;&#x53D8;&#x91CF;</span></span><br><span class="line">        setIndex(readerIndex, writerIndex);<span class="comment">//&#x540C;&#x6837;&#x628A;&#x8FD9;&#x91CC;&#x4E24;&#x4E2A;&#x6307;&#x9488;&#x4FDD;&#x5B58;&#x5230;&#x6210;&#x5458;&#x53D8;&#x91CF;</span></span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x90A3;&#x4E48;<code>UnpooledUnsafeHeapByteBuf</code>&#x548C;<code>UnpooledHeapByteBuf</code>&#x7684;&#x5B9E;&#x73B0;&#x7684;&#x533A;&#x522B;&#x662F;&#x4EC0;&#x4E48;?</p>
+<p>&#x5173;&#x4E8E;<code>UnpooledHeapByteBuf</code>,&#x80FD;&#x770B;&#x51FA;&#x5B83;&#x662F;&#x76F4;&#x63A5;&#x4ECE;Byte&#x6570;&#x7EC4;&#x4E2D;&#x53D6;&#x51FA;&#x5143;&#x7D20;</p>
+<p>(&#x975E;Unsafe:&#x4E0D;&#x4F9D;&#x8D56;JDK&#x7684;Unsafe&#x5BF9;&#x8C61;)</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">byte</span> <span class="title">_getByte</span><span class="params">(<span class="keyword">int</span> index)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> HeapByteBufUtil.getByte(array, index);</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">byte</span> <span class="title">getByte</span><span class="params">(<span class="keyword">byte</span>[] memory, <span class="keyword">int</span> index)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> memory[index];<span class="comment">//</span></span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x800C;<code>UnpooledUnsafeHeapByteBuf</code>,&#x5B83;&#x6700;&#x7EC8;&#x8C03;&#x7528;unsafe&#x5BF9;&#x8C61;&#x53BB;&#x83B7;&#x53D6;&#x5143;&#x7D20;</p>
+<p>(Unsafe:&#x53EF;&#x4EE5;&#x62FF;&#x5230;&#x5BF9;&#x8C61;&#x7684;&#x5185;&#x5B58;&#x5730;&#x5740;,&#x901A;&#x8FC7;&#x5185;&#x5B58;&#x5730;&#x5740;&#x8FDB;&#x884C;&#x8BFB;&#x5199;&#x64CD;&#x4F5C;.&#x76F4;&#x63A5;&#x8C03;&#x7528;JDK&#x7684;Unsafe&#x5BF9;ByteBuf&#x8FDB;&#x884C;&#x8BFB;&#x5199;)</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">byte</span> <span class="title">_getByte</span><span class="params">(<span class="keyword">int</span> index)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> UnsafeByteBufUtil.getByte(array, index);</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">byte</span> <span class="title">getByte</span><span class="params">(<span class="keyword">byte</span>[] data, <span class="keyword">int</span> index)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> UNSAFE.getByte(data, BYTE_ARRAY_BASE_OFFSET + index);</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="direct&#x5185;&#x5B58;&#x5206;&#x914D;"><a href="#direct&#x5185;&#x5B58;&#x5206;&#x914D;" class="headerlink" title="direct&#x5185;&#x5B58;&#x5206;&#x914D;"></a>direct&#x5185;&#x5B58;&#x5206;&#x914D;</h3><p>&#x4E5F;&#x5C31;&#x662F;&#x5806;&#x5916;&#x5185;&#x5B58;&#x5206;&#x914D; </p>
+<p>&#x56DE;&#x5230;<code>UnpooledByteBufAllocator</code>&#x7684;<code>newDirectBuffer()</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> ByteBuf <span class="title">newDirectBuffer</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span> </span>{</span><br><span class="line">    <span class="comment">//&#x4E5F;&#x662F;&#x5148;&#x5224;&#x65AD;unsafe</span></span><br><span class="line">    ByteBuf buf = PlatformDependent.hasUnsafe() ?</span><br><span class="line">            UnsafeByteBufUtil.newUnsafeDirectByteBuf(<span class="keyword">this</span>, initialCapacity, maxCapacity) :</span><br><span class="line">            <span class="keyword">new</span> UnpooledDirectByteBuf(<span class="keyword">this</span>, initialCapacity, maxCapacity);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> disableLeakDetector ? buf : toLeakAwareBuffer(buf);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5148;&#x770B;<code>UnpooledDirectByteBuf</code>&#x7684;&#x521B;&#x5EFA;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="title">UnpooledDirectByteBuf</span><span class="params">(ByteBufAllocator alloc, <span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span> </span>{</span><br><span class="line">    <span class="keyword">super</span>(maxCapacity);</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">this</span>.alloc = alloc;</span><br><span class="line">    <span class="comment">//&#x7528;JDK-API&#x5206;&#x914D;&#x5806;&#x5916;&#x5185;&#x5B58;</span></span><br><span class="line">    setByteBuffer(ByteBuffer.allocateDirect(initialCapacity));<span class="comment">//&#x628A;&#x521B;&#x5EFA;&#x7684;JDKBuffer&#x4FDD;&#x5B58;&#x5230;&#x6210;&#x5458;&#x53D8;&#x91CF;</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x800C;&#x4E0A;&#x9762;&#x7684;<code>newUnsafeDirectByteBuf</code>&#x521B;&#x5EFA;&#x7684;unsafe&#x7684;direct&#x662F;&#x505A;&#x4E86;&#x4EC0;&#x4E48;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">static</span> UnpooledUnsafeDirectByteBuf <span class="title">newUnsafeDirectByteBuf</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            ByteBufAllocator alloc, <span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span> </span>{</span><br><span class="line">        <span class="comment">//&#x521B;&#x5EFA;&#x4E86;UnpooledUnsafeDirectByteBuf</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> UnpooledUnsafeDirectByteBuf(alloc, initialCapacity, maxCapacity);</span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="comment">//&#x548C;UnpooledDirectByteBuf&#x76F8;&#x4F3C;</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">UnpooledUnsafeDirectByteBuf</span><span class="params">(ByteBufAllocator alloc, <span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span> </span>{</span><br><span class="line">        <span class="keyword">super</span>(maxCapacity);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">this</span>.alloc = alloc;</span><br><span class="line">    	<span class="comment">//&#x540C;&#x6837;&#x662F;&#x8C03;&#x7528;ByteBuffer.allocateDirect(initialCapacity);</span></span><br><span class="line">        setByteBuffer(allocateDirect(initialCapacity), <span class="keyword">false</span>);</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E0E;UnpooledDirectByteBuf&#x7684;&#x5185;&#x5B58;&#x5206;&#x914D;&#x6B65;&#x9AA4;&#x76F8;&#x540C;,&#x4E0D;&#x540C;&#x5728;&#x4E8E;&#x5B83;&#x7684;<code>setByteBuffer()</code>&#x6B65;&#x9AA4;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">setByteBuffer</span><span class="params">(ByteBuffer buffer, <span class="keyword">boolean</span> tryFree)</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="keyword">this</span>.buffer = buffer;<span class="comment">//&#x548C;UnpooledDirectByteBuf&#x76F8;&#x540C;&#x4FDD;&#x5B58;&#x521B;&#x5EFA;&#x7684;JDKBuffer</span></span><br><span class="line">    <span class="comment">//&#x4E0D;&#x540C;&#x4E4B;&#x5904; : &#x628A;&#x8FD9;&#x4E2A;buffer&#x7684;&#x5185;&#x5B58;&#x5730;&#x5740;&#x4FDD;&#x5B58;&#x5230;memoryAddress&#x4E2D;</span></span><br><span class="line">    memoryAddress = PlatformDependent.directBufferAddress(buffer);</span><br><span class="line">    tmpNioBuf = <span class="keyword">null</span>;</span><br><span class="line">    capacity = buffer.remaining();</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD9;&#x4E2A;<code>PlatformDependent.directBufferAddress</code>&#x4F1A;&#x901A;&#x8FC7;<code>UNSAFE.getLong(object, fieldOffset);</code>&#x83B7;&#x53D6;&#x5185;&#x5B58;&#x5730;&#x5740;</p>
+<p>&#x4EE5;&#x540E;&#x6211;&#x4EEC;&#x901A;&#x8FC7;getByte&#x8BFB;&#x503C;&#x7684;&#x65F6;&#x5019;&#x4F1A;&#x901A;&#x8FC7;&#x8FD9;&#x91CC;&#x4FDD;&#x5B58;&#x7684;<code>memoryAddress</code>&#x53BB;&#x8BFB;&#x503C;,&#x770B;&#x4E00;&#x4E0B;&#x5B83;&#x7684;getByte</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">byte</span> <span class="title">_getByte</span><span class="params">(<span class="keyword">int</span> index)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> UnsafeByteBufUtil.getByte(addr(index));<span class="comment">//&#x7B97;&#x5185;&#x5B58;&#x5730;&#x5740; memoryAddress + index </span></span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="comment">//&#x901A;&#x8FC7;Unsafe&#x548C;&#x5185;&#x5B58;&#x5730;&#x5740;&#x83B7;&#x53D6;</span></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">byte</span> <span class="title">getByte</span><span class="params">(<span class="keyword">long</span> address)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> UNSAFE.getByte(address);</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x800C;&#x76F8;&#x6BD4;&#x4E4B;&#x4E0B;,<code>UnpooledDirectByteBuf</code>&#x5219;&#x662F;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">byte</span> <span class="title">_getByte</span><span class="params">(<span class="keyword">int</span> index)</span> </span>{</span><br><span class="line">    <span class="keyword">return</span> buffer.get(index);<span class="comment">//&#x76F4;&#x63A5;&#x7528;JDK&#x7684;buffer&#x7684;get&#x53BB;&#x83B7;&#x53D6;</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h1 id="&#x5C0F;&#x7ED3;"><a href="#&#x5C0F;&#x7ED3;" class="headerlink" title="&#x5C0F;&#x7ED3;"></a>&#x5C0F;&#x7ED3;</h1><h3 id="ByteBuf&#x5206;&#x7C7B;-1"><a href="#ByteBuf&#x5206;&#x7C7B;-1" class="headerlink" title="ByteBuf&#x5206;&#x7C7B;"></a>ByteBuf&#x5206;&#x7C7B;</h3><ul>
+<li><strong>&#x6309;&#x5185;&#x5B58;&#x7684;&#x5206;&#x914D;&#x65B9;&#x5F0F;&#x5206;&#x7C7B;</strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Pooled</th>
+<th>Unpooled</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&#x5229;&#x7528;&#x5DF2;&#x5206;&#x914D;&#x7684;&#x5185;&#x5B58;&#x7A7A;&#x95F4;&#x6784;&#x5EFA;ByteBuf</td>
+<td>&#x91CD;&#x65B0;&#x5206;&#x914D;&#x5185;&#x5B58;&#x7A7A;&#x95F4;&#x6784;&#x5EFA;ByteBuf</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>&#x6309;&#x64CD;&#x4F5C;&#x65B9;&#x5F0F;&#x5206;&#x7C7B;</strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Unsafe</th>
+<th>&#x975E;Unsafe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&#x901A;&#x8FC7;Unsafe&#x5BF9;&#x8C61;,&#x7528;&#x5185;&#x5B58;&#x5730;&#x5740;&#x5BF9;ByteBuf&#x8FDB;&#x884C;&#x64CD;&#x4F5C;</td>
+<td>&#x7528;&#x5176;&#x4ED6;&#x65B9;&#x5F0F;&#x5BF9;ByteBuf&#x8FDB;&#x884C;&#x64CD;&#x4F5C;</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>&#x6309;&#x6240;&#x5728;&#x7A7A;&#x95F4;&#x5206;&#x7C7B;</strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Heap</th>
+<th>Direct</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&#x5806;&#x5185;&#x5B58;</td>
+<td>&#x5806;&#x5916;&#x5185;&#x5B58;,&#x521B;&#x5EFA;JDK&#x7684;ByteBuf</td>
+</tr>
+</tbody>
+</table>
+<h3 id="&#x5BF9;&#x4E8E;Unpooled"><a href="#&#x5BF9;&#x4E8E;Unpooled" class="headerlink" title="&#x5BF9;&#x4E8E;Unpooled"></a>&#x5BF9;&#x4E8E;Unpooled</h3><p>&#x4ED6;&#x4EEC;&#x7684;<code>_getByte()</code>&#x5206;&#x522B;&#x662F;&#x5982;&#x4F55;&#x83B7;&#x53D6;&#x5143;&#x7D20;&#x7684;</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Unsafe</th>
+<th>&#x975E;Unsafe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Heap</strong></td>
+<td>Unsafe&#x5BF9;&#x8C61;&#x4ECE;&#x5806;&#x5185;&#x5730;&#x5740;&#x83B7;&#x53D6;&#x5143;&#x7D20;</td>
+<td>&#x4ECE;&#x6570;&#x7EC4;&#x76F4;&#x63A5;&#x83B7;&#x53D6;&#x7D22;&#x5F15;&#x5143;&#x7D20;</td>
+</tr>
+<tr>
+<td><strong>Direct</strong></td>
+<td>Unsafe&#x5BF9;&#x8C61;&#x4ECE;&#x8BA1;&#x7B97;&#x5806;&#x5916;&#x5730;&#x5740;&#x540E;&#x83B7;&#x53D6;&#x5143;&#x7D20;</td>
+<td>&#x4ECE;JDK&#x7684;ByteBuf&#x76F4;&#x63A5;&#x83B7;&#x53D6;&#x5143;&#x7D20;</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3&#x4E2A;&#x7EF4;&#x5EA6;&#x7684;&#x5206;&#x7C7B;&#x5206;&#x522B;&#x5728;&#x4EC0;&#x4E48;&#x65F6;&#x5019;&#x51B3;&#x5B9A;"><a href="#3&#x4E2A;&#x7EF4;&#x5EA6;&#x7684;&#x5206;&#x7C7B;&#x5206;&#x522B;&#x5728;&#x4EC0;&#x4E48;&#x65F6;&#x5019;&#x51B3;&#x5B9A;" class="headerlink" title="3&#x4E2A;&#x7EF4;&#x5EA6;&#x7684;&#x5206;&#x7C7B;&#x5206;&#x522B;&#x5728;&#x4EC0;&#x4E48;&#x65F6;&#x5019;&#x51B3;&#x5B9A;"></a>3&#x4E2A;&#x7EF4;&#x5EA6;&#x7684;&#x5206;&#x7C7B;&#x5206;&#x522B;&#x5728;&#x4EC0;&#x4E48;&#x65F6;&#x5019;&#x51B3;&#x5B9A;</h3><ol>
+<li>Allocator&#x5B50;&#x7C7B;&#x51B3;&#x5B9A;Pooled&#x8FD8;&#x662F;UnPooled</li>
+<li>&#x8C03;&#x7528;&#x5B83;&#x7684;newHeapBuffer&#x8FD8;&#x662F;newDirectBuffer&#x51B3;&#x5B9A;Heap&#x8FD8;&#x662F;Direct</li>
+<li>&#x8C03;&#x7528;hasUnsafe()&#x51B3;&#x5B9A;&#x65F6;Unsafe&#x8FD8;&#x662F;&#x975E;Unsafe</li>
+</ol>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2019/01/07/20190107-1/" title="校招准备视频笔记-操作系统">
+                    <div class="nextTitle">校招准备视频笔记-操作系统</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2019/01/06/20190106-1/" title="校招准备视频">
+                    <div class="prevTitle">校招准备视频</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MDUwMy8xNzAzMA==">
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:nnkwrik@gmail.com" class="iconfont-archer email" title="email"></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/nnkwrik" class="iconfont-archer github" target="_blank" title="github"></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title="wechat">
+                  
+                  <img class="profile-qr" src="/assets/qr.png">
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:30vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ByteBuf"><span class="toc-number">1.</span> <span class="toc-text">ByteBuf</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ByteBuf结构以及重要API"><span class="toc-number">2.</span> <span class="toc-text">ByteBuf结构以及重要API</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ByteBuf的结构"><span class="toc-number">2.1.</span> <span class="toc-text">ByteBuf的结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#read-write-set方法"><span class="toc-number">2.2.</span> <span class="toc-text">read,write,set方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mark和reset方法"><span class="toc-number">2.3.</span> <span class="toc-text">mark和reset方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他常用API"><span class="toc-number">2.4.</span> <span class="toc-text">其他常用API</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ByteBuf分类"><span class="toc-number">3.</span> <span class="toc-text">ByteBuf分类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#AbstractByteBuf"><span class="toc-number">3.1.</span> <span class="toc-text">AbstractByteBuf</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ByteBuf实现的分类"><span class="toc-number">3.2.</span> <span class="toc-text">ByteBuf实现的分类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Pooled和Unpooled"><span class="toc-number">3.2.1.</span> <span class="toc-text">Pooled和Unpooled</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Unsafe和非Unsafe"><span class="toc-number">3.2.2.</span> <span class="toc-text">Unsafe和非Unsafe</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Heap和Direct"><span class="toc-number">3.2.3.</span> <span class="toc-text">Heap和Direct</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ByteBufAllocator分析"><span class="toc-number">4.</span> <span class="toc-text">ByteBufAllocator分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ByteBufAllocator功能"><span class="toc-number">4.1.</span> <span class="toc-text">ByteBufAllocator功能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AbstractByteBufAllocator抽象实现"><span class="toc-number">4.2.</span> <span class="toc-text">AbstractByteBufAllocator抽象实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ByteBufAllocator两大子类"><span class="toc-number">4.3.</span> <span class="toc-text">ByteBufAllocator两大子类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#UnpooledByteBufAllocator分析"><span class="toc-number">4.4.</span> <span class="toc-text">UnpooledByteBufAllocator分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Heap内存分配"><span class="toc-number">4.4.1.</span> <span class="toc-text">Heap内存分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#direct内存分配"><span class="toc-number">4.4.2.</span> <span class="toc-text">direct内存分配</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#小结"><span class="toc-number">5.</span> <span class="toc-text">小结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ByteBuf分类-1"><span class="toc-number">5.0.1.</span> <span class="toc-text">ByteBuf分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#对于Unpooled"><span class="toc-number">5.0.2.</span> <span class="toc-text">对于Unpooled</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3个维度的分类分别在什么时候决定"><span class="toc-number">5.0.3.</span> <span class="toc-text">3个维度的分类分别在什么时候决定</span></a></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 54
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href="/2019/01/18/20190118/">校招准备视频笔记-高级知识点</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span><a class="archive-post-title" href="/2019/01/17/20190117-1/">校招准备视频笔记-设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span><a class="archive-post-title" href="/2019/01/17/20190117/">校招准备视频笔记-面向对象</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href="/2019/01/15/20190115-1/">校招准备视频笔记-编码技巧</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href="/2019/01/15/20190115/">校招准备视频笔记-程序设计语言基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-3/">校招准备视频笔记-数据库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-2/">校招准备视频笔记-网络</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-1/">校招准备视频笔记-操作系统</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107/">Netty源码剖析-ByteBuf</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106-1/">校招准备视频</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106/">Netty源码剖析-pipeline创建</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228-1/">Netty源码剖析-新连接接入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228/">Netty源码剖析-NioEventLoop执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-2/">Netty源码剖析-NioEventLoop创建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-1/">Netty源码剖析-Netty服务端启动的过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225/">Netty源码剖析-Netty基本组件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224-3/">高性能MySQL-第5章-创建高性能的索引</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224/">高性能MySQL-第1章-MySQL架构与历史</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-7/">高性能MySQL-第4章-Schema与数据类型优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-6/">🍓 JVM知识点合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-5/">JVM知识点合集-4.Class文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-4/">JVM知识点合集-3.GC算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-3/">JVM知识点合集-2.内存结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-2/">JVM知识点合集-1.类的加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223/">深入理解Java虚拟机-第12章-Java内存模型与线程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222-2/">深入理解Java虚拟机-第8章-虚拟机字节码执行引擎</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222/">深入理解Java虚拟机-第7章-虚拟机类加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181221/">深入理解Java虚拟机-第6章-类文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/19</span><a class="archive-post-title" href="/2018/12/19/20181219/">重构的艺术？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/30</span><a class="archive-post-title" href="/2018/11/30/20181130/">万能的Jackson</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span><a class="archive-post-title" href="/2018/11/20/20181120/">Guava的Cache</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/19</span><a class="archive-post-title" href="/2018/11/19/20181119/">Spring Cloud中使用RabbitMQ的两种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href="/2018/11/12/20181112/">深入理解Java虚拟机-第4章-虚拟机性能监控与故障处理工具</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href="/2018/11/10/20181110/">深入理解Java虚拟机-第3章-垃圾收集器与内存分配策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109-2/">深入理解Java虚拟机-第2章-Java内存区域与内存溢出异常</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109/">深入理解Java虚拟机-第1章-走近Java</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/05</span><a class="archive-post-title" href="/2018/11/05/20181105/">Java并发编程实战-第7章-取消与关闭</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-5/">🍤 并发操作合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-4/">并发操作合集-11.ThreadLocal</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-3/">并发操作合集-10.Executor和线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-2/">并发操作合集-9.并发工具：Semaphore,CountDownLatch,CyclicBarrier</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104/">并发操作合集-8.并发容器：CopyOnWriteArrayList</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181102-3/">并发操作合集-7.并发容器：BlockingQueue</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102-2/">并发操作合集-6.并发容器：ConcurrentHashMap</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102/">并发操作合集-5.原子变量和volatile</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181030-2/">并发操作合集-1.线程的生命周期</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span><a class="archive-post-title" href="/2018/10/30/20181030/">Java并发编程实战-第6章-任务执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/29</span><a class="archive-post-title" href="/2018/10/29/20181029/">Java并发编程实战-第5章-基础构建模块</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href="/2018/10/28/20181028/">Java并发编程实战-第4章-对象的组合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span><a class="archive-post-title" href="/2018/10/27/20181027/">Java并发编程实战-第3章-对象的共享</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/25</span><a class="archive-post-title" href="/2018/10/25/20181025/">Java并发编程实战-第2章-线程安全性</a>
+        </li>
+    
+    </ul></div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发操作合集"><span class="iconfont-archer">&#xe606;</span>并发操作合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM"><span class="iconfont-archer">&#xe606;</span>JVM</span>
+    
+        <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
+    
+        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
+    
+        <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
+    
+        <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
+    
+        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
+    
+        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br>
+    1、请确保node版本大于6.2<br>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
+    
+        <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="框架使用"><span class="iconfont-archer">&#xe60a;</span>框架使用</span>
+    
+        <span class="sidebar-category-name" data-categories="瞎逼叨"><span class="iconfont-archer">&#xe60a;</span>瞎逼叨</span>
+    
+        <span class="sidebar-category-name" data-categories="JVM知识点合集"><span class="iconfont-archer">&#xe60a;</span>JVM知识点合集</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "曽生"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

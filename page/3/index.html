@@ -374,6 +374,42 @@ height:50vh;
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2018/12/23/20181223-5/">
+            
+                <span>JVM知识点合集-4.Class文件结构</span>
+        </a>
+        <div class="abstract-content">
+            
+Class&#x7C7B;&#x6587;&#x4EF6;&#x7684;&#x7ED3;&#x6784;Class&#x6587;&#x4EF6;&#x683C;&#x5F0F;&#x91C7;&#x7528;&#x4E00;&#x79CD;&#x7C7B;&#x4F3C;&#x4E8E;C&#x8BED;&#x8A00;&#x7ED3;&#x6784;&#x4F53;&#x7684;&#x4F2A;&#x7ED3;&#x6784;&#x6765;&#x5B58;&#x50A8;&#x6570;&#x636E;,&#x8FD9;&#x79CD;&#x4F2A;&#x7ED3;&#x6784;&#x4E2D;&#x53EA;&#x6709;&#x4E24;&#x79CD;&#x6570;&#x636E;&#x7C7B;&#x578B;:&#x65E0;&#x7B26;&#x53F7;&#x6570;&#x548C;&#x8868;
+
+&#x65E0;&#x7B26;&#x53F7;&#x6570;&#x5C5E;&#x4E8E;&#x57FA;&#x672C;&#x7684;&#x6570;&#x636E;&#x7C7B;&#x578B;,&#x4EE5;u1&#x3001;u2&#x3001;u4&#x3001;u8&#x6765;&#x5206;&#x522B;&#x4EE3;&#x8868;1&#x4E2A;&#x5B57;&#x8282;&#x3001;2&#x4E2A;&#x5B57;&#x8282;&#x3001;4&#x4E2A;&#x5B57;&#x8282;&#x548C;8&#x4E2A;&#x5B57;&#x8282;&#x7684;&#x65E0;&#x7B26;&#x53F7;&#x6570;&#x3002;&#x65E0;&#x7B26;&#x53F7;&#x6570;&#x53EF;&#x4EE5;&#x7528;&#x6765;&#x63CF;&#x8FF0;&#x6570;&#x5B57;&#x3001;&#x7D22;&#x5F15;&#x5F15;&#x7528;&#x3001;&#x6570;&#x91CF;&#x503C;&#x6216;&#x8005;&#x6309;&#x7167;UTF-8&#x7F16;&#x...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/12/23</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class="abstract-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="JVM">JVM</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="JVM知识点合集">JVM知识点合集</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2018/12/23/20181223-4/">
             
                 <span>JVM知识点合集-3.GC算法</span>
@@ -683,39 +719,6 @@ Jackson&#x4F7F;&#x7528;&#x6280;&#...
         <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags="JSON">JSON</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/20/20181120/">
-            
-                <span>Guava的Cache</span>
-        </a>
-        <div class="abstract-content">
-            &#x5728;&#x9879;&#x76EE;&#x89C4;&#x6A21;&#x4E0D;&#x5927;&#x7684;&#x65F6;&#x5019;&#x53EF;&#x4EE5;&#x7528;guava&#x7B49;&#x63D0;&#x4F9B;&#x7684;cache&#x6765;&#x4EE3;&#x66FF;redis.guava&#x7684;cache&#x53EF;&#x4EE5;&#x8BBE;&#x7F6E;removalListener&#x6765;&#x76D1;&#x542C;&#x8981;&#x79FB;&#x9664;&#x7F13;&#x5B58;&#x7684;&#x6570;&#x636E;&#x3002;&#x9700;&#x8981;&#x628A;&#x8FC7;&#x671F;&#x6216;&#x5931;&#x6548;&#x7684;&#x7F13;&#x5B58;&#x5237;&#x5165;&#x6570;&#x636E;&#x5E93;&#x65F6;&#x5F88;&#x6709;&#x7528;,&#x7528;&#x6CD5;&#x5982;&#x4E0B;:
-&#x8BBE;&#x7F6E;&#x4E00;&#x4E2A;&#x5927;&#x5C0F;&#x4E3A;1,&#x8FC7;&#x671F;&#x65F6;&#x95F4;&#x4E3A;2&#x79D2;&#x7684;&#x7F13;&#x5B58;&#xFF0C;&#x8D85;&#x8FC7;&#x7F13;&#x5B58;&#x5927;&#x5C0F;&#x540E;&#x4F1A;&#x88AB;&#x79FB;&#x9664;
-1234567891011121314151617181920212223242526public static Cache&lt;Integer, Integer&gt; cache =    CacheBuilder.newBuilder().maximumSize(1).expireAfterWrite(2, TimeUnit.SECONDS).removalListener(new RemovalListener&lt;Integer, Integer&gt;(...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/20</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="缓存">缓存</a>
     
 </div>
             
@@ -1645,9 +1648,24 @@ Jackson&#x4F7F;&#x7528;&#x6280;&#...
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 53
+        Total : 54
         </div>
         <!-- search  -->
         
@@ -1703,6 +1721,11 @@ Jackson&#x4F7F;&#x7528;&#x6280;&#...
     
         <li class="archive-post-item">
             <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-1/">校招准备视频笔记-操作系统</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107/">Netty源码剖析-ByteBuf</a>
         </li>
     
     
@@ -1896,22 +1919,22 @@ Jackson&#x4F7F;&#x7528;&#x6280;&#...
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181030-2/">并发操作合集-1.线程的生命周期</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
             <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181030-2/">并发操作合集-1.线程的生命周期</a>
         </li>
     
     
         <li class="archive-post-item">
             <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     
@@ -1950,6 +1973,8 @@ Jackson&#x4F7F;&#x7528;&#x6280;&#...
     
         <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
     
+        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
+    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
         <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
@@ -1960,13 +1985,13 @@ Jackson&#x4F7F;&#x7528;&#x6280;&#...
     
         <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
     
+        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
+    
         <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
     
         <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
     
         <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
-    
-        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
     
         <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
     
@@ -1975,8 +2000,6 @@ Jackson&#x4F7F;&#x7528;&#x6280;&#...
         <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
     
         <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
-    
-        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
     
         <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
