@@ -374,6 +374,53 @@ height:50vh;
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2018/12/28/20181228-1/">
+            
+                <span>Netty源码剖析-新连接接入</span>
+        </a>
+        <div class="abstract-content">
+            
+Netty&#x662F;&#x5728;&#x54EA;&#x91CC;&#x68C0;&#x6D4B;&#x5230;&#x6709;&#x65B0;&#x8FDE;&#x63A5;&#x63A5;&#x5165;&#x7684;?
+
+&#x65B0;&#x8FDE;&#x63A5;&#x662F;&#x600E;&#x6837;&#x6CE8;&#x518C;&#x5230;NioEventLoop&#x7EBF;&#x7A0B;&#x7684;?
+
+
+Netty&#x65B0;&#x8FDE;&#x63A5;&#x63A5;&#x5165;&#x5904;&#x7406;&#x903B;&#x8F91;
+&#x68C0;&#x6D4B;&#x65B0;&#x8FDE;&#x63A5;
+&#x670D;&#x52A1;&#x7AEF;channel&#x7ED1;&#x5B9A;&#x7684;selector&#x8F6E;&#x8BAD;&#x51FA;ACCEPT&#x4E8B;&#x4EF6;  
+
+&#x521B;&#x5EFA;NioSocketChannel 
+&#x57FA;&#x4E8E;jdkChannel&#x521B;&#x5EFA;neety&#x81EA;&#x5DF1;&#x7684;NioSocketChannel,&#x4E5F;&#x5C31;&#x662F;&#x5BA2;&#x6237;&#x7AEF;Channel
+
+&#x5206;&#x914D;&#x7EBF;&#x7A0B;&#x53CA;&#x6CE8;&#x518C;selector
+&#x7ED9;&#x8FD9;&#x4E2A;&#x5BA2;&#x6237;&#x7AEF;channel&#x5206;&#x914D;&#x4E00;&#x4E2A;NioEventLoop,&#x5E76;&#x628A;&#x5B83;&#x6CE8;&#x518C;&#x5230;NioEventLoop&#x7684;selector&#x4E0A;,&#x4E4B;&#x540E;&#x90FD;&#x7531;&#x8FD9;&#x4E2A;NioEventLoop&#x8FDB;&#x884C;&#x7BA1;&#x7406;
+
+&#x5411;s...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/12/28</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class="abstract-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2018/12/28/20181228/">
             
                 <span>Netty源码剖析-NioEventLoop执行</span>
@@ -714,42 +761,6 @@ MySQL&#x9ED8;&#x8BA4;&#x5B9E;&#x73B0;&#x4E86;&#x8FD9;&#x4E9B;&#x3002;&#x5927;&#x
 Class&#x7C7B;&#x6587;&#x4EF6;&#x7684;&#x7ED3;&#x6784;Class&#x6587;&#x4EF6;&#x683C;&#x5F0F;&#x91C7;&#x7528;&#x4E00;&#x79CD;&#x7C7B;&#x4F3C;&#x4E8E;C&#x8BED;&#x8A00;&#x7ED3;&#x6784;&#x4F53;&#x7684;&#x4F2A;&#x7ED3;&#x6784;&#x6765;&#x5B58;&#x50A8;&#x6570;&#x636E;,&#x8FD9;&#x79CD;&#x4F2A;&#x7ED3;&#x6784;&#x4E2D;&#x53EA;&#x6709;&#x4E24;&#x79CD;&#x6570;&#x636E;&#x7C7B;&#x578B;:&#x65E0;&#x7B26;&#x53F7;&#x6570;&#x548C;&#x8868;
 
 &#x65E0;&#x7B26;&#x53F7;&#x6570;&#x5C5E;&#x4E8E;&#x57FA;&#x672C;&#x7684;&#x6570;&#x636E;&#x7C7B;&#x578B;,&#x4EE5;u1&#x3001;u2&#x3001;u4&#x3001;u8&#x6765;&#x5206;&#x522B;&#x4EE3;&#x8868;1&#x4E2A;&#x5B57;&#x8282;&#x3001;2&#x4E2A;&#x5B57;&#x8282;&#x3001;4&#x4E2A;&#x5B57;&#x8282;&#x548C;8&#x4E2A;&#x5B57;&#x8282;&#x7684;&#x65E0;&#x7B26;&#x53F7;&#x6570;&#x3002;&#x65E0;&#x7B26;&#x53F7;&#x6570;&#x53EF;&#x4EE5;&#x7528;&#x6765;&#x63CF;&#x8FF0;&#x6570;&#x5B57;&#x3001;&#x7D22;&#x5F15;&#x5F15;&#x7528;&#x3001;&#x6570;&#x91CF;&#x503C;&#x6216;&#x8005;&#x6309;&#x7167;UTF-8&#x7F16;&#x...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/12/23</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="JVM">JVM</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="JVM知识点合集">JVM知识点合集</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/12/23/20181223-4/">
-            
-                <span>JVM知识点合集-3.GC算法</span>
-        </a>
-        <div class="abstract-content">
-            
-&#x80FD;&#x88AB;&#x56DE;&#x6536;&#x7684;&#x5BF9;&#x8C61;&#x5BF9;&#x8C61;&#x5B58;&#x6D3B;&#x5224;&#x65AD;&#x5F53;&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;&#x4E0D;&#x518D;&#x88AB;&#x5F15;&#x7528;&#x65F6;&#x8BF4;&#x660E;&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;&#x5DF2;&#x7ECF;&#x6B7B;&#x4E86;&#x3002;&#x600E;&#x6837;&#x77E5;&#x9053;&#x67D0;&#x4E2A;&#x5BF9;&#x8C61;&#x662F;&#x6D3B;&#x7740;&#x8FD8;&#x662F;&#x6B7B;&#x4E86;&#x3002;&#x4E24;&#x79CD;&#x65B9;&#x6CD5;&#xFF1A;
-
-&#x5F15;&#x7528;&#x8BA1;&#x6570;&#xFF1A;&#x6BCF;&#x4E2A;&#x5BF9;&#x8C61;&#x6709;&#x4E00;&#x4E2A;&#x5F15;&#x7528;&#x8BA1;&#x6570;&#x5C5E;&#x6027;&#xFF0C;&#x65B0;&#x589E;&#x4E00;&#x4E2A;&#x5F15;&#x7528;&#x65F6;&#x8BA1;&#x6570;&#x52A0;1&#xFF0C;&#x5F15;&#x7528;&#x91CA;&#x653E;&#x65F6;&#x8BA1;&#x6570;&#x51CF;1&#xFF0C;&#x8BA1;&#x6570;&#x4E3A;0&#x65F6;&#x53EF;&#x4EE5;&#x56DE;&#x6536;&#x3002;&#x6B64;&#x65B9;&#x6CD5;&#x7B80;&#x5355;&#xFF0C;&#x65E0;&#x6CD5;&#x89E3;&#x51B3;&#x5BF9;&#x8C61;&#x76F8;&#x4E92;&#x5FAA;&#x73AF;&#x5F15;&#x7528;&#x7684;&#x95EE...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -1669,9 +1680,34 @@ Class&#x7C7B;&#x6587;&#x4EF6;&#x7684;&#x7ED3;&#x6784;Class&#x6587;&#x4EF6;&#x683
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 52
+        Total : 53
         </div>
         <!-- search  -->
         
@@ -1688,6 +1724,11 @@ Class&#x7C7B;&#x6587;&#x4EF6;&#x7684;&#x7ED3;&#x6784;Class&#x6587;&#x4EF6;&#x683
     
     <div class="archive-year"> 2019 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href="/2019/01/18/20190118/">校招准备视频笔记-高级知识点</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -1969,8 +2010,6 @@ Class&#x7C7B;&#x6587;&#x4EF6;&#x7684;&#x7ED3;&#x6784;Class&#x6587;&#x4EF6;&#x683
     
         <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
     
-        <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
-    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
         <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
@@ -1981,23 +2020,25 @@ Class&#x7C7B;&#x6587;&#x4EF6;&#x7684;&#x7ED3;&#x6784;Class&#x6587;&#x4EF6;&#x683
     
         <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
     
-        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
-    
         <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
     
         <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
-    
-        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
     
         <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
     
         <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
     
+        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
+    
         <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
     
         <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
     
+        <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
+    
         <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
