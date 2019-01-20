@@ -376,28 +376,17 @@ height:50vh;
     <article class="index-post">
         <a class="abstract-title" href="/2019/01/19/20190119/">
             
-                <span>Netty源码剖析-ByteBuf</span>
+                <span>Netty源码剖析-ByteBuf-2</span>
         </a>
         <div class="abstract-content">
-            
-        document.querySelectorAll('.github-emoji')
-          .forEach(el => {
-            if (!el.dataset.src) { return; }
-            const img = document.createElement('img');
-            img.style = 'display:none !important;';
-            img.src = el.dataset.src;
-            img.addEventListener('error', () => {
-              img.remove();
-              el.style.color = 'inherit';
-              el.style.backgroundImage = 'none';
-              el.style.background = 'none';
-            });
-            img.addEventListener('load', () => {
-              img.remove();
-            });
-            document.body.appendChild(img);
-          });
-      
+            &#x5185;&#x5B58;&#x89C4;&#x683C;&#x4ECB;&#x7ECD;netty&#x4E2D;&#x5E38;&#x89C1;&#x7684;&#x5185;&#x5B58;&#x89C4;&#x683C;
+
+
+Chunk
+16M&#x5BF9;&#x5E94;&#x4E00;&#x4E2A;Chunck,&#x5185;&#x5B58;&#x7533;&#x8BF7;&#x662F;&#x4EE5;Chunk&#x4E3A;&#x5355;&#x4F4D;&#x8FDB;&#x884C;,&#x4E4B;&#x540E;&#x7684;&#x5185;&#x5B58;&#x5206;&#x914D;&#x90FD;&#x662F;&#x5728;&#x7533;&#x8BF7;&#x5230;&#x7684;Chunk&#x4E2D;&#x8FDB;&#x884C;&#x64CD;&#x4F5C;
+&#x5982;:&#x60F3;&#x7533;&#x8BF7;1M&#x7684;&#x5185;&#x5B58;:&#x53BB;&#x7533;&#x8BF7;16M&#x7684;Chunk,&#x518D;&#x4ECE;&#x8FD9;&#x91CC;&#x9762;&#x53D6;&#x51FA;1M&#x7684;&#x8FDE;&#x7EED;&#x5185;&#x5B58;&#x5206;&#x914D;&#x7ED9;&#x4E00;&#x4E2A;ByteBuf
+
+Page8K&#x5BF9;&#x5E94;&#x4E00;&#x4E2A;Page&#x5982;:&#x60F3;&#x7533;&#x8BF7;16K&#x7684;&#x5185;&#x5B58;,&#x4F46;&#x4F1A;&#x5F97;&#x5230;16M&#x7684;Chunk,&#x628A;&#x8FD9;&#x4E2A;Chunk&#x8FDB;&#x884C;&#x5207;&#x5206;,&#x6B64;&#x65F6;&#x4EE5;Page&#x4E3A;&#x5355;&#x4F4D;.&#x7136;&#x540E;&#x53D6;2&#x4E2A;&#x8FDE;&#x7EED;&#x7684;Page1...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -1790,6 +1779,10 @@ ByteBuf&#x7ED3;&#x6784;&#x4EE5;&#x53CA;&#x91CD;&#x8981;APIByteBuf&#x7684;&#x7ED3
     
     
     
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
         Total : 55
@@ -1812,7 +1805,7 @@ ByteBuf&#x7ED3;&#x6784;&#x4EE5;&#x53CA;&#x91CD;&#x8981;APIByteBuf&#x7684;&#x7ED3
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">01/19</span><a class="archive-post-title" href="/2019/01/19/20190119/">Netty源码剖析-ByteBuf</a>
+            <span class="archive-post-date">01/19</span><a class="archive-post-title" href="/2019/01/19/20190119/">Netty源码剖析-ByteBuf-2</a>
         </li>
     
     
@@ -2105,8 +2098,6 @@ ByteBuf&#x7ED3;&#x6784;&#x4EE5;&#x53CA;&#x91CD;&#x8981;APIByteBuf&#x7684;&#x7ED3
     
         <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
     
-        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
-    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
         <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
@@ -2117,23 +2108,25 @@ ByteBuf&#x7ED3;&#x6784;&#x4EE5;&#x53CA;&#x91CD;&#x8981;APIByteBuf&#x7684;&#x7ED3
     
         <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
     
-        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
-    
-        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
-    
-        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
-    
         <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
     
         <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
     
+        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
+    
         <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
+    
+        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
     
         <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
     
         <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
     
         <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
@@ -2174,9 +2167,9 @@ jsonContent:
     
         <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
     
-        <span class="sidebar-category-name" data-categories="瞎逼叨"><span class="iconfont-archer">&#xe60a;</span>瞎逼叨</span>
-    
         <span class="sidebar-category-name" data-categories="框架使用"><span class="iconfont-archer">&#xe60a;</span>框架使用</span>
+    
+        <span class="sidebar-category-name" data-categories="瞎逼叨"><span class="iconfont-archer">&#xe60a;</span>瞎逼叨</span>
     
         <span class="sidebar-category-name" data-categories="JVM知识点合集"><span class="iconfont-archer">&#xe60a;</span>JVM知识点合集</span>
     
