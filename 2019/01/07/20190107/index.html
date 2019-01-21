@@ -22,7 +22,7 @@
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Netty源码剖析-ByteBuf · 农场主的黑科技.</title>
+    <title>Netty源码剖析-ByteBuf-1 · 农场主的黑科技.</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -232,7 +232,7 @@
                 <a href="/">农场主的黑科技.</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">Netty源码剖析-ByteBuf</a>
+                <a href="#" class="post-name">Netty源码剖析-ByteBuf-1</a>
             </div>
     </div>
     
@@ -262,7 +262,7 @@ height:30vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            Netty源码剖析-ByteBuf
+            Netty源码剖析-ByteBuf-1
             <!-- 404 -->
             
         </h1>
@@ -291,7 +291,7 @@ height:30vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>字数统计: <span class="post-count word-count">4.2k</span>阅读时长: <span class="post-count reading-time">26 min</span></span>
+                        <span>字数统计: <span class="post-count word-count">3.8k</span>阅读时长: <span class="post-count reading-time">23 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -518,88 +518,10 @@ height:30vh;
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">byte</span> <span class="title">_getByte</span><span class="params">(<span class="keyword">int</span> index)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> UnsafeByteBufUtil.getByte(addr(index));<span class="comment">//&#x7B97;&#x5185;&#x5B58;&#x5730;&#x5740; memoryAddress + index </span></span><br><span class="line">    }</span><br><span class="line">---</span><br><span class="line">    <span class="comment">//&#x901A;&#x8FC7;Unsafe&#x548C;&#x5185;&#x5B58;&#x5730;&#x5740;&#x83B7;&#x53D6;</span></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">byte</span> <span class="title">getByte</span><span class="params">(<span class="keyword">long</span> address)</span> </span>{</span><br><span class="line">        <span class="keyword">return</span> UNSAFE.getByte(address);</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
 <p>&#x800C;&#x76F8;&#x6BD4;&#x4E4B;&#x4E0B;,<code>UnpooledDirectByteBuf</code>&#x5219;&#x662F;</p>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">byte</span> <span class="title">_getByte</span><span class="params">(<span class="keyword">int</span> index)</span> </span>{</span><br><span class="line">    <span class="keyword">return</span> buffer.get(index);<span class="comment">//&#x76F4;&#x63A5;&#x7528;JDK&#x7684;buffer&#x7684;get&#x53BB;&#x83B7;&#x53D6;</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
-<h1 id="&#x5C0F;&#x7ED3;"><a href="#&#x5C0F;&#x7ED3;" class="headerlink" title="&#x5C0F;&#x7ED3;"></a>&#x5C0F;&#x7ED3;</h1><h3 id="ByteBuf&#x5206;&#x7C7B;-1"><a href="#ByteBuf&#x5206;&#x7C7B;-1" class="headerlink" title="ByteBuf&#x5206;&#x7C7B;"></a>ByteBuf&#x5206;&#x7C7B;</h3><ul>
-<li><strong>&#x6309;&#x5185;&#x5B58;&#x7684;&#x5206;&#x914D;&#x65B9;&#x5F0F;&#x5206;&#x7C7B;</strong></li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>Pooled</th>
-<th>Unpooled</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>&#x5229;&#x7528;&#x5DF2;&#x5206;&#x914D;&#x7684;&#x5185;&#x5B58;&#x7A7A;&#x95F4;&#x6784;&#x5EFA;ByteBuf</td>
-<td>&#x91CD;&#x65B0;&#x5206;&#x914D;&#x5185;&#x5B58;&#x7A7A;&#x95F4;&#x6784;&#x5EFA;ByteBuf</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li><strong>&#x6309;&#x64CD;&#x4F5C;&#x65B9;&#x5F0F;&#x5206;&#x7C7B;</strong></li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>Unsafe</th>
-<th>&#x975E;Unsafe</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>&#x901A;&#x8FC7;Unsafe&#x5BF9;&#x8C61;,&#x7528;&#x5185;&#x5B58;&#x5730;&#x5740;&#x5BF9;ByteBuf&#x8FDB;&#x884C;&#x64CD;&#x4F5C;</td>
-<td>&#x7528;&#x5176;&#x4ED6;&#x65B9;&#x5F0F;&#x5BF9;ByteBuf&#x8FDB;&#x884C;&#x64CD;&#x4F5C;</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li><strong>&#x6309;&#x6240;&#x5728;&#x7A7A;&#x95F4;&#x5206;&#x7C7B;</strong></li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>Heap</th>
-<th>Direct</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>&#x5806;&#x5185;&#x5B58;</td>
-<td>&#x5806;&#x5916;&#x5185;&#x5B58;,&#x521B;&#x5EFA;JDK&#x7684;ByteBuf</td>
-</tr>
-</tbody>
-</table>
-<h3 id="&#x5BF9;&#x4E8E;Unpooled"><a href="#&#x5BF9;&#x4E8E;Unpooled" class="headerlink" title="&#x5BF9;&#x4E8E;Unpooled"></a>&#x5BF9;&#x4E8E;Unpooled</h3><p>&#x4ED6;&#x4EEC;&#x7684;<code>_getByte()</code>&#x5206;&#x522B;&#x662F;&#x5982;&#x4F55;&#x83B7;&#x53D6;&#x5143;&#x7D20;&#x7684;</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th>Unsafe</th>
-<th>&#x975E;Unsafe</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Heap</strong></td>
-<td>Unsafe&#x5BF9;&#x8C61;&#x4ECE;&#x5806;&#x5185;&#x5730;&#x5740;&#x83B7;&#x53D6;&#x5143;&#x7D20;</td>
-<td>&#x4ECE;&#x6570;&#x7EC4;&#x76F4;&#x63A5;&#x83B7;&#x53D6;&#x7D22;&#x5F15;&#x5143;&#x7D20;</td>
-</tr>
-<tr>
-<td><strong>Direct</strong></td>
-<td>Unsafe&#x5BF9;&#x8C61;&#x4ECE;&#x8BA1;&#x7B97;&#x5806;&#x5916;&#x5730;&#x5740;&#x540E;&#x83B7;&#x53D6;&#x5143;&#x7D20;</td>
-<td>&#x4ECE;JDK&#x7684;ByteBuf&#x76F4;&#x63A5;&#x83B7;&#x53D6;&#x5143;&#x7D20;</td>
-</tr>
-</tbody>
-</table>
-<h3 id="3&#x4E2A;&#x7EF4;&#x5EA6;&#x7684;&#x5206;&#x7C7B;&#x5206;&#x522B;&#x5728;&#x4EC0;&#x4E48;&#x65F6;&#x5019;&#x51B3;&#x5B9A;"><a href="#3&#x4E2A;&#x7EF4;&#x5EA6;&#x7684;&#x5206;&#x7C7B;&#x5206;&#x522B;&#x5728;&#x4EC0;&#x4E48;&#x65F6;&#x5019;&#x51B3;&#x5B9A;" class="headerlink" title="3&#x4E2A;&#x7EF4;&#x5EA6;&#x7684;&#x5206;&#x7C7B;&#x5206;&#x522B;&#x5728;&#x4EC0;&#x4E48;&#x65F6;&#x5019;&#x51B3;&#x5B9A;"></a>3&#x4E2A;&#x7EF4;&#x5EA6;&#x7684;&#x5206;&#x7C7B;&#x5206;&#x522B;&#x5728;&#x4EC0;&#x4E48;&#x65F6;&#x5019;&#x51B3;&#x5B9A;</h3><ol>
-<li>Allocator&#x5B50;&#x7C7B;&#x51B3;&#x5B9A;Pooled&#x8FD8;&#x662F;UnPooled</li>
-<li>&#x8C03;&#x7528;&#x5B83;&#x7684;newHeapBuffer&#x8FD8;&#x662F;newDirectBuffer&#x51B3;&#x5B9A;Heap&#x8FD8;&#x662F;Direct</li>
-<li>&#x8C03;&#x7528;hasUnsafe()&#x51B3;&#x5B9A;&#x65F6;Unsafe&#x8FD8;&#x662F;&#x975E;Unsafe</li>
-</ol>
 <h1 id="PooledByteBufAllocator&#x6982;&#x8FF0;"><a href="#PooledByteBufAllocator&#x6982;&#x8FF0;" class="headerlink" title="PooledByteBufAllocator&#x6982;&#x8FF0;"></a>PooledByteBufAllocator&#x6982;&#x8FF0;</h1><p>&#x76F8;&#x5BF9;&#x4E8E;Unpooled&#x66F4;&#x590D;&#x6742;</p>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> ByteBuf <span class="title">newDirectBuffer</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span> </span>{</span><br><span class="line">    PoolThreadCache cache = threadCache.get();<span class="comment">// &#x62FF;&#x5230;PoolThreadCache&#x5BF9;&#x8C61;</span></span><br><span class="line">    PoolArena&lt;ByteBuffer&gt; directArena = cache.directArena;<span class="comment">//&#x518D;&#x62FF;PoolArena&#x5BF9;&#x8C61;</span></span><br><span class="line"></span><br><span class="line">    ByteBuf buf;</span><br><span class="line">    <span class="keyword">if</span> (directArena != <span class="keyword">null</span>) {</span><br><span class="line">        <span class="comment">//&#x5728;&#x8FD9;&#x4E2A;directArena&#x4E0A;&#x5206;&#x914D;&#x60F3;&#x8981;&#x7684;&#x7A7A;&#x95F4;</span></span><br><span class="line">        buf = directArena.allocate(cache, initialCapacity, maxCapacity);</span><br><span class="line">    } </span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> toLeakAwareBuffer(buf);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
 <p>&#x5B83;&#x7684;&#x5185;&#x5B58;&#x5206;&#x914D;&#x8FC7;&#x7A0B;</p>
-<h2 id="1-&#x62FF;&#x5230;&#x7EBF;&#x7A0B;&#x5C40;&#x90E8;&#x7F13;&#x5B58;PoolThreadCache"><a href="#1-&#x62FF;&#x5230;&#x7EBF;&#x7A0B;&#x5C40;&#x90E8;&#x7F13;&#x5B58;PoolThreadCache" class="headerlink" title="1.&#x62FF;&#x5230;&#x7EBF;&#x7A0B;&#x5C40;&#x90E8;&#x7F13;&#x5B58;PoolThreadCache"></a>1.&#x62FF;&#x5230;&#x7EBF;&#x7A0B;&#x5C40;&#x90E8;&#x7F13;&#x5B58;PoolThreadCache</h2><p><code>newDirectBuffer()</code>&#x53EF;&#x80FD;&#x4F1A;&#x88AB;&#x591A;&#x7EBF;&#x7A0B;&#x8C03;&#x7528;,&#x800C;<code>threadCache.get()</code>&#x80FD;&#x4F7F;&#x6211;&#x4EEC;&#x83B7;&#x53D6;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x7684;cache<br>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x4E0D;&#x540C;&#x7684;&#x7EBF;&#x7A0B;&#x62E5;&#x6709;&#x4E0D;&#x540C;&#x7684;&#x5185;&#x5B58;&#x7A7A;&#x95F4;<br>&#x8FD9;&#x91CC;&#x7684;threadCache&#x662F;<code>PoolThreadLocalCache</code>&#x7C7B;&#x578B;,&#x4E5F;&#x5C31;&#x662F;JDK&#x7684;ThreadLocal&#x7684;&#x6269;&#x5C55;&#x7C7B;&#x578B;<br>&#x5B83;&#x662F;PooledByteBufAllocator&#x7684;&#x5185;&#x90E8;&#x7C7B;,&#x8C03;&#x7528;<code>threadCache.get();</code>&#x65F6;&#x4F1A;&#x8C03;&#x7528;&#x5B83;&#x7684;<code>initialValue()</code>&#x65B9;&#x6CD5;,&#x5206;&#x914D;&#x7A7A;&#x95F4;&#x4E00;&#x6BB5;&#x7EBF;&#x7A0B;&#x79C1;&#x6709;&#x7684;&#x7A7A;&#x95F4;</p>
+<h2 id="1-&#x62FF;&#x5230;&#x7EBF;&#x7A0B;&#x5C40;&#x90E8;&#x7F13;&#x5B58;PoolThreadCache"><a href="#1-&#x62FF;&#x5230;&#x7EBF;&#x7A0B;&#x5C40;&#x90E8;&#x7F13;&#x5B58;PoolThreadCache" class="headerlink" title="1.&#x62FF;&#x5230;&#x7EBF;&#x7A0B;&#x5C40;&#x90E8;&#x7F13;&#x5B58;PoolThreadCache"></a>1.&#x62FF;&#x5230;&#x7EBF;&#x7A0B;&#x5C40;&#x90E8;&#x7F13;&#x5B58;PoolThreadCache</h2><p><code>newDirectBuffer()</code>&#x53EF;&#x80FD;&#x4F1A;&#x88AB;&#x591A;&#x7EBF;&#x7A0B;&#x8C03;&#x7528;,&#x800C;<code>threadCache.get()</code>&#x80FD;&#x4F7F;&#x6211;&#x4EEC;&#x83B7;&#x53D6;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x7684;cache<br>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x4E0D;&#x540C;&#x7684;&#x7EBF;&#x7A0B;&#x62E5;&#x6709;&#x4E0D;&#x540C;&#x7684;&#x5185;&#x5B58;&#x7A7A;&#x95F4;<br>&#x8FD9;&#x91CC;&#x7684;threadCache&#x662F;<code>PoolThreadLocalCache</code>&#x7C7B;&#x578B;,&#x57FA;&#x4E8E;JDK&#x7684;ThreadLocal<br>&#x5B83;&#x662F;PooledByteBufAllocator&#x7684;&#x5185;&#x90E8;&#x7C7B;,&#x8C03;&#x7528;<code>threadCache.get();</code>&#x65F6;&#x4F1A;&#x8C03;&#x7528;&#x5B83;&#x7684;<code>initialValue()</code>&#x65B9;&#x6CD5;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;<code>PoolThreadCache</code>&#x5176;&#x4E2D;&#x5305;&#x542B;&#x7EBF;&#x7A0B;&#x79C1;&#x6709;&#x7684;&#x7A7A;&#x95F4;,</p>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">synchronized</span> PoolThreadCache <span class="title">initialValue</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="comment">//heapArenas,directArenas&#x662F;&#x4EC0;&#x4E48;?&#x7A0D;&#x540E;&#x4F1A;&#x8BB2;</span></span><br><span class="line">    <span class="keyword">final</span> PoolArena&lt;<span class="keyword">byte</span>[]&gt; heapArena = leastUsedArena(heapArenas);</span><br><span class="line">    <span class="keyword">final</span> PoolArena&lt;ByteBuffer&gt; directArena = leastUsedArena(directArenas);</span><br><span class="line">	</span><br><span class="line">    <span class="comment">//&#x7EBF;&#x7A0B;&#x79C1;&#x6709;&#x7684;PoolThreadCache</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> PoolThreadCache(</span><br><span class="line">        heapArena, directArena, tinyCacheSize, smallCacheSize, normalCacheSize,</span><br><span class="line">        DEFAULT_MAX_CACHED_BUFFER_CAPACITY, DEFAULT_CACHE_TRIM_INTERVAL);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
 <h2 id="2-&#x5728;&#x7EBF;&#x7A0B;&#x5C40;&#x90E8;&#x7F13;&#x5B58;&#x7684;Arena&#x4E0A;&#x8FDB;&#x884C;&#x5185;&#x5B58;&#x5206;&#x914D;"><a href="#2-&#x5728;&#x7EBF;&#x7A0B;&#x5C40;&#x90E8;&#x7F13;&#x5B58;&#x7684;Arena&#x4E0A;&#x8FDB;&#x884C;&#x5185;&#x5B58;&#x5206;&#x914D;" class="headerlink" title="2.&#x5728;&#x7EBF;&#x7A0B;&#x5C40;&#x90E8;&#x7F13;&#x5B58;&#x7684;Arena&#x4E0A;&#x8FDB;&#x884C;&#x5185;&#x5B58;&#x5206;&#x914D;"></a>2.&#x5728;&#x7EBF;&#x7A0B;&#x5C40;&#x90E8;&#x7F13;&#x5B58;&#x7684;Arena&#x4E0A;&#x8FDB;&#x884C;&#x5185;&#x5B58;&#x5206;&#x914D;</h2><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> ByteBuf <span class="title">newDirectBuffer</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span> </span>{</span><br><span class="line">        PoolThreadCache cache = threadCache.get();<span class="comment">// &#x6B64;&#x65F6;&#x521B;&#x5EFA;&#x7EBF;&#x7A0B;&#x79C1;&#x6709;&#x7684;</span></span><br><span class="line">        <span class="comment">//&#x8FD9;&#x91CC;&#x7684;directArena&#x5C31;&#x662F;&#x4E0A;&#x9762;&#x521B;&#x5EFA;PoolThreadCache&#x65F6;&#x653E;&#x5165;&#x7684;directArena</span></span><br><span class="line">        PoolArena&lt;ByteBuffer&gt; directArena = cache.directArena;</span><br><span class="line"><span class="comment">//...</span></span><br><span class="line">        <span class="comment">//&#x5728;&#x7EBF;&#x7A0B;&#x5C40;&#x90E8;&#x7F13;&#x5B58;&#x7684;Arena&#x4E0A;&#x8FDB;&#x884C;&#x5185;&#x5B58;&#x5206;&#x914D;</span></span><br><span class="line">        buf = directArena.allocate(cache, initialCapacity, maxCapacity);</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
 <p>&#x5728;&#x4E0A;&#x9762;&#x4ECB;&#x7ECD;&#x7684;<code>initialValue()</code>&#x4E2D;&#x662F;&#x901A;&#x8FC7;<code>leastUsedArena()</code>&#x62FF;&#x5230;&#x8FD9;&#x7684;&#x5BF9;&#x8C61;&#x7684; .&#x4ECE;&#x5B57;&#x9762;&#x610F;&#x601D;&#x53EF;&#x4EE5;&#x63A8;&#x65AD;&#x51FA;&#x4ED6;&#x662F;&#x4ECE;directArenas&#x4E2D;&#x62FF;&#x5230;&#x53EF;&#x7528;&#x7684;Arena&#x4E2D;&#x6700;&#x5C0F;&#x7684;Arena.</p>
@@ -638,13 +560,6 @@ height:30vh;
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (directArena != <span class="keyword">null</span>) {</span><br><span class="line">    tinySubPageDirectCaches = createSubPageCaches(</span><br><span class="line">        tinyCacheSize, PoolArena.numTinySubpagePools, SizeClass.Tiny);</span><br><span class="line">    smallSubPageDirectCaches = createSubPageCaches(</span><br><span class="line">        smallCacheSize, directArena.numSmallSubpagePools, SizeClass.Small);</span><br><span class="line"></span><br><span class="line">    numShiftsNormalDirect = log2(directArena.pageSize);</span><br><span class="line">    normalDirectCaches = createNormalCaches(</span><br><span class="line">        normalCacheSize, maxCachedBufferCapacity, directArena);</span><br><span class="line"></span><br><span class="line">    directArena.numThreadCaches.getAndIncrement();</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
 <p>&#x770B;&#x4E00;&#x4E0B;<code>createSubPageCaches</code>&#x662F;&#x600E;&#x4E48;&#x505A;&#x7684;</p>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> &lt;T&gt; MemoryRegionCache&lt;T&gt;[] createSubPageCaches(</span><br><span class="line">    <span class="keyword">int</span> cacheSize, <span class="keyword">int</span> numCaches, SizeClass sizeClass) {</span><br><span class="line">    <span class="keyword">if</span> (cacheSize &gt; <span class="number">0</span>) {</span><br><span class="line">        <span class="comment">//&#x521B;&#x5EFA;&#x5728;&#x6BCF;&#x4E2A;PooledThreadCache&#x4E2D;&#x7684;&#x7F13;&#x5B58;&#x5BF9;&#x8C61;</span></span><br><span class="line">        MemoryRegionCache&lt;T&gt;[] cache = <span class="keyword">new</span> MemoryRegionCache[numCaches];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; cache.length; i++) {</span><br><span class="line">            cache[i] = <span class="keyword">new</span> SubPageMemoryRegionCache&lt;T&gt;(cacheSize, sizeClass);</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">return</span> cache;</span><br><span class="line">    } <span class="keyword">else</span> {</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
-<h1 id="&#x5C0F;&#x7ED3;-1"><a href="#&#x5C0F;&#x7ED3;-1" class="headerlink" title="&#x5C0F;&#x7ED3;"></a>&#x5C0F;&#x7ED3;</h1><p>&#x8C03;&#x7528;Pooled&#x7684;newDirectBuffer()&#x65F6;&#x4F1A;&#x8C03;&#x7528;threadCache.get(),&#x5E76;&#x5728;&#x4ED6;&#x8FD4;&#x56DE;&#x7684;PoolThreadCache&#x4E2D;&#x5206;&#x914D;&#x7A7A;&#x95F4;</p>
-<p>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x4E0E;Unpooled&#x76F4;&#x63A5;&#x5206;&#x914D;&#x7A7A;&#x95F4;&#x4E0D;&#x540C;,Pooled&#x4F1A;&#x5728;&#x7EBF;&#x7A0B;&#x79C1;&#x6709;&#x7684;PoolThreadCache&#x4E2D;&#x5206;&#x914D;&#x7A7A;&#x95F4;</p>
-<p>&#x800C;&#x8FD9;&#x4E2A;PoolThreadCache&#x662F;&#x5728;&#x8C03;&#x7528;threadCache.get();&#x65F6;,&#x521B;&#x5EFA;&#x7EBF;&#x7A0B;&#x79C1;&#x6709;&#x7684;&#x7A7A;&#x95F4;.&#x6B64;&#x65F6;heap,direct&#x90FD;&#x4F1A;&#x521B;&#x5EFA;.</p>
-<p>&#x8FD9;&#x4E24;&#x4E2A;&#x7EBF;&#x7A0B;&#x79C1;&#x6709;&#x7684;&#x7A7A;&#x95F4;&#x662F;&#x4ECE;&#x6574;&#x4F53;&#x7684;heapArenas[],directArenas[]&#x6570;&#x7EC4;&#x4E2D;&#x5404;&#x53D6;&#x51FA;&#x4E00;&#x4E2A;&#x53EF;&#x7528;&#x7684;&#x4F5C;&#x4E3A;&#x7EBF;&#x7A0B;&#x79C1;&#x6709;&#x7684;&#x7A7A;&#x95F4;.</p>
-<p>Arenas[]&#x6570;&#x7EC4;&#x7684;&#x5927;&#x5C0F;&#x662F;cpu*2,&#x4E5F;&#x5C31;&#x610F;&#x5473;&#x7740;&#x62E5;&#x6709;NioEventLoop&#x4E2A;&#x6570;&#x7684;Arena.</p>
-<p>Arena&#x672C;&#x4F53;&#x662F;&#x5728;PooledByteBufAllocator&#x7684;&#x6784;&#x9020;&#x65B9;&#x6CD5;&#x4E2D;&#x521B;&#x5EFA;</p>
-<p>&#x6B64;&#x5916;,&#x7EBF;&#x7A0B;&#x79C1;&#x6709;&#x7684;PooledThreadCache&#x9664;&#x4E86;&#x5728;Arena&#x4E0A;&#x5206;&#x914D;&#x7A7A;&#x95F4;&#x4E4B;&#x5916;,&#x8FD8;&#x80FD;&#x5728;&#x4ED6;&#x7EF4;&#x62A4;&#x7684;JDK&#x7684;ByteBuf&#x7F13;&#x5B58;&#x5217;&#x8868;&#x4E2D;&#x5206;&#x914D;&#x7A7A;&#x95F4;,&#x63D0;&#x4F9B;&#x4E86;&#x4E09;&#x79CD;&#x5927;&#x5C0F;&#x7684;&#x7F13;&#x5B58;,&#x5206;&#x522B;&#x662F; tinyCache,smallCache,normalCache</p>
 <h2 id="directArena&#x5206;&#x914D;direct&#x5185;&#x5B58;&#x7684;&#x6D41;&#x7A0B;"><a href="#directArena&#x5206;&#x914D;direct&#x5185;&#x5B58;&#x7684;&#x6D41;&#x7A0B;" class="headerlink" title="directArena&#x5206;&#x914D;direct&#x5185;&#x5B58;&#x7684;&#x6D41;&#x7A0B;"></a>directArena&#x5206;&#x914D;direct&#x5185;&#x5B58;&#x7684;&#x6D41;&#x7A0B;</h2><h3 id="1-&#x4ECE;&#x5BF9;&#x8C61;&#x6C60;&#x91CC;&#x9762;&#x62FF;&#x5230;PooledByteBuf&#x8FDB;&#x884C;&#x590D;&#x7528;"><a href="#1-&#x4ECE;&#x5BF9;&#x8C61;&#x6C60;&#x91CC;&#x9762;&#x62FF;&#x5230;PooledByteBuf&#x8FDB;&#x884C;&#x590D;&#x7528;" class="headerlink" title="1.&#x4ECE;&#x5BF9;&#x8C61;&#x6C60;&#x91CC;&#x9762;&#x62FF;&#x5230;PooledByteBuf&#x8FDB;&#x884C;&#x590D;&#x7528;"></a>1.&#x4ECE;&#x5BF9;&#x8C61;&#x6C60;&#x91CC;&#x9762;&#x62FF;&#x5230;<code>PooledByteBuf</code>&#x8FDB;&#x884C;&#x590D;&#x7528;</h3><p>&#x7EE7;&#x7EED;&#x770B;&#x4E4B;&#x524D;&#x8C03;&#x7528;<code>newDirectBuffer()</code>&#x7684;&#x8FC7;&#x7A0B;</p>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> ByteBuf <span class="title">newDirectBuffer</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">int</span> maxCapacity)</span> </span>{</span><br><span class="line">    <span class="comment">//&#x8FD9;&#x4E24;&#x53E5;&#x662F;&#x521A;&#x624D;&#x5206;&#x6790;&#x7684;</span></span><br><span class="line">    PoolThreadCache cache = threadCache.get();</span><br><span class="line">    PoolArena&lt;ByteBuffer&gt; directArena = cache.directArena;</span><br><span class="line"></span><br><span class="line">    ByteBuf buf;</span><br><span class="line">    <span class="keyword">if</span> (directArena != <span class="keyword">null</span>) {</span><br><span class="line">        <span class="comment">//&#x770B;&#x8FD9;&#x4E2A;&#x90E8;&#x5206;&#x662F;&#x5982;&#x4F55;&#x5206;&#x914D;&#x51FA;netty.ByteBuf&#x7684;</span></span><br><span class="line">        buf = directArena.allocate(cache, initialCapacity, maxCapacity);</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> toLeakAwareBuffer(buf);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">PooledByteBuf&lt;T&gt; <span class="title">allocate</span><span class="params">(PoolThreadCache cache, <span class="keyword">int</span> reqCapacity, <span class="keyword">int</span> maxCapacity)</span> </span>{</span><br><span class="line">    <span class="comment">//&#x901A;&#x8FC7;newByteBuf()&#x62FF;&#x5230;PooledByteBuf&#x5BF9;&#x8C61;</span></span><br><span class="line">    PooledByteBuf&lt;T&gt; buf = newByteBuf(maxCapacity);</span><br><span class="line">    <span class="comment">//&#x5B9E;&#x9645;&#x5728;PoolThreadCache&#x4E0A;&#x8FDB;&#x884C;buf&#x7684;&#x521D;&#x59CB;&#x5316;</span></span><br><span class="line">    allocate(cache, buf, reqCapacity);</span><br><span class="line">    <span class="keyword">return</span> buf;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
@@ -818,7 +733,7 @@ top:30vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ByteBuf"><span class="toc-number">1.</span> <span class="toc-text">ByteBuf</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ByteBuf结构以及重要API"><span class="toc-number">2.</span> <span class="toc-text">ByteBuf结构以及重要API</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ByteBuf的结构"><span class="toc-number">2.1.</span> <span class="toc-text">ByteBuf的结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#read-write-set方法"><span class="toc-number">2.2.</span> <span class="toc-text">read,write,set方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mark和reset方法"><span class="toc-number">2.3.</span> <span class="toc-text">mark和reset方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他常用API"><span class="toc-number">2.4.</span> <span class="toc-text">其他常用API</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ByteBuf分类"><span class="toc-number">3.</span> <span class="toc-text">ByteBuf分类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#AbstractByteBuf"><span class="toc-number">3.1.</span> <span class="toc-text">AbstractByteBuf</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ByteBuf实现的分类"><span class="toc-number">3.2.</span> <span class="toc-text">ByteBuf实现的分类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Pooled和Unpooled"><span class="toc-number">3.2.1.</span> <span class="toc-text">Pooled和Unpooled</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Unsafe和非Unsafe"><span class="toc-number">3.2.2.</span> <span class="toc-text">Unsafe和非Unsafe</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Heap和Direct"><span class="toc-number">3.2.3.</span> <span class="toc-text">Heap和Direct</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ByteBufAllocator分析"><span class="toc-number">4.</span> <span class="toc-text">ByteBufAllocator分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ByteBufAllocator功能"><span class="toc-number">4.1.</span> <span class="toc-text">ByteBufAllocator功能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AbstractByteBufAllocator抽象实现"><span class="toc-number">4.2.</span> <span class="toc-text">AbstractByteBufAllocator抽象实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ByteBufAllocator两大子类"><span class="toc-number">4.3.</span> <span class="toc-text">ByteBufAllocator两大子类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#UnpooledByteBufAllocator分析"><span class="toc-number">4.4.</span> <span class="toc-text">UnpooledByteBufAllocator分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Heap内存分配"><span class="toc-number">4.4.1.</span> <span class="toc-text">Heap内存分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#direct内存分配"><span class="toc-number">4.4.2.</span> <span class="toc-text">direct内存分配</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#小结"><span class="toc-number">5.</span> <span class="toc-text">小结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ByteBuf分类-1"><span class="toc-number">5.0.1.</span> <span class="toc-text">ByteBuf分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#对于Unpooled"><span class="toc-number">5.0.2.</span> <span class="toc-text">对于Unpooled</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3个维度的分类分别在什么时候决定"><span class="toc-number">5.0.3.</span> <span class="toc-text">3个维度的分类分别在什么时候决定</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#PooledByteBufAllocator概述"><span class="toc-number">6.</span> <span class="toc-text">PooledByteBufAllocator概述</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-拿到线程局部缓存PoolThreadCache"><span class="toc-number">6.1.</span> <span class="toc-text">1.拿到线程局部缓存PoolThreadCache</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-在线程局部缓存的Arena上进行内存分配"><span class="toc-number">6.2.</span> <span class="toc-text">2.在线程局部缓存的Arena上进行内存分配</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PooledByteBufAllocator结构"><span class="toc-number">6.3.</span> <span class="toc-text">PooledByteBufAllocator结构</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#小结-1"><span class="toc-number">7.</span> <span class="toc-text">小结</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#directArena分配direct内存的流程"><span class="toc-number">7.1.</span> <span class="toc-text">directArena分配direct内存的流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-从对象池里面拿到PooledByteBuf进行复用"><span class="toc-number">7.1.1.</span> <span class="toc-text">1.从对象池里面拿到PooledByteBuf进行复用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-从缓存上进行分配"><span class="toc-number">7.1.2.</span> <span class="toc-text">2.从缓存上进行分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-缓存命中失败-从内存堆里面进行内存分配"><span class="toc-number">7.1.3.</span> <span class="toc-text">3.缓存命中失败,从内存堆里面进行内存分配</span></a></li></ol></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ByteBuf"><span class="toc-number">1.</span> <span class="toc-text">ByteBuf</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ByteBuf结构以及重要API"><span class="toc-number">2.</span> <span class="toc-text">ByteBuf结构以及重要API</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ByteBuf的结构"><span class="toc-number">2.1.</span> <span class="toc-text">ByteBuf的结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#read-write-set方法"><span class="toc-number">2.2.</span> <span class="toc-text">read,write,set方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mark和reset方法"><span class="toc-number">2.3.</span> <span class="toc-text">mark和reset方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他常用API"><span class="toc-number">2.4.</span> <span class="toc-text">其他常用API</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ByteBuf分类"><span class="toc-number">3.</span> <span class="toc-text">ByteBuf分类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#AbstractByteBuf"><span class="toc-number">3.1.</span> <span class="toc-text">AbstractByteBuf</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ByteBuf实现的分类"><span class="toc-number">3.2.</span> <span class="toc-text">ByteBuf实现的分类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Pooled和Unpooled"><span class="toc-number">3.2.1.</span> <span class="toc-text">Pooled和Unpooled</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Unsafe和非Unsafe"><span class="toc-number">3.2.2.</span> <span class="toc-text">Unsafe和非Unsafe</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Heap和Direct"><span class="toc-number">3.2.3.</span> <span class="toc-text">Heap和Direct</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ByteBufAllocator分析"><span class="toc-number">4.</span> <span class="toc-text">ByteBufAllocator分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ByteBufAllocator功能"><span class="toc-number">4.1.</span> <span class="toc-text">ByteBufAllocator功能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AbstractByteBufAllocator抽象实现"><span class="toc-number">4.2.</span> <span class="toc-text">AbstractByteBufAllocator抽象实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ByteBufAllocator两大子类"><span class="toc-number">4.3.</span> <span class="toc-text">ByteBufAllocator两大子类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#UnpooledByteBufAllocator分析"><span class="toc-number">4.4.</span> <span class="toc-text">UnpooledByteBufAllocator分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Heap内存分配"><span class="toc-number">4.4.1.</span> <span class="toc-text">Heap内存分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#direct内存分配"><span class="toc-number">4.4.2.</span> <span class="toc-text">direct内存分配</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#PooledByteBufAllocator概述"><span class="toc-number">5.</span> <span class="toc-text">PooledByteBufAllocator概述</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-拿到线程局部缓存PoolThreadCache"><span class="toc-number">5.1.</span> <span class="toc-text">1.拿到线程局部缓存PoolThreadCache</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-在线程局部缓存的Arena上进行内存分配"><span class="toc-number">5.2.</span> <span class="toc-text">2.在线程局部缓存的Arena上进行内存分配</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PooledByteBufAllocator结构"><span class="toc-number">5.3.</span> <span class="toc-text">PooledByteBufAllocator结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#directArena分配direct内存的流程"><span class="toc-number">5.4.</span> <span class="toc-text">directArena分配direct内存的流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-从对象池里面拿到PooledByteBuf进行复用"><span class="toc-number">5.4.1.</span> <span class="toc-text">1.从对象池里面拿到PooledByteBuf进行复用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-从缓存上进行分配"><span class="toc-number">5.4.2.</span> <span class="toc-text">2.从缓存上进行分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-缓存命中失败-从内存堆里面进行内存分配"><span class="toc-number">5.4.3.</span> <span class="toc-text">3.缓存命中失败,从内存堆里面进行内存分配</span></a></li></ol></li></ol></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -831,6 +746,16 @@ top:30vh;
     <div class="sidebar-content sidebar-content-show-archive">
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
@@ -1671,7 +1596,7 @@ top:30vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">01/21</span><a class="archive-post-title" href="/2019/01/21/20190121/">Netty源码剖析-ByteBuf-2</a>
+            <span class="archive-post-date">01/21</span><a class="archive-post-title" href="/2019/01/21/20190121/">Netty源码剖析-ByteBuf-3</a>
         </li>
     
     
@@ -1721,7 +1646,7 @@ top:30vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107/">Netty源码剖析-ByteBuf</a>
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107/">Netty源码剖析-ByteBuf-1</a>
         </li>
     
     
@@ -1925,12 +1850,12 @@ top:30vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     
@@ -1963,6 +1888,14 @@ top:30vh;
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
+    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
         <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
@@ -1973,31 +1906,23 @@ top:30vh;
     
         <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
     
-        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
-    
         <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
-    
-        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
     
         <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
     
         <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
     
-        <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
+        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
     
-        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
     
         <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
     
-        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
-    
         <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
     
-        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
-    
         <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
-    
-        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
@@ -2032,6 +1957,8 @@ jsonContent:
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
+        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
+    
         <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
     
         <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
@@ -2041,8 +1968,6 @@ jsonContent:
         <span class="sidebar-category-name" data-categories="瞎逼叨"><span class="iconfont-archer">&#xe60a;</span>瞎逼叨</span>
     
         <span class="sidebar-category-name" data-categories="JVM知识点合集"><span class="iconfont-archer">&#xe60a;</span>JVM知识点合集</span>
-    
-        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
     
     </div>
     <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
