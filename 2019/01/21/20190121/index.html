@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="曽生">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="曽生">
+    
+    <meta name="keywords" content="nnkwrik,曽生,曾丽桦">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Netty源码剖析-ByteBuf-2 · 农场主的黑科技.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin="">
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin="">
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"输入关键字 :D","hits_empty":"没有找到相关信息 :(","hits_stats":"找到 ${hits} 个相关信息,耗时 ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'LXR3VBZBS6',
+                apiKey: '17d6d4ab4ba943bab3232eced0eea766',
+                indexName: 'index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">农场主的黑科技.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Netty源码剖析-ByteBuf-2</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href="/">农场主的黑科技.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:30vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/andrew-leu-1113236-unsplash.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Netty源码剖析-ByteBuf-2
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class="post-intro-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">2.6k</span>阅读时长: <span class="post-count reading-time">16 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/01/21</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="subpage&#x7EA7;&#x522B;&#x7684;&#x5185;&#x5B58;&#x5206;&#x914D;-allocateTiny"><a href="#subpage&#x7EA7;&#x522B;&#x7684;&#x5185;&#x5B58;&#x5206;&#x914D;-allocateTiny" class="headerlink" title="subpage&#x7EA7;&#x522B;&#x7684;&#x5185;&#x5B58;&#x5206;&#x914D;:allocateTiny()"></a>subpage&#x7EA7;&#x522B;&#x7684;&#x5185;&#x5B58;&#x5206;&#x914D;:allocateTiny()</h1><p>&#x6B65;&#x9AA4;</p>
+<ol>
+<li>&#x5B9A;&#x4F4D;&#x4E00;&#x4E2A;Subpage&#x5BF9;&#x8C61;,&#x57FA;&#x4E8E;&#x4E00;&#x4E2A;page.&#x53EF;&#x80FD;&#x662F;&#x7528;&#x5DF2;&#x6709;&#x7684;subpage,&#x4E5F;&#x53EF;&#x80FD;&#x662F;&#x65B0;&#x521B;&#x5EFA;&#x7684;</li>
+<li>&#x5982;&#x679C;&#x662F;&#x65B0;&#x521B;&#x5EFA;&#x7684;subpage,&#x521D;&#x59CB;&#x5316;Subpage.<br>&#x521D;&#x59CB;&#x5316;&#x8FC7;&#x7A0B;,&#x53BB;chunk&#x91CC;&#x627E;&#x4E00;&#x4E2A;page.&#x628A;&#x8FD9;&#x4E2A;page&#x6309;&#x7167;&#x671F;&#x671B;&#x7684;subpage&#x5927;&#x5C0F;&#x8FDB;&#x884C;&#x5212;&#x5206;<br>&#x5982;:&#x671F;&#x671B;1K&#x7684;&#x5185;&#x5B58; ,&#x628A;8K&#x7684;Page&#x5206;&#x6210;8&#x4EFD;</li>
+<li>&#x521D;&#x59CB;&#x5316;pooledByteBuf.<br>&#x5176;&#x5B9E;&#x5C31;&#x662F;&#x62FF;&#x5230;&#x5185;&#x5B58;&#x4FE1;&#x606F;,&#x653E;&#x5165;&#x5230;&#x4E00;&#x4E2A;bytebuf&#x4E2D;</li>
+</ol>
+<p><strong>&#x4E0B;&#x9762;&#x4F7F;&#x7528;16B&#x8FDB;&#x884C;&#x6D4B;&#x8BD5;</strong></p>
+<p>&#x4EE3;&#x7801;&#x7247;&#x6BB5;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//PoolArena#allocate(io.netty.buffer.PoolThreadCache, io.netty.buffer.PooledByteBuf&lt;T&gt;, int)</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">allocate</span><span class="params">(PoolThreadCache cache, PooledByteBuf&lt;T&gt; buf, <span class="keyword">final</span> <span class="keyword">int</span> reqCapacity)</span> </span>{</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> normCapacity = normalizeCapacity(reqCapacity);</span><br><span class="line">        <span class="keyword">if</span> (isTinyOrSmall(normCapacity)) { <span class="comment">// capacity &lt; pageSize</span></span><br><span class="line">            <span class="keyword">int</span> tableIdx;</span><br><span class="line">            PoolSubpage&lt;T&gt;[] table;</span><br><span class="line">            <span class="keyword">boolean</span> tiny = isTiny(normCapacity);</span><br><span class="line">            <span class="keyword">if</span> (tiny) { <span class="comment">// &lt; 512</span></span><br><span class="line">                </span><br><span class="line">                <span class="keyword">if</span> (cache.allocateTiny(<span class="keyword">this</span>, buf, reqCapacity, normCapacity)) {<span class="comment">//false</span></span><br><span class="line">                    <span class="keyword">return</span>;</span><br><span class="line">                }</span><br><span class="line">                </span><br><span class="line">                tableIdx = tinyIdx(normCapacity);<span class="comment">//tableIdx = normCapacity/16</span></span><br><span class="line">                table = tinySubpagePools;<span class="comment">//&#x5206;&#x7EA7;&#x7684;SubPage&#x6C60;</span></span><br><span class="line">            } </span><br><span class="line">            <span class="comment">//&#x62FF;&#x5230;&#x5BF9;&#x5E94;&#x7684;SubPagePools,&#x8FD9;&#x91CC;&#x662F;table[1]&#x6240;&#x4EE5;&#x62FF;&#x5230;&#x7684;&#x662F;16B&#x4E13;&#x5C5E;&#x7684;SubPage&#x6C60;</span></span><br><span class="line">            <span class="comment">//&#x62FF;&#x5230;&#x5934;&#x7ED3;&#x70B9;,&#x7531;&#x4E8E;&#x662F;&#x7B2C;&#x4E00;&#x6B21;,&#x6B64;&#x65F6;&#x8FD9;&#x4E2A;&#x5934;&#x7ED3;&#x70B9;&#x6CA1;&#x6709;&#x4EFB;&#x4F55;&#x5185;&#x5B58;&#x76F8;&#x5173;&#x7684;&#x4FE1;&#x606F;</span></span><br><span class="line">            <span class="keyword">final</span> PoolSubpage&lt;T&gt; head = table[tableIdx];</span><br><span class="line"></span><br><span class="line">            <span class="keyword">synchronized</span> (head) {</span><br><span class="line">                <span class="keyword">final</span> PoolSubpage&lt;T&gt; s = head.next;</span><br><span class="line">                <span class="keyword">if</span> (s != head) {<span class="comment">//false,&#x56E0;&#x4E3A;&#x6B64;&#x65F6;&#x5934;&#x7ED3;&#x70B9;&#x4E3A;&#x7A7A;</span></span><br><span class="line">				...&#x7701;&#x7565;</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line">            <span class="comment">//&#x7528;allocateNormal&#x7684;&#x65B9;&#x5F0F;&#x53BB;&#x5206;&#x914D;,&#x5C31;&#x662F;&#x4E4B;&#x524D;&#x5206;&#x914D;page&#x65F6;&#x7684;&#x90A3;&#x6BB5;&#x903B;&#x8F91;</span></span><br><span class="line">            allocateNormal(buf, reqCapacity, normCapacity);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        }</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p><strong>tinySubPagePools</strong></p>
+<p>&#x5B83;&#x548C;<strong>MemoryRegionCache</strong>&#x7684;&#x7ED3;&#x6784;&#x5F88;&#x50CF;,&#x4E5F;&#x662F;&#x5206;&#x7EA7;.&#x6BD4;&#x5982;&#x7B2C;&#x4E00;&#x4E2A;tinySubPagePools[1]&#x662F;16B&#x4E13;&#x5C5E;&#x7684;SubPage&#x6C60;</p>
+<p><img src="1548065352388.png" alt="1548065352388"></p>
+<p>&#x8FD9;&#x91CC;&#x7684;tiny&#x6700;&#x7EC8;&#x4F1A;&#x8C03;&#x7528;<strong>allocateNormal</strong>&#x7684;&#x65B9;&#x5F0F;&#x53BB;&#x5206;&#x914D;,&#x5C31;&#x662F;&#x4E4B;&#x524D;&#x5206;&#x914D;page&#x65F6;&#x7684;&#x90A3;&#x6BB5;&#x903B;&#x8F91;.&#x800C;&#x8FD9;&#x91CC;&#x548C;&#x4E4B;&#x524D;&#x6709;&#x4E0D;&#x540C;:</p>
+<p>&#x521B;&#x5EFA;&#x65B0;&#x7684;chunk&#x540E;&#x4F1A;&#x5728;&#x8FD9;&#x4E2A;&#x65B0;&#x7684;<code>PoolChunk</code>&#x5BF9;&#x4E0A;&#x4E0A;&#x8C03;&#x7528;<code>PoolChunk#allocate</code>,&#x5C31;&#x662F;&#x4E0B;&#x9762;&#x8FD9;&#x6BB5;.&#x4F46;&#x4E0A;&#x6B21;&#x6211;&#x4EEC;&#x5206;&#x914D;page&#x7EA7;&#x522B;&#x7684;&#x65F6;&#x5019;&#x5B83;&#x4F1A;&#x8FDB;&#x5165;<code>allocateRun()</code>,&#x800C;&#x8FD9;&#x6B21;&#x6211;&#x4EEC;&#x60F3;&#x5206;&#x914D;&#x7684;&#x662F;<code>subpage</code>,&#x4ED6;&#x4F1A;&#x8FDB;&#x5165;&#x4E0B;&#x9762;&#x7684;<code>allocateSubpage()</code>&#x90E8;&#x5206;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">allocate</span><span class="params">(<span class="keyword">int</span> normCapacity)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> ((normCapacity &amp; subpageOverflowMask) != <span class="number">0</span>) { <span class="comment">// &gt;= pageSize</span></span><br><span class="line">        <span class="keyword">return</span> allocateRun(normCapacity);</span><br><span class="line">    } <span class="keyword">else</span> {</span><br><span class="line">        <span class="comment">//&#x56E0;&#x4E3A;&#x60F3;&#x5206;&#x914D;&#x7684;&#x662F;subpage,&#x4ED6;&#x4F1A;&#x8FDB;&#x5165;&#x4E0B;&#x9762;</span></span><br><span class="line">        <span class="keyword">return</span> allocateSubpage(normCapacity);<span class="comment">//</span></span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E0B;&#x9762;&#x5C31;&#x662F;<code>PoolChunk#allocateSubpage()</code>,&#x7528;&#x4E8E;&#x5B9A;&#x4F4D;&#x4E00;&#x4E2A;subpage</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">long</span> <span class="title">allocateSubpage</span><span class="params">(<span class="keyword">int</span> normCapacity)</span> </span>{</span><br><span class="line">	<span class="comment">//&#x901A;&#x8FC7;arena&#x627E;&#x5230;head,&#x5C31;&#x662F;&#x4E4B;&#x524D;PoolSubpage[1],16B&#x4E13;&#x5C5E;&#x7684;&#x7A7A;&#x7684;SubPage&#x6C60;</span></span><br><span class="line">    PoolSubpage&lt;T&gt; head = arena.findSubpagePoolHead(normCapacity);</span><br><span class="line">    <span class="keyword">synchronized</span> (head) {</span><br><span class="line">        <span class="keyword">int</span> d = maxOrder; <span class="comment">//11,&#x5C31;&#x662F;&#x4E0A;&#x7AE0;&#x7684;chunk&#x5C42;,.(&#x8FD9;&#x5C42;&#x662F;8K&#x5355;&#x4F4D;&#x7684;&#x5143;&#x7D20;,Page&#x7684;&#x5355;&#x4F4D; )</span></span><br><span class="line">        <span class="keyword">int</span> id = allocateNode(d);<span class="comment">//&#x547D;&#x4EE4;&#x4ED6;&#x5728;&#x7B2C;11&#x5C42;&#x5206;&#x914D;&#x8282;&#x70B9;.&#x62FF;&#x5230;&#x8282;&#x70B9;&#x7684;&#x7D22;&#x5F15;,&#x793A;&#x4F8B;&#x662F;2048(0~8k&#x7684;&#x8282;&#x70B9;)</span></span><br><span class="line">        <span class="keyword">if</span> (id &lt; <span class="number">0</span>) {</span><br><span class="line">            <span class="keyword">return</span> id;</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> PoolSubpage&lt;T&gt;[] subpages = <span class="keyword">this</span>.subpages;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> pageSize = <span class="keyword">this</span>.pageSize;</span><br><span class="line"></span><br><span class="line">        freeBytes -= pageSize;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> subpageIdx = subpageIdx(id);<span class="comment">//id= 2048.&#x8BA1;&#x7B97;&#x8FD9;&#x4E2A;&#x8282;&#x70B9;&#x662F;&#x7B2C;&#x51E0;&#x4E2A;&#x5206;&#x914D;index,&#x8FD9;&#x91CC;&#x662F;0</span></span><br><span class="line">        PoolSubpage&lt;T&gt; subpage = subpages[subpageIdx];<span class="comment">//&#x7531;&#x4E8E;&#x4EC0;&#x4E48;&#x90FD;&#x6CA1;&#x6709;,&#x8FD9;&#x91CC;&#x4F1A;&#x662F;null</span></span><br><span class="line">        <span class="keyword">if</span> (subpage == <span class="keyword">null</span>) {</span><br><span class="line">            <span class="comment">//&#x521B;&#x5EFA;&#x521D;&#x59CB;&#x5316;&#x4E3A;subpage</span></span><br><span class="line">            subpage = <span class="keyword">new</span> PoolSubpage&lt;T&gt;(head, <span class="keyword">this</span>, id, runOffset(id), pageSize, normCapacity);</span><br><span class="line">            <span class="comment">//&#x521B;&#x5EFA;&#x597D;&#x540E;,&#x628A;&#x8FD9;&#x4E2A;subpages[0]&#x8D4B;&#x503C;&#x6210;&#x5F53;&#x524D;subpage.&#x8868;&#x793A;&#x5F53;&#x524D;&#x8282;&#x70B9;&#x662F;&#x4EE5;subpage&#x7684;&#x65B9;&#x5F0F;&#x5B58;&#x5728;</span></span><br><span class="line">            subpages[subpageIdx] = subpage;</span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line">            subpage.init(head, normCapacity);</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">return</span> subpage.allocate();<span class="comment">//</span></span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x521B;&#x5EFA;&#x7684;<code>PoolSubpage</code>&#x65F6;&#x8C03;&#x7528;&#x5B83;&#x7684;&#x6784;&#x9020;&#x65B9;&#x6CD5;,&#x5176;&#x6784;&#x9020;&#x65B9;&#x6CD5;&#x4E2D;&#x53C8;&#x4F1A;&#x8C03;&#x7528;&#x8FD9;&#x4E48;&#x4E00;&#x6BB5;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">(PoolSubpage&lt;T&gt; head,</span></span></span><br><span class="line"><span class="function"><span class="params">          <span class="keyword">int</span> elemSize)</span> </span>{<span class="comment">//&#x6307;&#x5B9A;&#x7684;capacity</span></span><br><span class="line">    doNotDestroy = <span class="keyword">true</span>;</span><br><span class="line">    <span class="keyword">this</span>.elemSize = elemSize;</span><br><span class="line">    <span class="keyword">if</span> (elemSize != <span class="number">0</span>) {</span><br><span class="line">        <span class="comment">//&#x628A;page&#x5212;&#x5206;&#x6210;page/capacity&#x4E2A;,&#x8BA1;&#x7B97;&#x5212;&#x5206;&#x4E2A;&#x6570;</span></span><br><span class="line">        maxNumElems = numAvail = pageSize / elemSize;</span><br><span class="line">        nextAvail = <span class="number">0</span>;</span><br><span class="line">        bitmapLength = maxNumElems &gt;&gt;&gt; <span class="number">6</span>;</span><br><span class="line">        <span class="keyword">if</span> ((maxNumElems &amp; <span class="number">63</span>) != <span class="number">0</span>) {</span><br><span class="line">            bitmapLength ++;</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; bitmapLength; i ++) {</span><br><span class="line">            bitmap[i] = <span class="number">0</span>;<span class="comment">//&#x8868;&#x793A;&#x5DF2;&#x88AB;&#x5206;&#x914D;&#x7684;subpage[]&#x4E2D;&#x5DF2;&#x88AB;&#x5206;&#x914D;&#x7684;subpage</span></span><br><span class="line">            <span class="comment">//0&#x8868;&#x793A;&#x672A;&#x5206;&#x914D;,1&#x8868;&#x793A;&#x5DF2;&#x5206;&#x914D;</span></span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    addToPool(head);<span class="comment">//&#x628A;&#x8FD9;&#x4E2A;&#x65B0;&#x8282;&#x70B9;&#x52A0;&#x5230;Arena&#x7684;PoolSubPageSubPage[]&#x4E2D;</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E0B;&#x6B21;&#x518D;&#x5206;&#x914D;16B&#x5927;&#x5C0F;&#x7684;&#x65F6;&#x5019;&#x5C31;&#x53EF;&#x5DF2;&#x627E;&#x5230;&#x8FD9;&#x4E2A;&#x5212;&#x5206;&#x597D;&#x7684;page&#x4E86;</p>
+<p>&#x63A5;&#x4E0A;&#x9762;&#x7684;<code>PoolChunk#allocateSubpage()</code>&#x7247;&#x6BB5;,&#x5728;&#x8C03;&#x7528;&#x5B8C;<code>PoolSubpage</code>&#x7684;&#x6784;&#x9020;&#x65B9;&#x6CD5;,&#x5B8C;&#x6210;&#x521B;&#x5EFA;&#x521D;&#x59CB;&#x5316;&#x4E3A;subpage&#x540E;&#x4F1A;<code>return subpage.allocate();</code>.&#x901A;&#x8FC7;&#x8FD9;&#x4E2A;&#x65B9;&#x6CD5;,&#x5728;&#x521A;&#x624D;&#x521D;&#x59CB;&#x5316;&#x5B8C;&#x6210;&#x7684;<code>PoolSubpage</code>&#x4E2D;&#x53D6;&#x51FA;&#x4E00;&#x4E2A;<code>subpage</code>,&#x8FDB;&#x884C;&#x8FD4;&#x56DE;.</p>
+<p><code>subpage.allocate()</code>&#x7684;&#x4EE3;&#x7801;&#x7247;&#x6BB5;&#x5982;&#x4E0B;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//PoolSubpage#allocate</span></span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">allocate</span><span class="params">()</span> </span>{</span><br><span class="line">	<span class="comment">//&#x4ECE;PoolSubpage&#x4E2D;&#x627E;&#x5230;&#x4E00;&#x4E2A;&#x672A;&#x88AB;&#x4F7F;&#x7528;&#x7684;SubPage</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> bitmapIdx = getNextAvail();</span><br><span class="line">    <span class="keyword">int</span> q = bitmapIdx &gt;&gt;&gt; <span class="number">6</span>;</span><br><span class="line">    <span class="keyword">int</span> r = bitmapIdx &amp; <span class="number">63</span>;</span><br><span class="line">    <span class="keyword">assert</span> (bitmap[q] &gt;&gt;&gt; r &amp; <span class="number">1</span>) == <span class="number">0</span>;</span><br><span class="line">    bitmap[q] |= <span class="number">1L</span> &lt;&lt; r;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (-- numAvail == <span class="number">0</span>) {<span class="comment">//&#x5982;&#x679C;&#x662F;&#x6700;&#x540E;&#x4E00;&#x4E2A;&#x53EF;&#x7528;&#x7684;SubPage,&#x5C31;&#x628A;&#x8FD9;&#x4E2A;PoolSubpage&#x5220;&#x9664; </span></span><br><span class="line">        removeFromPool();</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> toHandle(bitmapIdx);<span class="comment">//&#x8FD4;&#x56DE;bitmapIdx&#x548C;memoryMapIdx&#x7684;&#x62FC;&#x63A5;</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x7136;&#x540E;&#x5C31;&#x4F1A;&#x8FD4;&#x56DE;&#x5230;<code>allocateNormal()</code>.&#x6B64;&#x65F6;&#x7684;handler&#x53EF;&#x4EE5;&#x7B97;&#x51FA;&#x8868;&#x793A;chunk&#x4E2D;&#x7B2C;&#x51E0;&#x4E2A;&#x8282;&#x70B9;,&#x7B2C;&#x51E0;&#x4E2A;subpage.&#x4E5F;&#x5C31;&#x662F;&#x8FD9;&#x5757;chunk&#x4E2D;&#x7684;&#x4F4D;&#x7F6E;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">allocateNormal</span><span class="params">(PooledByteBuf&lt;T&gt; buf, <span class="keyword">int</span> reqCapacity, <span class="keyword">int</span> normCapacity)</span> </span>{</span><br><span class="line">    <span class="comment">//1.</span></span><br><span class="line">    <span class="keyword">if</span> (q050.allocate(buf, reqCapacity, normCapacity) ||</span><br><span class="line">        q025.allocate(buf, reqCapacity, normCapacity) ||</span><br><span class="line">        q000.allocate(buf, reqCapacity, normCapacity) ||</span><br><span class="line">        qInit.allocate(buf, reqCapacity, normCapacity) ||</span><br><span class="line">        q075.allocate(buf, reqCapacity, normCapacity)) {</span><br><span class="line">        ++allocationsNormal;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="comment">//2.</span></span><br><span class="line">    PoolChunk&lt;T&gt; c = newChunk(pageSize, maxOrder, pageShifts, chunkSize);</span><br><span class="line">    <span class="keyword">long</span> handle = c.allocate(normCapacity);<span class="comment">//&#x4ECE;&#x8FD9;&#x91CC;&#x8FD4;&#x56DE;,&#x62FF;&#x5230;subpage&#x5728;chunk&#x4E2D;&#x7684;&#x4F4D;&#x7F6E;</span></span><br><span class="line">    ++allocationsNormal;</span><br><span class="line">    <span class="keyword">assert</span> handle &gt; <span class="number">0</span>;</span><br><span class="line">    c.initBuf(buf, handle, reqCapacity);<span class="comment">//&#x8FDB;&#x884C;&#x521D;&#x59CB;&#x5316;</span></span><br><span class="line">    qInit.add(c);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x770B;&#x770B;&#x5B83;&#x6700;&#x540E;&#x4E00;&#x6B65;&#x8FDB;&#x884C;&#x521D;&#x59CB;&#x5316;&#x7684;&#x8FC7;&#x7A0B;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//PoolChunk#initBuf</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">initBuf</span><span class="params">(PooledByteBuf&lt;T&gt; buf, <span class="keyword">long</span> handle, <span class="keyword">int</span> reqCapacity)</span> </span>{</span><br><span class="line">    <span class="keyword">int</span> memoryMapIdx = memoryMapIdx(handle);</span><br><span class="line">    <span class="keyword">int</span> bitmapIdx = bitmapIdx(handle);</span><br><span class="line">    <span class="keyword">if</span> (bitmapIdx == <span class="number">0</span>) {<span class="comment">//&#x6B64;&#x65F6;&#x4E0D;&#x662F;0,&#x4E0E;page&#x7EA7;&#x522B;&#x7684;&#x5206;&#x914D;&#x4E0D;&#x540C;</span></span><br><span class="line">        <span class="keyword">byte</span> val = value(memoryMapIdx);</span><br><span class="line">        <span class="keyword">assert</span> val == unusable : String.valueOf(val);</span><br><span class="line">        buf.init(<span class="keyword">this</span>, handle, runOffset(memoryMapIdx), reqCapacity, runLength(memoryMapIdx),</span><br><span class="line">                 arena.parent.threadCache());</span><br><span class="line">    } <span class="keyword">else</span> {</span><br><span class="line">        <span class="comment">//&#x8C03;&#x7528;&#x4EE5;&#x4E0B;</span></span><br><span class="line">        initBufWithSubpage(buf, handle, bitmapIdx, reqCapacity);</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initBufWithSubpage</span><span class="params">(PooledByteBuf&lt;T&gt; buf, <span class="keyword">long</span> handle, <span class="keyword">int</span> bitmapIdx, <span class="keyword">int</span> reqCapacity)</span> </span>{</span><br><span class="line"></span><br><span class="line">        buf.init(</span><br><span class="line">            <span class="keyword">this</span>, handle,</span><br><span class="line">            <span class="comment">//&#x7B97;&#x51FA;&#x4F4D;&#x7F6E;,page&#x5728;chunk&#x4E2D;&#x7684;&#x504F;&#x79FB;&#x91CF;+page&#x4E2D;&#x8FD9;&#x4E2A;subpage&#x7684;&#x504F;&#x79FB;&#x91CF;</span></span><br><span class="line">            runOffset(memoryMapIdx) + (bitmapIdx &amp; <span class="number">0x3FFFFFFF</span>) * subpage.elemSize, reqCapacity, subpage.elemSize,</span><br><span class="line">            arena.parent.threadCache());</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<h1 id="ByteBuf&#x7684;&#x56DE;&#x6536;"><a href="#ByteBuf&#x7684;&#x56DE;&#x6536;" class="headerlink" title="ByteBuf&#x7684;&#x56DE;&#x6536;"></a>ByteBuf&#x7684;&#x56DE;&#x6536;</h1><p>&#x7528;&#x6237;&#x4EE3;&#x7801;&#x5982;&#x4E0B;,&#x91CA;&#x653E;&#x4E00;&#x4E2A;ByteBuf</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PooledByteBufAllocator allocator = PooledByteBufAllocator.DEFAULT;</span><br><span class="line">ByteBuf bytebuf = allocator.directBuffer(<span class="number">16</span>);</span><br><span class="line">byteBuf.release();<span class="comment">//&#x91CA;&#x653E;bytebuf</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x65E0;&#x8BBA;&#x662F;&#x90A3;&#x79CD;&#x7C7B;&#x578B;&#x7684;ByteBuf,&#x5B83;&#x90FD;&#x4F1A;&#x8C03;&#x7528;<code>AbstractReferenceCountedByteBuf#release0</code>&#x8FDB;&#x884C;&#x91CA;&#x653E;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">release0</span><span class="params">(<span class="keyword">int</span> decrement)</span> </span>{</span><br><span class="line">    <span class="keyword">for</span> (;;) {</span><br><span class="line">        <span class="keyword">int</span> refCnt = <span class="keyword">this</span>.refCnt;</span><br><span class="line">        <span class="keyword">if</span> (refCnt &lt; decrement) {</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalReferenceCountException(refCnt, -decrement);</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (refCntUpdater.compareAndSet(<span class="keyword">this</span>, refCnt, refCnt - decrement)) {</span><br><span class="line">            <span class="keyword">if</span> (refCnt == decrement) {</span><br><span class="line">                deallocate();<span class="comment">//&#x8C03;&#x7528;&#x8FD9;&#x4E2A;&#x8FDB;&#x884C;&#x91CA;&#x653E;</span></span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            }</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5B83;&#x53C8;&#x901A;&#x8FC7;<code>PooledByteBuf#deallocate</code>&#x8FDB;&#x884C;&#x91CA;&#x653E;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">deallocate</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (handle &gt;= <span class="number">0</span>) {</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">long</span> handle = <span class="keyword">this</span>.handle;</span><br><span class="line">        <span class="keyword">this</span>.handle = -<span class="number">1</span>;<span class="comment">//&#x6E05;&#x9664;handle,&#x8868;&#x793A;&#x5F53;&#x524D;&#x7684;PooledByteBuf&#x4E0D;&#x6307;&#x5411;&#x4EFB;&#x4F55;&#x5185;&#x5B58;</span></span><br><span class="line">        memory = <span class="keyword">null</span>;</span><br><span class="line">        <span class="comment">//1.2.</span></span><br><span class="line">        chunk.arena.free(chunk, handle, maxLength, cache);</span><br><span class="line">        <span class="comment">//3</span></span><br><span class="line">        recycle();</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p><strong>&#x91CA;&#x653E;&#x6B65;&#x9AA4;</strong>:</p>
+<ol>
+<li>&#x8FDE;&#x7EED;&#x7684;&#x5185;&#x5B58;&#x533A;&#x6BB5;&#x52A0;&#x5230;&#x7F13;&#x5B58;.<br>&#x65E0;&#x8BBA;&#x662F;&#x901A;&#x8FC7;&#x65B0;&#x5206;&#x914D;&#x7A7A;&#x95F4;&#x521B;&#x5EFA;&#x7684;,&#x8FD8;&#x662F;&#x5728;&#x7F13;&#x5B58;&#x4E2D;&#x83B7;&#x53D6;&#x7684;.&#x6B64;&#x65F6;&#x7F13;&#x5B58;&#x4E2D;&#x90FD;&#x7F3A;&#x5C11;&#x8FD9;&#x6BB5;&#x7A7A;&#x95F4;,&#x6240;&#x4EE5;&#x628A;&#x4ED6;&#x52A0;&#x5230;&#x7F13;&#x5B58;</li>
+<li>&#x5982;&#x679C;&#x52A0;&#x5165;&#x7F13;&#x5B58;&#x5931;&#x8D25;,&#x6807;&#x8BB0;&#x8FDE;&#x7EED;&#x7684;&#x5185;&#x5B58;&#x533A;&#x6BB5;&#x4E3A;&#x672A;&#x4F7F;&#x7528;<br>&#x6839;&#x636E;&#x65F6;page&#x7EA7;&#x522B;&#x8FD8;&#x662F;SubPage&#x7EA7;&#x522B;,&#x6807;&#x8BB0;&#x65B9;&#x5F0F;&#x4E0D;&#x540C;<br>page:&#x6309;&#x4E4B;&#x524D;&#x7684;&#x5C42;&#x7684;&#x903B;&#x8F91;&#x56FE;&#x53BB;&#x6807;&#x8BB0;<br>subpage:&#x901A;&#x8FC7;bitmap&#x7684;&#x65B9;&#x5F0F;&#x53BB;&#x6807;&#x8BB0;,&#x6807;&#x8BB0;&#x4E3A;0&#x5C31;&#x662F;&#x672A;&#x4F7F;&#x7528;</li>
+<li>ByteBuf&#x52A0;&#x5230;&#x5BF9;&#x8C61;&#x6C60;<br>&#x4E4B;&#x524D;&#x521B;&#x5EFA;&#x65F6;&#x4E5F;&#x63D0;&#x5230;&#x8FC7;,&#x5982;&#x679C;&#x4EE5;&#x540E;&#x521B;&#x5EFA;&#x65F6;&#x53BB;&#x5F97;&#x5230;&#x5C31;&#x4F1A;&#x5728;&#x8FD9;&#x4E0A;&#x9762;&#x8FDB;&#x884C;&#x521D;&#x59CB;&#x5316;</li>
+</ol>
+<h3 id="1-&#x8FDE;&#x7EED;&#x7684;&#x5185;&#x5B58;&#x533A;&#x6BB5;&#x52A0;&#x5230;&#x7F13;&#x5B58;"><a href="#1-&#x8FDE;&#x7EED;&#x7684;&#x5185;&#x5B58;&#x533A;&#x6BB5;&#x52A0;&#x5230;&#x7F13;&#x5B58;" class="headerlink" title="1.&#x8FDE;&#x7EED;&#x7684;&#x5185;&#x5B58;&#x533A;&#x6BB5;&#x52A0;&#x5230;&#x7F13;&#x5B58;"></a>1.&#x8FDE;&#x7EED;&#x7684;&#x5185;&#x5B58;&#x533A;&#x6BB5;&#x52A0;&#x5230;&#x7F13;&#x5B58;</h3><p>&#x6DF1;&#x5165;&#x5230;<code>chunk.arena.free();</code>&#x4E2D;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.buffer.PoolArena#free</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">free</span><span class="params">(PoolChunk&lt;T&gt; chunk, <span class="keyword">long</span> handle, <span class="keyword">int</span> normCapacity, PoolThreadCache cache)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (chunk.unpooled) {</span><br><span class="line">        <span class="keyword">int</span> size = chunk.chunkSize();</span><br><span class="line">        destroyChunk(chunk);</span><br><span class="line">        activeBytesHuge.add(-size);</span><br><span class="line">        deallocationsHuge.increment();</span><br><span class="line">    } <span class="keyword">else</span> {<span class="comment">//&#x793A;&#x4F8B;&#x662F;pooled</span></span><br><span class="line">        SizeClass sizeClass = sizeClass(normCapacity);<span class="comment">//&#x7B97;&#x5185;&#x5B58;&#x89C4;&#x683C;,tiny</span></span><br><span class="line">        <span class="keyword">if</span> (cache != <span class="keyword">null</span> &amp;&amp; </span><br><span class="line">            cache.add(<span class="keyword">this</span>, chunk, handle, normCapacity, sizeClass)<span class="comment">//&#x5C1D;&#x8BD5;&#x52A0;&#x5165;&#x5230;&#x7F13;&#x5B58;</span></span><br><span class="line">           ) {</span><br><span class="line">            <span class="comment">// cached so not free it.</span></span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        freeChunk(chunk, handle, sizeClass);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x770B;&#x4E00;&#x4E0B;&#x5C1D;&#x8BD5;&#x52A0;&#x5165;&#x7F13;&#x5B58;&#x7684;&#x90E8;&#x5206;,&#x5C31;&#x662F;&#x4ECE;&#x7F13;&#x5B58;&#x4E2D;&#x627E;&#x5230;&#x4E13;&#x5C5E;&#x7684;MemoryRegionCache&#x5E76;&#x52A0;&#x5165;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.buffer.PoolThreadCache#add</span></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">add</span><span class="params">(PoolArena&lt;?&gt; area, PoolChunk chunk, <span class="keyword">long</span> handle, <span class="keyword">int</span> normCapacity, SizeClass sizeClass)</span> </span>{</span><br><span class="line">    <span class="comment">//&#x62FF;&#x5230;&#x5927;&#x5C0F;&#x5BF9;&#x5E94;&#x7684;MemoryRegionCache</span></span><br><span class="line">    MemoryRegionCache&lt;?&gt; cache = cache(area, normCapacity, sizeClass);</span><br><span class="line">    <span class="keyword">if</span> (cache == <span class="keyword">null</span>) {</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> cache.add(chunk, handle);<span class="comment">//&#x52A0;&#x5165;&#x5230;&#x7F13;&#x5B58;</span></span><br><span class="line">}</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">boolean</span> <span class="title">add</span><span class="params">(PoolChunk&lt;T&gt; chunk, <span class="keyword">long</span> handle)</span> </span>{</span><br><span class="line">    </span><br><span class="line">    Entry&lt;T&gt; entry = newEntry(chunk, handle);<span class="comment">//&#x83B7;&#x53D6;&#x590D;&#x7528;&#x7684;Entry&#x5BF9;&#x8C61;</span></span><br><span class="line">    <span class="keyword">boolean</span> queued = queue.offer(entry);<span class="comment">//&#x5047;&#x5982;&#x5230;queue</span></span><br><span class="line">    <span class="keyword">if</span> (!queued) {</span><br><span class="line">        entry.recycle();</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> queued;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E4B;&#x524D;&#x4ECE;&#x4E00;&#x4E2A;MemoryRegionCache&#x83B7;&#x53D6;&#x5408;&#x9002;&#x7684;&#x5927;&#x5C0F;&#x7684;chunk&#x90E8;&#x5206;&#x5E76;&#x521B;&#x5EFA;&#x65F6;,&#x4F1A;&#x628A;&#x5E9F;&#x5F03;&#x7684;<code>Entry</code>&#x6E05;&#x7A7A;&#x540E;&#x653E;&#x5165;&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;&#x6C60;&#x4E2D;,&#x800C;&#x8FD9;&#x4E2A;<code>newEntry()</code>&#x5C31;&#x4F1A;&#x5C1D;&#x8BD5;&#x4ECE;&#x5BF9;&#x8C61;&#x6C60;&#x4E2D;&#x83B7;&#x53D6;&#x4E00;&#x4E2A;&#x590D;&#x7528;&#x7684;<code>Entry</code>&#x5BF9;&#x8C61;.&#x5E76;&#x628A;&#x8FD9;&#x4E2A;&#x52A0;&#x5230;&#x7F13;&#x5B58;&#x7684;queue&#x91CC;&#x9762;</p>
+<h3 id="2-&#x5982;&#x679C;&#x52A0;&#x5165;&#x7F13;&#x5B58;&#x5931;&#x8D25;-&#x6807;&#x8BB0;&#x8FDE;&#x7EED;&#x7684;&#x5185;&#x5B58;&#x533A;&#x6BB5;&#x4E3A;&#x672A;&#x4F7F;&#x7528;"><a href="#2-&#x5982;&#x679C;&#x52A0;&#x5165;&#x7F13;&#x5B58;&#x5931;&#x8D25;-&#x6807;&#x8BB0;&#x8FDE;&#x7EED;&#x7684;&#x5185;&#x5B58;&#x533A;&#x6BB5;&#x4E3A;&#x672A;&#x4F7F;&#x7528;" class="headerlink" title="2.&#x5982;&#x679C;&#x52A0;&#x5165;&#x7F13;&#x5B58;&#x5931;&#x8D25;,&#x6807;&#x8BB0;&#x8FDE;&#x7EED;&#x7684;&#x5185;&#x5B58;&#x533A;&#x6BB5;&#x4E3A;&#x672A;&#x4F7F;&#x7528;"></a>2.&#x5982;&#x679C;&#x52A0;&#x5165;&#x7F13;&#x5B58;&#x5931;&#x8D25;,&#x6807;&#x8BB0;&#x8FDE;&#x7EED;&#x7684;&#x5185;&#x5B58;&#x533A;&#x6BB5;&#x4E3A;&#x672A;&#x4F7F;&#x7528;</h3><p>&#x53EF;&#x80FD;&#x662F;&#x7F13;&#x5B58;&#x961F;&#x5217;&#x5DF2;&#x7ECF;&#x6EE1;&#x4E86;</p>
+<p>&#x5C31;&#x4F1A;&#x8FDB;&#x5230;<code>free()</code>&#x4E2D;&#x7684;&#x4E0B;&#x9762;&#x7684;&#x90E8;&#x5206;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.buffer.PoolArena#free</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">free</span><span class="params">(PoolChunk&lt;T&gt; chunk, <span class="keyword">long</span> handle, <span class="keyword">int</span> normCapacity, PoolThreadCache cache)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (chunk.unpooled) {</span><br><span class="line">        ..&#x7701;&#x7565;</span><br><span class="line">    } <span class="keyword">else</span> {<span class="comment">//&#x793A;&#x4F8B;&#x662F;pooled</span></span><br><span class="line">        SizeClass sizeClass = sizeClass(normCapacity);<span class="comment">//&#x7B97;&#x5185;&#x5B58;&#x89C4;&#x683C;,tiny</span></span><br><span class="line">        <span class="comment">//&#x5C1D;&#x8BD5;&#x52A0;&#x5165;&#x5230;&#x7F13;&#x5B58;</span></span><br><span class="line">        <span class="keyword">if</span> (cache != <span class="keyword">null</span> &amp;&amp; cache.add(<span class="keyword">this</span>, chunk, handle, normCapacity, sizeClass)) {</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        }<span class="comment">//&#x5931;&#x8D25;</span></span><br><span class="line">		<span class="comment">//&#x8C03;&#x7528;&#x8FD9;&#x4E2A;&#x6807;&#x8BB0;&#x8FDE;&#x7EED;&#x7684;&#x5185;&#x5B58;&#x533A;&#x6BB5;&#x4E3A;&#x672A;&#x4F7F;&#x7528;</span></span><br><span class="line">        freeChunk(chunk, handle, sizeClass);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD9;&#x4E2A;<code>freeChunk()</code>&#x4F1A;&#x8C03;&#x7528;<code>PoolChunkList#free</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.buffer.PoolChunkList#free    </span></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">free</span><span class="params">(PoolChunk&lt;T&gt; chunk, <span class="keyword">long</span> handle)</span> </span>{</span><br><span class="line">    chunk.free(handle);</span><br><span class="line">    <span class="keyword">if</span> (chunk.usage() &lt; minUsage) {</span><br><span class="line">        remove(chunk);</span><br><span class="line">        <span class="comment">// Move the PoolChunk down the PoolChunkList linked-list.</span></span><br><span class="line">        <span class="keyword">return</span> move0(chunk);</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p><code>PoolChunk#free</code>.&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x901A;&#x8FC7;chunk&#x91CA;&#x653E;&#x6389;&#x4E00;&#x6BB5;&#x8FDE;&#x7EED;&#x5185;&#x5B58;.&#x8FD9;&#x91CC;&#x4F1A;&#x5148;&#x5224;&#x65AD;&#x91CA;&#x653E;&#x7684;&#x662F;page&#x8FD8;&#x662F;subpage.</p>
+<ul>
+<li>page:&#x6309;&#x4E4B;&#x524D;&#x7684;&#x5C42;&#x7684;&#x903B;&#x8F91;&#x56FE;&#x53BB;&#x6807;&#x8BB0;</li>
+<li>subpage:&#x901A;&#x8FC7;bitmap&#x7684;&#x65B9;&#x5F0F;&#x53BB;&#x6807;&#x8BB0;,&#x6807;&#x8BB0;&#x4E3A;0&#x5C31;&#x662F;&#x672A;&#x4F7F;&#x7528;</li>
+</ul>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.buffer.PoolChunk#free</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">free</span><span class="params">(<span class="keyword">long</span> handle)</span> </span>{</span><br><span class="line">    <span class="keyword">int</span> memoryMapIdx = memoryMapIdx(handle);</span><br><span class="line">    <span class="keyword">int</span> bitmapIdx = bitmapIdx(handle);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (bitmapIdx != <span class="number">0</span>) { <span class="comment">// &#x91CA;&#x653E;&#x7684;&#x662F;subpage</span></span><br><span class="line">        PoolSubpage&lt;T&gt; subpage = subpages[subpageIdx(memoryMapIdx)];</span><br><span class="line">        <span class="keyword">assert</span> subpage != <span class="keyword">null</span> &amp;&amp; subpage.doNotDestroy;</span><br><span class="line">		<span class="comment">//&#x627E;&#x5230;&#x5BF9;&#x5E94;&#x7684;PoolSubpage,&#x8FD9;&#x4E2A;&#x5927;&#x5C0F;&#x7684;subpage&#x7684;&#x4E13;&#x5C5E;Subpage&#x6C60;</span></span><br><span class="line">        PoolSubpage&lt;T&gt; head = arena.findSubpagePoolHead(subpage.elemSize);</span><br><span class="line">        <span class="keyword">synchronized</span> (head) {</span><br><span class="line">            <span class="comment">//&#x91CA;&#x653E;&#x4ED6;,&#x5C31;&#x662F;&#x628A;&#x5BF9;&#x5E94;&#x7684;bitmapIdx&#x6807;&#x8BB0;&#x4E3A;0</span></span><br><span class="line">            <span class="keyword">if</span> (subpage.free(head, bitmapIdx &amp; <span class="number">0x3FFFFFFF</span>)) {</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    <span class="comment">//&#x91CA;&#x653E;&#x7684;&#x662F;page,&#x6062;&#x590D;&#x4E4B;&#x524D;&#x7684;&#x5C42;&#x6B21;&#x56FE;</span></span><br><span class="line">    freeBytes += runLength(memoryMapIdx);</span><br><span class="line">    setValue(memoryMapIdx, depth(memoryMapIdx));</span><br><span class="line">    updateParentsFree(memoryMapIdx);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="3-ByteBuf&#x52A0;&#x5230;&#x5BF9;&#x8C61;&#x6C60;"><a href="#3-ByteBuf&#x52A0;&#x5230;&#x5BF9;&#x8C61;&#x6C60;" class="headerlink" title="3.ByteBuf&#x52A0;&#x5230;&#x5BF9;&#x8C61;&#x6C60;"></a>3.ByteBuf&#x52A0;&#x5230;&#x5BF9;&#x8C61;&#x6C60;</h3><p>&#x590D;&#x7528;:&#x7533;&#x8BF7;&#x65F6;&#x5C3D;&#x53EF;&#x80FD;&#x4ECE;&#x5BF9;&#x8C61;&#x6C60;&#x4E2D;&#x7533;&#x8BF7;,&#x91CA;&#x653E;&#x65F6;&#x4E5F;&#x5C3D;&#x53EF;&#x80FD;&#x91CA;&#x653E;&#x5230;&#x5BF9;&#x8C61;&#x6C60;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//PooledByteBuf#deallocate</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">deallocate</span><span class="params">()</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (handle &gt;= <span class="number">0</span>) {</span><br><span class="line">        ..&#x7701;&#x7565;</span><br><span class="line">		<span class="comment">//1.2.&#x8981;&#x4E48;&#x52A0;&#x5230;&#x7F13;&#x5B58;,&#x8981;&#x4E48;&#x6807;&#x8BB0;&#x4E3A;&#x672A;&#x4F7F;&#x7528;</span></span><br><span class="line">        <span class="comment">//3.ByteBuf&#x52A0;&#x5230;&#x5BF9;&#x8C61;&#x6C60;</span></span><br><span class="line">        recycle();</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p><code>PooledByteBuf#deallocate</code>&#x7684;<code>recycle();</code>&#x4F1A;&#x8FDB;&#x884C;&#x8FD9;&#x4E2A;&#x8FC7;&#x7A0B;</p>
+<h1 id="ByteBuf&#x603B;&#x7ED3;"><a href="#ByteBuf&#x603B;&#x7ED3;" class="headerlink" title="ByteBuf&#x603B;&#x7ED3;"></a>ByteBuf&#x603B;&#x7ED3;</h1><ul>
+<li><p>bytebuf&#x7684;api&#x548C;&#x5206;&#x7C7B;<br>api:read&#x548C;writeapi<br>&#x5206;&#x7C7B;:</p>
+<ul>
+<li>&#x5806;&#x5185;(&#x6570;&#x7EC4;)&#x8FD8;&#x662F;&#x5806;&#x5916;(JDK&#x7684;ByteBuf)</li>
+<li>Unsafe(&#x901A;&#x8FC7;JDK&#x7684;Unsafe&#x5BF9;&#x8C61;&#x5BF9;&#x5185;&#x5B58;&#x5730;&#x5740;&#x8FDB;&#x884C;&#x8BFB;&#x5199; )&#x8FD8;&#x662F;&#x975E;Unsafe(&#x76F4;&#x63A5;&#x8BFB;&#x5199;)</li>
+<li>Pooled(&#x6BCF;&#x6B21;&#x5206;&#x914D;&#x5185;&#x5B58;&#x90FD;&#x76F4;&#x63A5;&#x7533;&#x8BF7;&#x5185;&#x5B58;)&#x8FD8;&#x662F;UnPooled(&#x9884;&#x5148;&#x5206;&#x914D;&#x597D;&#x4E00;&#x6574;&#x5757;&#x5185;&#x5B58;,&#x4ECE;&#x8FD9;&#x5757;&#x5185;&#x5B58;&#x4E2D;&#x83B7;&#x53D6;&#x4E00;&#x90E8;&#x5206;)</li>
+</ul>
+</li>
+<li><p>&#x5206;&#x914D;Pooled&#x5185;&#x5B58;&#x7684;&#x603B;&#x6B65;&#x9AA4;<br>&#x7EBF;&#x7A0B;&#x79C1;&#x6709;&#x7684;PooledThreadCache&#x83B7;&#x53D6;&#x7F13;&#x5B58;&#x7A7A;&#x95F4;,&#x53BB;&#x627E;&#x4E4B;&#x524D;&#x4F7F;&#x7528;&#x8FC7;&#x7136;&#x540E;&#x88AB;&#x91CA;&#x653E;&#x4E86;&#x7684;&#x5185;&#x5B58;<br>&#x5982;&#x679C;&#x6CA1;&#x6709;&#x5C31;&#x901A;&#x8FC7;chunk&#x91CD;&#x65B0;&#x8FDB;&#x884C;&#x5206;&#x914D;</p>
+</li>
+<li><p>&#x4E0D;&#x540C;&#x89C4;&#x683C;&#x7684;Pooled&#x5185;&#x5B58;&#x5206;&#x914D;&#x4E0E;&#x91CA;&#x653E;</p>
+<ul>
+<li>page&#x7EA7;&#x522B;:&#x4ECE;chunk&#x7684;&#x5C42;&#x6B21;&#x7ED3;&#x6784;&#x4E2D;&#x5206;&#x914D;</li>
+<li>subpage&#x7EA7;&#x522B;:&#x628A;&#x4E00;&#x4E2A;page&#x6309;&#x7167;subpage&#x5927;&#x5C0F;&#x8FDB;&#x884C;&#x5212;&#x5206;,&#x7136;&#x540E;&#x901A;&#x8FC7;bitmap&#x7BA1;&#x7406;</li>
+</ul>
+<p>&#x91CA;&#x653E;&#x540E;&#x52A0;&#x5165;&#x7F13;&#x5B58;&#x961F;&#x5217;,&#x65B9;&#x522B;&#x4E0B;&#x6B21;&#x5206;&#x914D;&#x65F6;&#x4F7F;&#x7528;</p>
+</li>
+</ul>
+<h3 id="&#x4E09;&#x4E2A;&#x95EE;&#x9898;"><a href="#&#x4E09;&#x4E2A;&#x95EE;&#x9898;" class="headerlink" title="&#x4E09;&#x4E2A;&#x95EE;&#x9898;"></a>&#x4E09;&#x4E2A;&#x95EE;&#x9898;</h3><ul>
+<li>&#x5185;&#x5B58;&#x7684;&#x7C7B;&#x522B;&#x6709;&#x54EA;&#x4E9B;<br>&#x4E09;&#x4E2A;&#x552F;&#x72EC;</li>
+<li>&#x5982;&#x4F55;&#x51CF;&#x5C11;&#x591A;&#x7EBF;&#x7A0B;&#x5185;&#x5B58;&#x5206;&#x914D;&#x4E4B;&#x95F4;&#x7684;&#x7ADE;&#x4E89;<br>&#x5404;&#x4E2A;NioEventLoop&#x6709;&#x81EA;&#x5DF1;&#x7684;&#x5206;&#x914D;&#x7A7A;&#x95F4;,&#x548C;ThreadLocal&#x540C;&#x7406;,&#x4E0B;&#x56FE;:</li>
+</ul>
+<p><img src="1548073055898.png" alt="1548073055898"></p>
+<ul>
+<li>&#x4E0D;&#x540C;&#x5927;&#x5C0F;&#x7684;&#x5185;&#x5B58;&#x662F;&#x5982;&#x4F55;&#x8FDB;&#x884C;&#x5206;&#x914D;&#x7684;</li>
+</ul>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2019/01/21/20190121-2/" title="Netty源码剖析-ByteBuf-总结">
+                    <div class="nextTitle">Netty源码剖析-ByteBuf-总结</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2019/01/19/20190119/" title="Netty源码剖析-ByteBuf-2">
+                    <div class="prevTitle">Netty源码剖析-ByteBuf-2</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MDUwMy8xNzAzMA==">
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:nnkwrik@gmail.com" class="iconfont-archer email" title="email"></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/nnkwrik" class="iconfont-archer github" target="_blank" title="github"></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title="wechat">
+                  
+                  <img class="profile-qr" src="/assets/qr.png">
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:30vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#subpage级别的内存分配-allocateTiny"><span class="toc-number">1.</span> <span class="toc-text">subpage级别的内存分配:allocateTiny()</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ByteBuf的回收"><span class="toc-number">2.</span> <span class="toc-text">ByteBuf的回收</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-连续的内存区段加到缓存"><span class="toc-number">2.0.1.</span> <span class="toc-text">1.连续的内存区段加到缓存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-如果加入缓存失败-标记连续的内存区段为未使用"><span class="toc-number">2.0.2.</span> <span class="toc-text">2.如果加入缓存失败,标记连续的内存区段为未使用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-ByteBuf加到对象池"><span class="toc-number">2.0.3.</span> <span class="toc-text">3.ByteBuf加到对象池</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ByteBuf总结"><span class="toc-number">3.</span> <span class="toc-text">ByteBuf总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#三个问题"><span class="toc-number">3.0.1.</span> <span class="toc-text">三个问题</span></a></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 57
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/21</span><a class="archive-post-title" href="/2019/01/21/20190121-2/">Netty源码剖析-ByteBuf-总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/21</span><a class="archive-post-title" href="/2019/01/21/20190121/">Netty源码剖析-ByteBuf-2</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/19</span><a class="archive-post-title" href="/2019/01/19/20190119/">Netty源码剖析-ByteBuf-2</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href="/2019/01/18/20190118/">校招准备视频笔记-高级知识点</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span><a class="archive-post-title" href="/2019/01/17/20190117-1/">校招准备视频笔记-设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span><a class="archive-post-title" href="/2019/01/17/20190117/">校招准备视频笔记-面向对象</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href="/2019/01/15/20190115-1/">校招准备视频笔记-编码技巧</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href="/2019/01/15/20190115/">校招准备视频笔记-程序设计语言基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-3/">校招准备视频笔记-数据库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-2/">校招准备视频笔记-网络</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-1/">校招准备视频笔记-操作系统</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107/">Netty源码剖析-ByteBuf</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106-1/">校招准备视频</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106/">Netty源码剖析-pipeline创建</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228-1/">Netty源码剖析-新连接接入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228/">Netty源码剖析-NioEventLoop执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-2/">Netty源码剖析-NioEventLoop创建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-1/">Netty源码剖析-Netty服务端启动的过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225/">Netty源码剖析-Netty基本组件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224-3/">高性能MySQL-第5章-创建高性能的索引</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224/">高性能MySQL-第1章-MySQL架构与历史</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-7/">高性能MySQL-第4章-Schema与数据类型优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-6/">🍓 JVM知识点合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-5/">JVM知识点合集-4.Class文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-4/">JVM知识点合集-3.GC算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-3/">JVM知识点合集-2.内存结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-2/">JVM知识点合集-1.类的加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223/">深入理解Java虚拟机-第12章-Java内存模型与线程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222-2/">深入理解Java虚拟机-第8章-虚拟机字节码执行引擎</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222/">深入理解Java虚拟机-第7章-虚拟机类加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181221/">深入理解Java虚拟机-第6章-类文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/19</span><a class="archive-post-title" href="/2018/12/19/20181219/">重构的艺术？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/30</span><a class="archive-post-title" href="/2018/11/30/20181130/">万能的Jackson</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span><a class="archive-post-title" href="/2018/11/20/20181120/">Guava的Cache</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/19</span><a class="archive-post-title" href="/2018/11/19/20181119/">Spring Cloud中使用RabbitMQ的两种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href="/2018/11/12/20181112/">深入理解Java虚拟机-第4章-虚拟机性能监控与故障处理工具</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href="/2018/11/10/20181110/">深入理解Java虚拟机-第3章-垃圾收集器与内存分配策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109-2/">深入理解Java虚拟机-第2章-Java内存区域与内存溢出异常</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109/">深入理解Java虚拟机-第1章-走近Java</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/05</span><a class="archive-post-title" href="/2018/11/05/20181105/">Java并发编程实战-第7章-取消与关闭</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-5/">🍤 并发操作合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-4/">并发操作合集-11.ThreadLocal</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-3/">并发操作合集-10.Executor和线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-2/">并发操作合集-9.并发工具：Semaphore,CountDownLatch,CyclicBarrier</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104/">并发操作合集-8.并发容器：CopyOnWriteArrayList</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181102-3/">并发操作合集-7.并发容器：BlockingQueue</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102-2/">并发操作合集-6.并发容器：ConcurrentHashMap</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102/">并发操作合集-5.原子变量和volatile</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181030-2/">并发操作合集-1.线程的生命周期</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span><a class="archive-post-title" href="/2018/10/30/20181030/">Java并发编程实战-第6章-任务执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/29</span><a class="archive-post-title" href="/2018/10/29/20181029/">Java并发编程实战-第5章-基础构建模块</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href="/2018/10/28/20181028/">Java并发编程实战-第4章-对象的组合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span><a class="archive-post-title" href="/2018/10/27/20181027/">Java并发编程实战-第3章-对象的共享</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/25</span><a class="archive-post-title" href="/2018/10/25/20181025/">Java并发编程实战-第2章-线程安全性</a>
+        </li>
+    
+    </ul></div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发操作合集"><span class="iconfont-archer">&#xe606;</span>并发操作合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM"><span class="iconfont-archer">&#xe606;</span>JVM</span>
+    
+        <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
+    
+        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
+    
+        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
+    
+        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
+    
+        <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
+    
+        <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
+    
+        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br>
+    1、请确保node版本大于6.2<br>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
+    
+        <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="框架使用"><span class="iconfont-archer">&#xe60a;</span>框架使用</span>
+    
+        <span class="sidebar-category-name" data-categories="瞎逼叨"><span class="iconfont-archer">&#xe60a;</span>瞎逼叨</span>
+    
+        <span class="sidebar-category-name" data-categories="JVM知识点合集"><span class="iconfont-archer">&#xe60a;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "曽生"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
