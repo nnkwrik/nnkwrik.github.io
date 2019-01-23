@@ -291,7 +291,7 @@ height:30vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>字数统计: <span class="post-count word-count">5.3k</span>阅读时长: <span class="post-count reading-time">33 min</span></span>
+                        <span>字数统计: <span class="post-count word-count">4.1k</span>阅读时长: <span class="post-count reading-time">25 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -568,88 +568,6 @@ height:30vh;
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">initBuf</span><span class="params">(PooledByteBuf&lt;T&gt; buf, <span class="keyword">long</span> handle, <span class="keyword">int</span> reqCapacity)</span> </span>{</span><br><span class="line">    <span class="keyword">int</span> memoryMapIdx = memoryMapIdx(handle);<span class="comment">//1024</span></span><br><span class="line">    <span class="keyword">int</span> bitmapIdx = bitmapIdx(handle);</span><br><span class="line">    <span class="keyword">if</span> (bitmapIdx == <span class="number">0</span>) {<span class="comment">//&#x5206;&#x914D;subpage&#x65F6;&#x7684;,&#x6240;&#x4EE5;&#x8FD9;&#x91CC;&#x662F;0</span></span><br><span class="line">        buf.init(<span class="keyword">this</span>, </span><br><span class="line">                 handle,</span><br><span class="line">                 runOffset(memoryMapIdx), <span class="comment">//0</span></span><br><span class="line">                 reqCapacity,<span class="comment">//16K</span></span><br><span class="line">                 runLength(memoryMapIdx),<span class="comment">//16384 ,&#x8868;&#x793A;&#x5F53;&#x524D;&#x7684;1024&#x8282;&#x70B9;&#x957F;&#x5EA6;&#x4E3A;16K</span></span><br><span class="line">                 arena.parent.threadCache());</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
 <p>&#x6B64;&#x65F6;&#x5C31;&#x5230;&#x4E86;<code>PooledByteBuf</code>&#x4E2D;&#x7684;&#x521D;&#x59CB;&#x5316;&#x65B9;&#x6CD5;:</p>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.buffer.PooledByteBuf#init</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">(PoolChunk&lt;T&gt; chunk, <span class="keyword">long</span> handle, <span class="keyword">int</span> offset, <span class="keyword">int</span> length, <span class="keyword">int</span> maxLength, PoolThreadCache cache)</span> </span>{</span><br><span class="line">    <span class="keyword">assert</span> handle &gt;= <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">assert</span> chunk != <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">this</span>.chunk = chunk;</span><br><span class="line">    <span class="keyword">this</span>.handle = handle;<span class="comment">//1024</span></span><br><span class="line">    memory = chunk.memory;<span class="comment">//&#x8FD9;&#x91CC;&#x662F;&#x521A;&#x624D;&#x7533;&#x8BF7;chunk&#x7684;&#x65F6;&#x5019;,&#x901A;&#x8FC7;JDK&#x7533;&#x8BF7;&#x7684;DirectByteBuf</span></span><br><span class="line">    <span class="keyword">this</span>.offset = offset;<span class="comment">//0,&#x56E0;&#x4E3A;&#x662F;page</span></span><br><span class="line">    <span class="keyword">this</span>.length = length;<span class="comment">//16K</span></span><br><span class="line">    <span class="keyword">this</span>.maxLength = maxLength;</span><br><span class="line">    tmpNioBuf = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">this</span>.cache = cache;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
-<h1 id="&#x5C0F;&#x7ED3;"><a href="#&#x5C0F;&#x7ED3;" class="headerlink" title="&#x5C0F;&#x7ED3;"></a>&#x5C0F;&#x7ED3;</h1><p>PoolThreadCache&#x4E2D;&#x540C;&#x65F6;&#x5B58;&#x5728;Arena&#x548C;Cache,&#x5206;&#x914D;&#x5185;&#x5B58;&#x65F6;&#x4F18;&#x5148;&#x5728;Cache&#x4E0A;&#x8FDB;&#x884C;&#x5206;&#x914D;</p>
-<h3 id="&#x5185;&#x5B58;&#x89C4;&#x683C;"><a href="#&#x5185;&#x5B58;&#x89C4;&#x683C;" class="headerlink" title="&#x5185;&#x5B58;&#x89C4;&#x683C;"></a>&#x5185;&#x5B58;&#x89C4;&#x683C;</h3><p>&#x4E0D;&#x7BA1;&#x662F;cache&#x8FD8;&#x662F;arena,&#x5185;&#x5B58;&#x7533;&#x8BF7;&#x7684;&#x5355;&#x4F4D;&#x90FD;&#x662F;chunk,&#x90FD;&#x5177;&#x5907;4&#x79CD;&#x5185;&#x5B58;&#x89C4;&#x683C;</p>
-<ul>
-<li>tiny:0-512B </li>
-<li>small:512B-8K</li>
-<li>normal:8K-16M</li>
-<li>huge:16M~</li>
-</ul>
-<p>&#x8FD8;&#x6709;3&#x79CD;&#x5185;&#x5B58;&#x5355;&#x4F4D;:</p>
-<ul>
-<li>Chunk:<br>&#x5411;JDK&#x7533;&#x8BF7;&#x5185;&#x5B58;&#x65F6;&#x7684;&#x5355;&#x4F4D;<br>16M</li>
-<li>Page:<br>&#x5F53;&#x60F3;&#x7533;&#x8BF7;1&#x4E2A;Chunk&#x672A;&#x6EE1;&#x7684;&#x5185;&#x5B58;&#x65F6;(normal),&#x5148;&#x7533;&#x8BF7;Chunk,&#x628A;&#x8FD9;&#x4E2A;Chunk&#x62C6;&#x5206;&#x4E3A;2048&#x4E2A;8K&#x7684;Page,&#x5728;&#x4E00;&#x4E2A;&#x6216;&#x591A;&#x4E2A;Page&#x4E0A;&#x8FDB;&#x884C;&#x5206;&#x914D;<br>&#x5927;&#x5C0F;8K</li>
-<li>SubPage:<br>&#x60F3;&#x7533;&#x8BF7;1&#x4E2A;Page&#x672A;&#x6EE1;&#x7684;&#x5185;&#x5B58;&#x65F6;(tiny,small),&#x628A;&#x4E00;&#x4E2A;Page&#x5212;&#x5206;&#x6210;&#x671F;&#x671B;&#x5927;&#x5C0F;&#x7684;SubPage,SubPage&#x7684;&#x6570;&#x91CF;&#x662F;8K/&#x671F;&#x671B;&#x5927;&#x5C0F;&#x4E2A;,&#x4ECA;&#x540E;&#x8FD9;&#x4E2A;Page&#x90FD;&#x7528;&#x4E8E;&#x5206;&#x914D;&#x8FD9;&#x4E2A;&#x5927;&#x5C0F;&#x7684;SubPage<br>SubPage&#x5927;&#x5C0F;&#x4E0D;&#x56FA;&#x5B9A;</li>
-</ul>
-<h3 id="PoolThreadCache&#x4E2D;&#x7684;&#x7ED3;&#x6784;"><a href="#PoolThreadCache&#x4E2D;&#x7684;&#x7ED3;&#x6784;" class="headerlink" title="PoolThreadCache&#x4E2D;&#x7684;&#x7ED3;&#x6784;"></a>PoolThreadCache&#x4E2D;&#x7684;&#x7ED3;&#x6784;</h3><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">PoolThreadCache</span> </span>{</span><br><span class="line">    <span class="comment">//&#x5305;&#x542B;Arena</span></span><br><span class="line">    <span class="keyword">final</span> PoolArena&lt;<span class="keyword">byte</span>[]&gt; heapArena;</span><br><span class="line">    <span class="keyword">final</span> PoolArena&lt;ByteBuffer&gt; directArena;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//&#x5305;&#x542B;&#x5404;&#x4E2A;&#x5185;&#x5B58;&#x89C4;&#x683C;&#x7684;Cache</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MemoryRegionCache&lt;<span class="keyword">byte</span>[]&gt;[] tinySubPageHeapCaches;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MemoryRegionCache&lt;<span class="keyword">byte</span>[]&gt;[] smallSubPageHeapCaches;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MemoryRegionCache&lt;ByteBuffer&gt;[] tinySubPageDirectCaches;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MemoryRegionCache&lt;ByteBuffer&gt;[] smallSubPageDirectCaches;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MemoryRegionCache&lt;<span class="keyword">byte</span>[]&gt;[] normalHeapCaches;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MemoryRegionCache&lt;ByteBuffer&gt;[] normalDirectCaches;</span><br></pre></td></tr></tbody></table></figure>
-<h3 id="PoolThreadCache&#x4E2D;&#x7684;Cache&#x90E8;&#x5206;"><a href="#PoolThreadCache&#x4E2D;&#x7684;Cache&#x90E8;&#x5206;" class="headerlink" title="PoolThreadCache&#x4E2D;&#x7684;Cache&#x90E8;&#x5206;"></a>PoolThreadCache&#x4E2D;&#x7684;Cache&#x90E8;&#x5206;</h3><h4 id="&#x7ED3;&#x6784;"><a href="#&#x7ED3;&#x6784;" class="headerlink" title="&#x7ED3;&#x6784;"></a>&#x7ED3;&#x6784;</h4><p>Cache&#x7684;&#x7C7B;&#x578B;&#x662F;MemoryRegionCache</p>
-<p>&#x62E5;&#x6709;&#x4E00;&#x4E2A;entry&#x7684;&#x961F;&#x5217;,&#x6BCF;&#x4E2A;entry&#x8BB0;&#x5F55;&#x4E86;&#x7A7A;&#x95F2;&#x7684;&#x5B58;&#x50A8;&#x7A7A;&#x95F4;.&#x521B;&#x5EFA;ByteBuf&#x65F6;&#x4F1A;&#x901A;&#x8FC7;&#x8FD9;&#x4E9B;entry&#x53BB;&#x627E;&#x5230;&#x7A7A;&#x95F2;&#x7684;&#x7A7A;&#x95F4;&#x5206;&#x914D;.</p>
-<p>&#x8003;&#x8651;&#x5230;&#x901A;&#x5E38;&#x4F1A;&#x5728;chunk&#x4E0A;&#x83B7;&#x53D6;&#x4E00;&#x90E8;&#x5206;&#x7A7A;&#x95F4;:</p>
-<p>entry&#x4F1A;&#x5305;&#x542B;&#x4EE5;&#x4E0B;&#x4FE1;&#x606F;:</p>
-<ul>
-<li>chunk:&#x6709;&#x7A7A;&#x95F2;&#x4F4D;&#x7F6E;&#x7684;chunk</li>
-<li>handler:chunk&#x4E2D;&#x7684;&#x7D22;&#x5F15;,&#x8FD9;&#x4E2A;Chunk&#x7684;&#x54EA;&#x4E2A;&#x90E8;&#x5206;&#x662F;&#x7A7A;&#x95F2;&#x7684;</li>
-</ul>
-<p>&#x800C;&#x4E00;&#x4E2A;MemoryRegionCache&#x4E2D;&#x6BCF;&#x4E2A;entry&#x6307;&#x5411;&#x7684;&#x7A7A;&#x95F4;&#x5927;&#x5C0F;&#x90FD;&#x662F;&#x56FA;&#x5B9A;&#x7684;,&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;MemoryRegionCache&#x65F6;,&#x6307;&#x5B9A;&#x4E86;16K&#x5927;&#x5C0F;,&#x90A3;&#x4E48;&#x8FD9;&#x4E2A;MemoryRegionCache&#x5B83;&#x7684;&#x6240;&#x6709;entry&#x90FD;&#x662F;&#x7528;&#x4E8E;&#x521B;&#x5EFA;16K&#x5927;&#x5C0F;&#x7684;&#x7A7A;&#x95F4;.</p>
-<p>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;PoolThreadCache&#x4E2D;&#x4E3A;&#x4E86;&#x521B;&#x5EFA;&#x591A;&#x79CD;&#x5927;&#x5C0F;&#x7684;Cache,&#x5B83;&#x4F1A;<strong>&#x4FDD;&#x5B58;MemoryRegionCache[],&#x800C;&#x4E0D;&#x662F;&#x5355;&#x72EC;&#x7684;&#x4E00;&#x4E2A;</strong>.&#x6570;&#x7EC4;&#x4E2D;&#x7684;&#x6BCF;&#x4E00;&#x4E2A;MemoryRegionCache&#x90FD;&#x5177;&#x5907;&#x5206;&#x914D;&#x4E0D;&#x540C;&#x5927;&#x5C0F;&#x7684;&#x80FD;&#x529B;,&#x6BD4;&#x5982;:</p>
-<ul>
-<li>MemoryRegionCache[1]:&#x7528;&#x4E8E;&#x5206;&#x914D;16B&#x7684;&#x7F13;&#x5B58;</li>
-<li>MemoryRegionCache[2]:&#x7528;&#x4E8E;&#x5206;&#x914D;32B&#x7684;&#x7F13;&#x5B58;</li>
-</ul>
-<p>&#x90A3;&#x4E48;&#x5982;&#x4F55;&#x786E;&#x5B9A;&#x4E00;&#x4E2A;MemoryRegionCache&#x8BE5;&#x7528;&#x4E8E;&#x5206;&#x914D;&#x591A;&#x5927;&#x7684;&#x7F13;&#x5B58;,&#x4E5F;&#x5C31;&#x662F;&#x4E3A;&#x4EC0;&#x4E48;&#x4E0A;&#x9762;&#x7684;[1]&#x662F;&#x5206;&#x914D;16B&#x800C;&#x4E0D;&#x662F;15B,14B?</p>
-<p>&#x8FD9;&#x548C;MemoryRegionCache&#x4E2D;&#x7684;sizeClass(&#x5185;&#x5B58;&#x89C4;&#x683C;)&#x6709;&#x5173;,&#x521B;&#x5EFA;MemoryRegionCache&#x65F6;&#x4F1A;&#x5728;&#x53C2;&#x6570;&#x4E2D;&#x5E26;&#x5165;&#x5B83;&#x7684;&#x5185;&#x5B58;&#x89C4;&#x683C;,&#x7136;&#x540E;&#x6839;&#x636E;&#x8FD9;&#x4E2A;&#x5185;&#x5B58;&#x89C4;&#x683C;&#x521B;&#x5EFA;&#x5408;&#x9002;&#x5927;&#x5C0F;&#x7684;entry.&#x5185;&#x5B58;&#x89C4;&#x683C;&#x5305;&#x62EC;tiny,small,normal.&#x4E0D;&#x5305;&#x62EC;<strong>huge</strong></p>
-<p>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;PoolThreadCache<strong>&#x4E0D;&#x4EC5;&#x4FDD;&#x5B58;&#x4E00;&#x4E2A;MemoryRegionCache[],&#x800C;&#x662F;&#x5BF9;&#x5E94;&#x4E86;3&#x79CD;&#x5185;&#x5B58;&#x89C4;&#x683C;&#x7684;3&#x4E2A;MemoryRegionCache[]</strong>.&#x5B9E;&#x9645;&#x4E0A;,&#x7531;&#x4E8E;&#x6709;heap,direct&#x4E4B;&#x5206;,&#x5B83;&#x4FDD;&#x5B58;&#x7684;&#x662F;<strong>6&#x4E2A;MemoryRegionCache[]</strong>.</p>
-<ul>
-<li><p>tiny&#x7684;MemoryRegionCache[]</p>
-<p>&#x5BF9;&#x4E8E;tiny&#x7684;MemoryRegionCache[],&#x5B83;&#x7684;&#x5404;&#x4E2A;&#x5143;&#x7D20;&#x53EF;&#x521B;&#x5EFA;bytebuf&#x7684;&#x5927;&#x5C0F;&#x662F;&#xFF2E;*16B&#x7684;.&#x800C;&#x5185;&#x5B58;tiny&#x7684;&#x5927;&#x5C0F;&#x662F;0-512B</p>
-<p>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;,tiny&#x7684;MemoryRegionCache[]&#x5927;&#x5C0F;&#x957F;&#x5EA6;&#x4E3A;32</p>
-<ul>
-<li>tiny&#x7684;MemoryRegionCache[1]:&#x7528;&#x4E8E;&#x5206;&#x914D;16B&#x5927;&#x5C0F;&#x7684;&#x5185;&#x5B58;</li>
-<li>tiny&#x7684;MemoryRegionCache[2]:&#x7528;&#x4E8E;&#x5206;&#x914D;32B&#x5927;&#x5C0F;&#x7684;&#x5185;&#x5B58;</li>
-<li>&#x2026;tiny&#x7684;MemoryRegionCache[31]:&#x7528;&#x4E8E;&#x5206;496B&#x5927;&#x5C0F;&#x7684;&#x5185;&#x5B58;</li>
-</ul>
-</li>
-<li><p>small&#x7684;MemoryRegionCache[]<br>&#x5B83;&#x7684;&#x5404;&#x4E2A;&#x5143;&#x7D20;&#x53EF;&#x521B;&#x5EFA;bytebuf&#x7684;&#x5927;&#x5C0F;&#x662F;512B,1K,2K,4K(&#x5E42;)<br>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;small&#x7684;MemoryRegionCache[]&#x5927;&#x5C0F;&#x957F;&#x5EA6;&#x4E3A;4</p>
-<ul>
-<li>small&#x7684;MemoryRegionCache[0]:&#x7528;&#x4E8E;&#x5206;&#x914D;512B&#x5927;&#x5C0F;&#x7684;&#x5185;&#x5B58;</li>
-<li>small&#x7684;MemoryRegionCache[1]:&#x7528;&#x4E8E;&#x5206;&#x914D;1k&#x5927;&#x5C0F;&#x7684;&#x5185;&#x5B58;</li>
-<li>&#x2026;small&#x7684;MemoryRegionCache[3]:&#x7528;&#x4E8E;&#x5206;4K&#x5927;&#x5C0F;&#x7684;&#x5185;&#x5B58;</li>
-</ul>
-</li>
-<li><p>normal&#x7684;MemoryRegionCache[]<br>&#x5B83;&#x7684;&#x5404;&#x4E2A;&#x5143;&#x7D20;&#x53EF;&#x521B;&#x5EFA;8K,1K,16K,32K(&#x5E42;),&#x548C;small&#x7C7B;&#x4F3C;</p>
-</li>
-</ul>
-<h4 id="&#x5206;&#x914D;&#x6D41;&#x7A0B;"><a href="#&#x5206;&#x914D;&#x6D41;&#x7A0B;" class="headerlink" title="&#x5206;&#x914D;&#x6D41;&#x7A0B;"></a>&#x5206;&#x914D;&#x6D41;&#x7A0B;</h4><p>&#x5982;&#x679C;&#x5B58;&#x5728;Cache&#x5C31;&#x80FD;&#x5728;Cache&#x4E0A;&#x8FDB;&#x884C;&#x5206;&#x914D;,&#x800C;&#x975E;Arena.&#x6D41;&#x7A0B;:</p>
-<ol>
-<li>&#x627E;&#x5230;size&#x5BF9;&#x5E94;&#x7684;MemoryRegionCache</li>
-<li>&#x4ECE;queue&#x4E2D;&#x5F39;&#x51FA;&#x4E00;&#x4E2A;entry&#x7ED9;ByteBuf&#x521D;&#x59CB;&#x5316;,entity&#x8868;&#x793A;&#x67D0;&#x4E2A;chunk&#x4E2D;&#x7684;&#x8FDE;&#x7EED;&#x5185;&#x5B58;</li>
-<li>&#x5C06;&#x5F39;&#x51FA;&#x7684;entry&#x6254;&#x5230;&#x5BF9;&#x8C61;&#x6C60;&#x4E2D;&#x8FDB;&#x884C;&#x590D;&#x7528;</li>
-</ol>
-<h3 id="PoolThreadCache&#x4E2D;&#x7684;Arena&#x90E8;&#x5206;"><a href="#PoolThreadCache&#x4E2D;&#x7684;Arena&#x90E8;&#x5206;" class="headerlink" title="PoolThreadCache&#x4E2D;&#x7684;Arena&#x90E8;&#x5206;"></a>PoolThreadCache&#x4E2D;&#x7684;Arena&#x90E8;&#x5206;</h3><p>&#x6CA1;&#x83B7;&#x53D6;&#x5230;&#x5408;&#x9002;&#x5927;&#x5C0F;&#x7684;&#x7F13;&#x5B58;&#x7684;&#x65F6;&#x5019;(&#x6216;&#x8005;sizeClass&#x4E3A;huge&#x7684;&#x65F6;&#x5019;)&#x624D;&#x4F1A;&#x5728;Arena&#x4E0A;&#x8FDB;&#x884C;&#x5206;&#x914D;.</p>
-<h4 id="&#x7ED3;&#x6784;-1"><a href="#&#x7ED3;&#x6784;-1" class="headerlink" title="&#x7ED3;&#x6784;"></a>&#x7ED3;&#x6784;</h4><p>&#x4E00;&#x4E2A;Arena&#x4F1A;&#x5305;&#x542B;:</p>
-<ul>
-<li><p><strong>&#x4E00;&#x4E2A;ChunkList&#x7684;&#x53CC;&#x5411;&#x94FE;&#x8868;</strong><br>&#x6BCF;&#x4E2A;ChunkList&#x53C8;&#x662F;Chunk&#x7684;&#x53CC;&#x5411;&#x94FE;&#x8868;.&#x6BCF;&#x4E2A;ChunkList&#x5305;&#x542B;&#x7684;chunk&#x7684;&#x7A7A;&#x95F4;&#x4F7F;&#x7528;&#x7387;&#x4E0D;&#x540C;.&#x5982;&#x7B2C;&#x4E00;&#x4E2A;chunkList&#x5B58;&#x653E;&#x4F7F;&#x7528;&#x7387;0-25%&#x7684;chunk,&#x7B2C;&#x4E8C;&#x4E2A;chunkList&#x5B58;&#x653E;&#x4F7F;&#x7528;&#x7387;1-50%&#x7684;.</p>
-</li>
-<li><p><strong>&#x7528;&#x4E8E;tiny&#x7684;PoolSubpage[]</strong></p>
-</li>
-<li><p><strong>&#x7528;&#x4E8E;small&#x7684;PoolSubpage[]</strong><br>&#x4E4B;&#x524D;&#x8BF4;&#x8FC7;,&#x5982;&#x679C;&#x60F3;&#x4ECE;&#x4E00;&#x4E2A;Page&#x5206;&#x51FA;&#x67D0;&#x4E2A;&#x5927;&#x5C0F;&#x7684;SubPage&#x65F6;,&#x4F1A;&#x628A;&#x6574;&#x4E2A;Page&#x90FD;&#x5212;&#x5206;&#x6210;Page/SubPage&#x4E2A;SubPage.&#x4E4B;&#x540E;&#x8FD9;&#x4E2A;Page&#x90FD;&#x7528;&#x4E8E;&#x5206;&#x914D;&#x8FD9;&#x4E2A;&#x5927;&#x5C0F;&#x7684;SubPage.&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x8FD9;&#x4E2A;Page = SubPage[]</p>
-<p>&#x8FD9;&#x91CC;&#x7684;PoolSubpage[]&#x7684;&#x5143;&#x7D20;&#x672C;&#x8EAB;&#x5C31;&#x662F;&#x7528;&#x4E8E;&#x5212;&#x5206;&#x6210;SubPage&#x7684;Page,&#x4E5F;&#x5C31;&#x662F;SubPage[]<br>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;,PoolSubpage[]&#x7684;&#x5143;&#x7D20;&#x7528;&#x4E8E;&#x6807;&#x793A;&#x53EF;&#x4EE5;&#x5212;&#x5206;&#x6210;X&#x5927;&#x5C0F;&#x7684;SubPage&#x7684;Page</p>
-<p>&#x6240;&#x4EE5;&#x4E00;&#x4E2A;PoolSubpage&#x4F1A;&#x5305;&#x62EC;&#x4EE5;&#x4E0B;&#x4FE1;&#x606F;:</p>
-<ul>
-<li>&#x8FD9;&#x4E9B;&#x4E2A;SubPage[]&#x662F;&#x5728;&#x90A3;&#x4E2A;chunk&#x4E0A;&#x5212;&#x5206;</li>
-<li>SubPage[]&#x4E2D;&#x54EA;&#x4E9B;&#x5DF2;&#x7ECF;&#x88AB;&#x5206;&#x914D;&#x51FA;&#x53BB;&#x4E86;</li>
-<li>&#x8FD9;&#x4E2A;PoolSubpage&#x53EF;&#x4EE5;&#x5212;&#x5206;&#x7684;SubPage&#x7684;&#x5927;&#x5C0F;&#x662F;&#x591A;&#x5C11;</li>
-</ul>
-</li>
-</ul>
-<h3 id="page&#x7EA7;&#x522B;&#x7684;&#x5185;&#x5B58;&#x5206;&#x914D;"><a href="#page&#x7EA7;&#x522B;&#x7684;&#x5185;&#x5B58;&#x5206;&#x914D;" class="headerlink" title="page&#x7EA7;&#x522B;&#x7684;&#x5185;&#x5B58;&#x5206;&#x914D;"></a>page&#x7EA7;&#x522B;&#x7684;&#x5185;&#x5B58;&#x5206;&#x914D;</h3><p>&#x5BF9;&#x4E8E;normal(8K~16K &gt; page(8K)&#x5927;&#x5C0F;),&#x4F1A;&#x8FDB;&#x884C;Page&#x7EA7;&#x522B;&#x7684;&#x5206;&#x914D;</p>
-<p>&#x6B65;&#x9AA4;</p>
-<ol>
-<li>&#x5C1D;&#x8BD5;&#x5728;&#x73B0;&#x6709;&#x7684;chunk&#x4E0A;&#x5206;&#x914D;,&#x5C31;&#x662F;&#x4E4B;&#x524D;&#x56FE;&#x4E2D;&#x7684;ChunkList</li>
-<li>&#x5982;&#x679C;&#x6CA1;&#x6709;chunk,&#x901A;&#x8FC7;JDK&#x83B7;&#x53D6;&#x4E00;&#x6BB5;&#x5185;&#x5B58;,&#x521B;&#x5EFA;&#x6210;&#x4E00;&#x4E2A;chunk&#x8FDB;&#x884C;&#x5185;&#x5B58;&#x5206;&#x914D;</li>
-<li>&#x521D;&#x59CB;&#x5316;<code>PooledByteBuf</code></li>
-</ol>
 <script>
         document.querySelectorAll('.github-emoji')
           .forEach(el => {
@@ -813,7 +731,7 @@ top:30vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#内存规格介绍"><span class="toc-number">1.</span> <span class="toc-text">内存规格介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#命中缓存的分配逻辑"><span class="toc-number">2.</span> <span class="toc-text">命中缓存的分配逻辑</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#MemoryRegionCache"><span class="toc-number">2.1.</span> <span class="toc-text">MemoryRegionCache</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#命中缓存的分配流程"><span class="toc-number">2.2.</span> <span class="toc-text">命中缓存的分配流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-找到size对应的MemoryRegionCache"><span class="toc-number">2.2.1.</span> <span class="toc-text">1.找到size对应的MemoryRegionCache</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-从queue中弹出一个entry给ByteBuf初始化"><span class="toc-number">2.2.2.</span> <span class="toc-text">2.从queue中弹出一个entry给ByteBuf初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-将弹出的entry扔到对象池中进行复用"><span class="toc-number">2.2.3.</span> <span class="toc-text">3.将弹出的entry扔到对象池中进行复用</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#arena-chunk-page-subpage"><span class="toc-number">3.</span> <span class="toc-text">arena,chunk,page,subpage</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#arena"><span class="toc-number">3.1.</span> <span class="toc-text">arena</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Page"><span class="toc-number">3.2.</span> <span class="toc-text">Page</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SubPage"><span class="toc-number">3.3.</span> <span class="toc-text">SubPage</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#page级别的内存分配-allocateNormal"><span class="toc-number">4.</span> <span class="toc-text">page级别的内存分配:allocateNormal()</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-尝试在现有的chunk上分配"><span class="toc-number">4.0.1.</span> <span class="toc-text">1.尝试在现有的chunk上分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-创建一个chunk进行内存分配"><span class="toc-number">4.0.2.</span> <span class="toc-text">2.创建一个chunk进行内存分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-初始化PooledByteBuf"><span class="toc-number">4.0.3.</span> <span class="toc-text">3.初始化PooledByteBuf</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#小结"><span class="toc-number">5.</span> <span class="toc-text">小结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#内存规格"><span class="toc-number">5.0.1.</span> <span class="toc-text">内存规格</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PoolThreadCache中的结构"><span class="toc-number">5.0.2.</span> <span class="toc-text">PoolThreadCache中的结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PoolThreadCache中的Cache部分"><span class="toc-number">5.0.3.</span> <span class="toc-text">PoolThreadCache中的Cache部分</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#结构"><span class="toc-number">5.0.3.1.</span> <span class="toc-text">结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#分配流程"><span class="toc-number">5.0.3.2.</span> <span class="toc-text">分配流程</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PoolThreadCache中的Arena部分"><span class="toc-number">5.0.4.</span> <span class="toc-text">PoolThreadCache中的Arena部分</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#结构-1"><span class="toc-number">5.0.4.1.</span> <span class="toc-text">结构</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#page级别的内存分配"><span class="toc-number">5.0.5.</span> <span class="toc-text">page级别的内存分配</span></a></li></ol></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#内存规格介绍"><span class="toc-number">1.</span> <span class="toc-text">内存规格介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#命中缓存的分配逻辑"><span class="toc-number">2.</span> <span class="toc-text">命中缓存的分配逻辑</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#MemoryRegionCache"><span class="toc-number">2.1.</span> <span class="toc-text">MemoryRegionCache</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#命中缓存的分配流程"><span class="toc-number">2.2.</span> <span class="toc-text">命中缓存的分配流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-找到size对应的MemoryRegionCache"><span class="toc-number">2.2.1.</span> <span class="toc-text">1.找到size对应的MemoryRegionCache</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-从queue中弹出一个entry给ByteBuf初始化"><span class="toc-number">2.2.2.</span> <span class="toc-text">2.从queue中弹出一个entry给ByteBuf初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-将弹出的entry扔到对象池中进行复用"><span class="toc-number">2.2.3.</span> <span class="toc-text">3.将弹出的entry扔到对象池中进行复用</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#arena-chunk-page-subpage"><span class="toc-number">3.</span> <span class="toc-text">arena,chunk,page,subpage</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#arena"><span class="toc-number">3.1.</span> <span class="toc-text">arena</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Page"><span class="toc-number">3.2.</span> <span class="toc-text">Page</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SubPage"><span class="toc-number">3.3.</span> <span class="toc-text">SubPage</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#page级别的内存分配-allocateNormal"><span class="toc-number">4.</span> <span class="toc-text">page级别的内存分配:allocateNormal()</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-尝试在现有的chunk上分配"><span class="toc-number">4.0.1.</span> <span class="toc-text">1.尝试在现有的chunk上分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-创建一个chunk进行内存分配"><span class="toc-number">4.0.2.</span> <span class="toc-text">2.创建一个chunk进行内存分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-初始化PooledByteBuf"><span class="toc-number">4.0.3.</span> <span class="toc-text">3.初始化PooledByteBuf</span></a></li></ol></li></ol></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -826,6 +744,8 @@ top:30vh;
     <div class="sidebar-content sidebar-content-show-archive">
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
+    
+    
     
     
     
@@ -1930,12 +1850,12 @@ top:30vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
         </li>
     
     
@@ -1974,8 +1894,6 @@ top:30vh;
     
         <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
     
-        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
-    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
         <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
@@ -1986,21 +1904,23 @@ top:30vh;
     
         <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
     
-        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
-    
         <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
     
         <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
     
-        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
-    
         <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
+    
+        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
     
         <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
     
         <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
     
         <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
+    
+        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
     
         <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     

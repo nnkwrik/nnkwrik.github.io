@@ -516,11 +516,11 @@ height:30vh;
 <ol>
 <li><p>&#x5728;PooledByteBufAllocator&#x88AB;&#x521B;&#x5EFA;,&#x521B;&#x5EFA;CPU&#x6838;&#x6570;*2&#x7684;Arena</p>
 </li>
-<li><p>&#x5728;<code>directBuffer()</code>&#x6216;<code>heapBuffer()</code>&#x88AB;&#x8C03;&#x7528;&#x7684;&#x65F6;&#x5019;,&#x5212;&#x51FA;&#x5176;&#x4E2D;&#x4E00;&#x5757;Arena&#x6784;&#x9020;&#x7EBF;&#x7A0B;&#x79C1;&#x6709;&#x7684;<code>PoolThreadCache</code></p>
+<li><p>&#x8C03;&#x7528;<code>PooledByteBufAllocator</code>&#x7684;<code>directBuffer()</code>&#x6216;<code>heapBuffer()</code>&#x88AB;&#x8C03;&#x7528;&#x7684;&#x65F6;&#x5019;,&#x5212;&#x51FA;&#x5176;&#x4E2D;&#x4E00;&#x5757;Arena&#x6784;&#x9020;&#x7EBF;&#x7A0B;&#x79C1;&#x6709;&#x7684;<code>PoolThreadCache</code></p>
 </li>
 <li>&#x5728;&#x8FD9;&#x4E2A;<code>PoolThreadCache</code>&#x83B7;&#x53D6;&#x53EF;&#x7528;&#x5185;&#x5B58;&#x5E76;&#x5206;&#x914D;</li>
 </ol>
-<h3 id="PooledByteBufAllocator&#x7ED3;&#x6784;"><a href="#PooledByteBufAllocator&#x7ED3;&#x6784;" class="headerlink" title="PooledByteBufAllocator&#x7ED3;&#x6784;"></a>PooledByteBufAllocator&#x7ED3;&#x6784;</h3><p>&#x4E4B;&#x524D;&#x7684;<code>CPU&#x6838;&#x6570;*2</code>&#x7684;Arena&#x662F;&#x4EC0;&#x4E48;&#x9B3C;,&#x8FD8;&#x8BB0;&#x5F97;NioEventLoop&#x6570;&#x9ED8;&#x8BA4;&#x4E5F;&#x662F;<code>CPU&#x6838;&#x6570;*2</code>&#x5417;.&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x7ED9;&#x6BCF;&#x4E2A;NioEventLoop&#x5206;&#x914D;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x79C1;&#x6709;&#x7684;<code>PoolThreadCache</code>.</p>
+<h3 id="PooledByteBufAllocator&#x7ED3;&#x6784;"><a href="#PooledByteBufAllocator&#x7ED3;&#x6784;" class="headerlink" title="PooledByteBufAllocator&#x7ED3;&#x6784;"></a>PooledByteBufAllocator&#x7ED3;&#x6784;</h3><p><code>CPU&#x6838;&#x6570;*2</code>&#x7684;Arena&#x662F;&#x4EC0;&#x4E48;&#x9B3C;,&#x8FD8;&#x8BB0;&#x5F97;NioEventLoop&#x6570;&#x9ED8;&#x8BA4;&#x4E5F;&#x662F;<code>CPU&#x6838;&#x6570;*2</code>&#x5417;.&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x7ED9;&#x6BCF;&#x4E2A;NioEventLoop&#x5206;&#x914D;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x79C1;&#x6709;&#x7684;<code>PoolThreadCache</code>.</p>
 <p><img src="1548076129957.png" alt="1548076129957"></p>
 <p>&#x9664;&#x4E86;DirectArena,HeapArena&#x4E4B;&#x5916;Cache&#x8FD8;&#x5305;&#x62EC;Direct&#x548C;Heap&#x7684;&#x7F13;&#x5B58;(MemoryRegionCache[]),Cache&#x53C8;&#x5B58;&#x5728;tiny,small,normal&#x4E4B;&#x5206;.&#x6240;&#x4EE5;<code>PoolThreadCache</code>&#x7684;&#x7ED3;&#x6784;&#x662F;&#x4E0B;&#x9762;&#x8FD9;&#x6837;&#x7684;</p>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">PoolThreadCache</span> </span>{</span><br><span class="line">	<span class="comment">//arena&#x90E8;&#x5206;</span></span><br><span class="line">    <span class="keyword">final</span> PoolArena&lt;<span class="keyword">byte</span>[]&gt; heapArena;</span><br><span class="line">    <span class="keyword">final</span> PoolArena&lt;ByteBuffer&gt; directArena;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//&#x7F13;&#x5B58;&#x90E8;&#x5206;</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MemoryRegionCache&lt;<span class="keyword">byte</span>[]&gt;[] tinySubPageHeapCaches;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MemoryRegionCache&lt;<span class="keyword">byte</span>[]&gt;[] smallSubPageHeapCaches;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MemoryRegionCache&lt;ByteBuffer&gt;[] tinySubPageDirectCaches;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MemoryRegionCache&lt;ByteBuffer&gt;[] smallSubPageDirectCaches;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MemoryRegionCache&lt;<span class="keyword">byte</span>[]&gt;[] normalHeapCaches;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MemoryRegionCache&lt;ByteBuffer&gt;[] normalDirectCaches;</span><br></pre></td></tr></tbody></table></figure>
@@ -799,6 +799,8 @@ top:30vh;
     <div class="sidebar-content sidebar-content-show-archive">
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
+    
+    
     
     
     
@@ -1903,12 +1905,12 @@ top:30vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
         </li>
     
     
@@ -1947,8 +1949,6 @@ top:30vh;
     
         <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
     
-        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
-    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
         <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
@@ -1959,21 +1959,23 @@ top:30vh;
     
         <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
     
-        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
-    
         <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
     
         <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
     
-        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
-    
         <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
+    
+        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
     
         <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
     
         <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
     
         <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
+    
+        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
     
         <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
