@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="曽生">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="曽生">
+    
+    <meta name="keywords" content="nnkwrik,曽生,曾丽桦">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Netty源码剖析-解码 · 农场主的黑科技.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin="">
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin="">
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"输入关键字 :D","hits_empty":"没有找到相关信息 :(","hits_stats":"找到 ${hits} 个相关信息,耗时 ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'LXR3VBZBS6',
+                apiKey: '17d6d4ab4ba943bab3232eced0eea766',
+                indexName: 'index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">农场主的黑科技.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Netty源码剖析-解码</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href="/">农场主的黑科技.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:30vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/andrew-leu-1113236-unsplash.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Netty源码剖析-解码
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class="post-intro-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">4.5k</span>阅读时长: <span class="post-count reading-time">27 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/01/24</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>&#x89E3;&#x7801;:&#x628A;&#x4E00;&#x4E32;&#x4E8C;&#x8FDB;&#x5236;&#x6570;&#x636E;&#x6D41;&#x89E3;&#x6790;&#x6210;ByteBuf</p>
+<p> <img src="20190124/1548308752766.png" alt="1548308752766"></p>
+<ul>
+<li>&#x89E3;&#x7801;&#x5668;&#x62BD;&#x8C61;&#x7684;&#x89E3;&#x7801;&#x8FC7;&#x7A0B;</li>
+<li>netty&#x91CC;&#x9762;&#x6709;&#x54EA;&#x4E9B;&#x62C6;&#x7BB1;&#x5373;&#x7528;&#x7684;&#x89E3;&#x7801;&#x5668;</li>
+</ul>
+<p>&#x672C;&#x7AE0;&#x5185;&#x5BB9;</p>
+<ul>
+<li>&#x89E3;&#x7801;&#x5668;&#x57FA;&#x7C7B;</li>
+<li>netty&#x4E2D;&#x5E38;&#x89C1;&#x7684;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;</li>
+</ul>
+<h1 id="&#x89E3;&#x7801;&#x5668;&#x57FA;&#x7C7B;"><a href="#&#x89E3;&#x7801;&#x5668;&#x57FA;&#x7C7B;" class="headerlink" title="&#x89E3;&#x7801;&#x5668;&#x57FA;&#x7C7B;"></a>&#x89E3;&#x7801;&#x5668;&#x57FA;&#x7C7B;</h1><h2 id="ByteToMessageDecoder&#x89E3;&#x7801;&#x6B65;&#x9AA4;"><a href="#ByteToMessageDecoder&#x89E3;&#x7801;&#x6B65;&#x9AA4;" class="headerlink" title="ByteToMessageDecoder&#x89E3;&#x7801;&#x6B65;&#x9AA4;"></a>ByteToMessageDecoder&#x89E3;&#x7801;&#x6B65;&#x9AA4;</h2><p>&#x6240;&#x6709;&#x5E95;&#x5C42;&#x89E3;&#x7801;&#x5668;&#x90FD;&#x57FA;&#x4E8E;&#x5B83;&#x5B9E;&#x73B0;</p>
+<p>&#x89E3;&#x7801;&#x6B65;&#x9AA4;:</p>
+<ol>
+<li>&#x7D2F;&#x52A0;&#x5B57;&#x8282;&#x6D41;</li>
+<li>&#x8C03;&#x7528;&#x5B50;&#x7C7B;&#x7684;decode&#x65B9;&#x6CD5;&#x8FDB;&#x884C;&#x89E3;&#x6790;</li>
+<li>&#x5C06;&#x89E3;&#x6790;&#x5230;&#x7684;ByteBuf&#x5411;&#x4E0B;&#x4F20;&#x64AD;</li>
+</ol>
+<h3 id="1-&#x7D2F;&#x52A0;&#x5B57;&#x8282;&#x6D41;"><a href="#1-&#x7D2F;&#x52A0;&#x5B57;&#x8282;&#x6D41;" class="headerlink" title="1.&#x7D2F;&#x52A0;&#x5B57;&#x8282;&#x6D41;"></a>1.&#x7D2F;&#x52A0;&#x5B57;&#x8282;&#x6D41;</h3><ul>
+<li>&#x5982;&#x679C;&#x662F;&#x7B2C;&#x4E00;&#x6B21;&#x8BFB;&#x6570;&#x636E;,&#x628A;&#x5F53;&#x524D;&#x8BFB;&#x5165;&#x7684;&#x6570;&#x636E;&#x8BBE;&#x7F6E;&#x6210;&#x7D2F;&#x52A0;&#x5668;</li>
+<li>&#x5426;&#x5219;,&#x628A;&#x8FD9;&#x6B21;&#x8BFB;&#x5165;&#x7684;&#x6570;&#x636E;&#x7D2F;&#x52A0;&#x5230;&#x7D2F;&#x52A0;&#x5668;&#x4E0A;</li>
+</ul>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.ByteToMessageDecoder#channelRead</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        <span class="keyword">if</span> (msg <span class="keyword">instanceof</span> ByteBuf) {<span class="comment">//&#x6B64;&#x65F6;&#x4F1A;&#x4F20;&#x5165;bytebuf ,&#x4EE5;&#x4E0B;&#x8FDB;&#x5165;&#x89E3;&#x7801;&#x5668;&#x7684;&#x5904;&#x7406;</span></span><br><span class="line">            CodecOutputList out = CodecOutputList.newInstance();</span><br><span class="line">            <span class="keyword">try</span> {</span><br><span class="line">                ByteBuf data = (ByteBuf) msg;</span><br><span class="line">                first = cumulation == <span class="keyword">null</span>;</span><br><span class="line">                <span class="keyword">if</span> (first) {<span class="comment">//&#x5F53;&#x524D;&#x7D2F;&#x52A0;&#x5668;==null,&#x8868;&#x793A;&#x9996;&#x6B21;&#x4ECE;io&#x6D41;&#x4E2D;&#x8BFB;&#x53D6;&#x6570;&#x636E;</span></span><br><span class="line">                    cumulation = data;<span class="comment">//&#x628A;&#x7D2F;&#x52A0;&#x5668;&#x8BBE;&#x7F6E;&#x4E3A;&#x5F53;&#x524D;&#x7684;ByteBuf</span></span><br><span class="line">                } <span class="keyword">else</span> {</span><br><span class="line">                    <span class="comment">//&#x4E0D;&#x662F;&#x7B2C;&#x4E00;&#x6B21;,&#x628A;&#x8FD9;&#x6B21;&#x8BFB;&#x5165;&#x7684;&#x6570;&#x636E;&#x7D2F;&#x52A0;&#x5230;&#x7D2F;&#x52A0;&#x5668;&#x4E0A;</span></span><br><span class="line">                    cumulation = cumulator.cumulate(ctx.alloc(), cumulation, data);</span><br><span class="line">                }</span><br><span class="line">                <span class="comment">//&#x8C03;&#x7528;&#x5B50;&#x7C7B;&#x7684;decode&#x65B9;&#x6CD5;</span></span><br><span class="line">                callDecode(ctx, cumulation, out);</span><br><span class="line">..&#x7701;&#x7565;</span><br><span class="line">        } <span class="keyword">else</span> {<span class="comment">//&#x5982;&#x679C;&#x4E0D;&#x662F;ByteBuf&#x7C7B;&#x578B;,&#x4E0D;&#x89E3;&#x7801;&#x76F4;&#x63A5;&#x5411;&#x4E0B;&#x4F20;&#x64AD;</span></span><br><span class="line">            ctx.fireChannelRead(msg);</span><br><span class="line">        }</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x7D2F;&#x52A0;&#x5668;<code>cumulation</code>&#x662F;&#x4EC0;&#x4E48;.</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Cumulator cumulator = MERGE_CUMULATOR;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Cumulator MERGE_CUMULATOR = <span class="keyword">new</span> Cumulator() {</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ByteBuf <span class="title">cumulate</span><span class="params">(ByteBufAllocator alloc, ByteBuf cumulation, ByteBuf in)</span> </span>{</span><br><span class="line">        ByteBuf buffer;</span><br><span class="line">        <span class="keyword">if</span> (cumulation.writerIndex() &gt; cumulation.maxCapacity() - in.readableBytes()</span><br><span class="line">            || cumulation.refCnt() &gt; <span class="number">1</span>) {</span><br><span class="line">			<span class="comment">//&#x8FDB;&#x884C;&#x6269;&#x5BB9;</span></span><br><span class="line">            buffer = expandCumulation(alloc, cumulation, in.readableBytes());</span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line">            <span class="comment">//&#x4E0D;&#x9700;&#x8981;&#x6269;&#x5BB9;,&#x8BBE;&#x7F6E;&#x4E3A;&#x5F53;&#x524D;&#x7D2F;&#x52A0;&#x5668;</span></span><br><span class="line">            buffer = cumulation;</span><br><span class="line">        }</span><br><span class="line">        <span class="comment">//&#x628A;&#x5F53;&#x671F;&#x6570;&#x636E;&#x7D2F;&#x52A0;&#x5230;&#x7D2F;&#x52A0;&#x5668;</span></span><br><span class="line">        buffer.writeBytes(in);</span><br><span class="line">        in.release();<span class="comment">//&#x91CA;&#x653E;</span></span><br><span class="line">        <span class="keyword">return</span> buffer;</span><br><span class="line">    }</span><br><span class="line">};</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="2-&#x8C03;&#x7528;&#x5B50;&#x7C7B;&#x7684;decode&#x65B9;&#x6CD5;&#x8FDB;&#x884C;&#x89E3;&#x6790;"><a href="#2-&#x8C03;&#x7528;&#x5B50;&#x7C7B;&#x7684;decode&#x65B9;&#x6CD5;&#x8FDB;&#x884C;&#x89E3;&#x6790;" class="headerlink" title="2.&#x8C03;&#x7528;&#x5B50;&#x7C7B;&#x7684;decode&#x65B9;&#x6CD5;&#x8FDB;&#x884C;&#x89E3;&#x6790;"></a>2.&#x8C03;&#x7528;&#x5B50;&#x7C7B;&#x7684;decode&#x65B9;&#x6CD5;&#x8FDB;&#x884C;&#x89E3;&#x6790;</h3><p>&#x653E;&#x5165;&#x7D2F;&#x52A0;&#x5668;&#x540E;&#x4F1A;&#x8C03;&#x7528;&#x5B50;&#x7C7B;&#x7684;decode&#x65B9;&#x6CD5;&#x8FDB;&#x884C;&#x89E3;&#x6790;.</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.ByteToMessageDecoder#channelRead			</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">            CodecOutputList out = CodecOutputList.newInstance();</span><br><span class="line">...</span><br><span class="line">                <span class="comment">//&#x8C03;&#x7528;&#x5B50;&#x7C7B;&#x7684;decode&#x65B9;&#x6CD5;</span></span><br><span class="line">                callDecode(ctx, cumulation, out);</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x53EF;&#x4EE5;&#x628A;<code>out</code>&#x7B80;&#x5355;&#x7406;&#x89E3;&#x4E3A;&#x4E00;&#x4E2A;ArrayList.&#x8C03;&#x7528;<code>callDecode()</code>&#x8FDB;&#x884C;&#x89E3;&#x6790;,&#x7136;&#x540E;&#x628A;&#x89E3;&#x6790;&#x5B8C;&#x6210;&#x540E;&#x7684;&#x7ED3;&#x679C;&#x653E;&#x5165;</p>
+<p><code>out</code>.&#x7136;&#x540E;&#x518D;&#x4ECE;&#x8FD9;&#x4E2A;<code>out</code>&#x7684;List&#x91CC;&#x9762;&#x7684;&#x89E3;&#x6790;&#x7ED3;&#x679C;&#x4E00;&#x4E2A;&#x4E2A;&#x62FF;&#x51FA;,&#x5411;&#x4E0B;&#x8FDB;&#x884C;&#x4F20;&#x64AD;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.ByteToMessageDecoder#callDecode</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">callDecode</span><span class="params">(ChannelHandlerContext ctx, ByteBuf in, List&lt;Object&gt; out)</span> </span>{</span><br><span class="line">    		<span class="comment">//&#x4E00;&#x4E2A;while&#x5FAA;&#x73AF;,&#x7D2F;&#x52A0;&#x5668;&#x91CC;&#x9762;&#x6709;&#x4E1C;&#x897F;&#x5C31;&#x7EE7;&#x7EED;</span></span><br><span class="line">            <span class="keyword">while</span> (in.isReadable()) {</span><br><span class="line">                <span class="keyword">int</span> outSize = out.size();<span class="comment">//list&#x91CC;&#x9762;&#x662F;&#x5426;&#x5DF2;&#x7ECF;&#x6709;&#x5BF9;&#x8C61;</span></span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (outSize &gt; <span class="number">0</span>) {<span class="comment">//&#x6709;&#x5BF9;&#x8C61;,&#x9996;&#x6B21;&#x8FDB;&#x5165;&#x65F6;&#x4E0D;&#x4F1A;&#x8FDB;&#x8FD9;&#x91CC;</span></span><br><span class="line">                    <span class="comment">//&#x5411;&#x4E0B;&#x8FDB;&#x884C;&#x4F20;&#x64AD;</span></span><br><span class="line">                    fireChannelRead(ctx, out, outSize);</span><br><span class="line">                    out.clear();<span class="comment">//&#x6E05;&#x7A7A;list</span></span><br><span class="line">                    <span class="keyword">if</span> (ctx.isRemoved()) {</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    }</span><br><span class="line">                    outSize = <span class="number">0</span>;</span><br><span class="line">                }</span><br><span class="line"></span><br><span class="line">                <span class="keyword">int</span> oldInputLength = in.readableBytes(); <span class="comment">//&#x53EF;&#x8BFB;&#x6570;&#x636E;&#x7684;&#x957F;&#x5EA6;</span></span><br><span class="line">                decode(ctx, in, out);<span class="comment">//&#x8FD9;&#x91CC;&#x8C03;&#x7528;&#x5B50;&#x7C7B;&#x7684;&#x89E3;&#x7801;&#x5668;</span></span><br><span class="line">                <span class="keyword">if</span> (ctx.isRemoved()) {</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                }</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (outSize == out.size()) {<span class="comment">//&#x89E3;&#x6790;&#x524D;&#x7684;&#x5927;&#x5C0F;==&#x89E3;&#x6790;&#x540E;&#x7684;&#x5927;&#x5C0F;,&#x6CA1;&#x6709;&#x89E3;&#x6790;&#x5230;&#x6570;&#x636E;</span></span><br><span class="line">                    <span class="comment">//&#x7D2F;&#x52A0;&#x5668;&#x91CC;&#x9762;&#x7684;&#x6570;&#x636E;&#x957F;&#x5EA6;&#x4E0D;&#x8DB3;&#x4EE5;&#x5C01;&#x88C5;&#x6210;&#x4E00;&#x4E2A;&#x6570;&#x636E;&#x5305;</span></span><br><span class="line">                    <span class="keyword">if</span> (oldInputLength == in.readableBytes()) {</span><br><span class="line">                        <span class="keyword">break</span>;<span class="comment">//&#x6CA1;&#x6709;&#x8DB3;&#x591F;&#x7684;&#x6570;&#x636E;&#x5305;,&#x9000;&#x51FA;</span></span><br><span class="line">                    } <span class="keyword">else</span> {</span><br><span class="line">                        <span class="comment">//&#x5DF2;&#x7ECF;&#x8BFB;&#x53D6;&#x4E86;&#x4E00;&#x90E8;&#x5206;&#x6570;&#x636E;,&#x4F46;&#x8FD8;&#x6CA1;&#x6709;&#x6784;&#x6210;&#x5BF9;&#x8C61; </span></span><br><span class="line">                        <span class="keyword">continue</span>;</span><br><span class="line">                    }</span><br><span class="line">                }</span><br><span class="line"></span><br><span class="line">                <span class="comment">//&#x6CA1;&#x6709;&#x8BFB;&#x53D6;&#x5230;&#x6570;&#x636E;,&#x4F46;&#x662F;decode&#x5230;&#x4E00;&#x4E2A;message.&#x6709;&#x95EE;&#x9898;</span></span><br><span class="line">                <span class="keyword">if</span> (oldInputLength == in.readableBytes()) {</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> DecoderException(</span><br><span class="line">                            StringUtil.simpleClassName(getClass()) +</span><br><span class="line">                            <span class="string">&quot;.decode() did not read anything but decoded a message.&quot;</span>);</span><br><span class="line">                }</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (isSingleDecode()) {<span class="comment">//&#x53EA;&#x89E3;&#x6790;&#x4E00;&#x6B21;</span></span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="3-&#x5C06;&#x89E3;&#x6790;&#x5230;&#x7684;ByteBuf&#x5411;&#x4E0B;&#x4F20;&#x64AD;"><a href="#3-&#x5C06;&#x89E3;&#x6790;&#x5230;&#x7684;ByteBuf&#x5411;&#x4E0B;&#x4F20;&#x64AD;" class="headerlink" title="3.&#x5C06;&#x89E3;&#x6790;&#x5230;&#x7684;ByteBuf&#x5411;&#x4E0B;&#x4F20;&#x64AD;"></a>3.&#x5C06;&#x89E3;&#x6790;&#x5230;&#x7684;ByteBuf&#x5411;&#x4E0B;&#x4F20;&#x64AD;</h3><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.ByteToMessageDecoder#channelRead    </span></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        <span class="keyword">if</span> (msg <span class="keyword">instanceof</span> ByteBuf) {</span><br><span class="line">            CodecOutputList out = CodecOutputList.newInstance();</span><br><span class="line">            <span class="keyword">try</span> {</span><br><span class="line">                ByteBuf data = (ByteBuf) msg;</span><br><span class="line">                <span class="comment">//1.</span></span><br><span class="line">                first = cumulation == <span class="keyword">null</span>;</span><br><span class="line">                <span class="keyword">if</span> (first) {</span><br><span class="line">                    cumulation = data;</span><br><span class="line">                } <span class="keyword">else</span> {</span><br><span class="line">                    cumulation = cumulator.cumulate(ctx.alloc(), cumulation, data);</span><br><span class="line">                }</span><br><span class="line">                <span class="comment">//2.</span></span><br><span class="line">                callDecode(ctx, cumulation, out);</span><br><span class="line">..</span><br><span class="line">            } <span class="keyword">finally</span> {</span><br><span class="line">..</span><br><span class="line">                <span class="keyword">int</span> size = out.size();<span class="comment">//&#x5F53;&#x524D;list&#x957F;&#x5EA6;</span></span><br><span class="line">                decodeWasNull = !out.insertSinceRecycled();</span><br><span class="line">                fireChannelRead(ctx, out, size);<span class="comment">//&#x628A;&#x89E3;&#x6790;&#x5230;&#x7684;&#x5BF9;&#x8C61;&#x5411;&#x4E0B;&#x8FDB;&#x884C;&#x4F20;&#x64AD;</span></span><br><span class="line">                out.recycle();<span class="comment">//list&#x56DE;&#x6536;</span></span><br><span class="line">            }</span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line">            ctx.fireChannelRead(msg);</span><br><span class="line">        }</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8DDF;&#x8E2A;<code>fireChannelRead()</code>&#x770B;&#x4E00;&#x4E0B;&#x4F20;&#x64AD;&#x7684;&#x8FC7;&#x7A0B;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.ByteToMessageDecoder#fireChannelRead(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.CodecOutputList, int)    </span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">fireChannelRead</span><span class="params">(ChannelHandlerContext ctx, CodecOutputList msgs, <span class="keyword">int</span> numElements)</span> </span>{</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numElements; i ++) {</span><br><span class="line">            <span class="comment">//&#x5BF9;&#x89E3;&#x6790;&#x51FA;&#x7684;&#x6BCF;&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;&#x8FDB;&#x884C;&#x4F20;&#x64AD;</span></span><br><span class="line">            ctx.fireChannelRead(msgs.getUnsafe(i)<span class="comment">//&#x8FD4;&#x56DE;bytebuf</span></span><br><span class="line">                               );</span><br><span class="line">        }</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4F20;&#x64AD;&#x540E;&#x4E1A;&#x52A1;&#x4EE3;&#x7801;&#x5C31;&#x80FD;&#x83B7;&#x53D6;&#x5230;&#x89E3;&#x7801;&#x540E;&#x7684;<code>ByteBuf</code>&#x5BF9;&#x8C61;</p>
+<h1 id="netty&#x4E2D;&#x5E38;&#x89C1;&#x7684;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;"><a href="#netty&#x4E2D;&#x5E38;&#x89C1;&#x7684;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;" class="headerlink" title="netty&#x4E2D;&#x5E38;&#x89C1;&#x7684;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;"></a>netty&#x4E2D;&#x5E38;&#x89C1;&#x7684;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;</h1><h2 id="&#x57FA;&#x4E8E;&#x56FA;&#x5B9A;&#x957F;&#x5EA6;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;"><a href="#&#x57FA;&#x4E8E;&#x56FA;&#x5B9A;&#x957F;&#x5EA6;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;" class="headerlink" title="&#x57FA;&#x4E8E;&#x56FA;&#x5B9A;&#x957F;&#x5EA6;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;"></a>&#x57FA;&#x4E8E;&#x56FA;&#x5B9A;&#x957F;&#x5EA6;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;</h2><p>&#x6700;&#x7B80;&#x5355;&#x7684;&#x89E3;&#x7801;&#x5668;<code>io.netty.handler.codec.FixedLengthFrameDecoder</code>.&#x53EA;&#x6709;&#x4E00;&#x4E2A;&#x6210;&#x5458;&#x53D8;&#x91CF;,&#x5728;&#x6784;&#x9020;&#x65B9;&#x6CD5;&#x4E2D;&#x4F20;&#x5165;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FixedLengthFrameDecoder</span> <span class="keyword">extends</span> <span class="title">ByteToMessageDecoder</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> frameLength;<span class="comment">//&#x957F;&#x5EA6;</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">FixedLengthFrameDecoder</span><span class="params">(<span class="keyword">int</span> frameLength)</span> </span>{</span><br><span class="line">        <span class="keyword">this</span>.frameLength = frameLength;</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x89C4;&#x5219;&#x5982;&#x4E0B;:</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#x5982;&#x679C;&#x4F60;&#x4F20;&#x5165;&#x8FD9;&#x6837;&#x7684;&#x6570;&#x636E;&#x5305;</span><br><span class="line">* +---+----+------+----+</span><br><span class="line">* | A | BC | DEFG | HI |</span><br><span class="line">* +---+----+------+----+</span><br><span class="line">&#x8BBE;&#x7F6E;&#x957F;&#x5EA6;=3,&#x90A3;&#x4E48;&#x4F1A;&#x5C01;&#x88C5;&#x6210;&#x4E00;&#x4E0B;&#x7684;&#x5F62;&#x5F0F;</span><br><span class="line">* +-----+-----+-----+</span><br><span class="line">* | ABC | DEF | GHI |</span><br><span class="line">* +-----+-----+-----+</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5B83;&#x7684;<code>decode()</code>&#x5B9E;&#x73B0;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.FixedLengthFrameDecoder#decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List&lt;java.lang.Object&gt;)</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">decode</span><span class="params">(ChannelHandlerContext ctx, ByteBuf in, List&lt;Object&gt; out)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">    Object decoded = decode(ctx, in);</span><br><span class="line">    <span class="keyword">if</span> (decoded != <span class="keyword">null</span>) {</span><br><span class="line">        out.add(decoded);<span class="comment">//&#x5982;&#x679C;decode&#x5230;&#x4E86;&#x5BF9;&#x8C61;&#x5C31;&#x52A0;&#x5165;&#x5BB9;&#x5668;</span></span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line">---</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> Object <span class="title">decode</span><span class="params">(ChannelHandlerContext ctx, ByteBuf in)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">    <span class="keyword">if</span> (in.readableBytes() &lt; frameLength) {<span class="comment">//&#x53EF;&#x8BFB;&#x5B57;&#x8282;&#x662F;&#x5426;&#x5C0F;&#x4E8E;&#x5E27;&#x957F;&#x5EA6;</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    } <span class="keyword">else</span> {</span><br><span class="line">        <span class="keyword">return</span> in.readRetainedSlice(frameLength);<span class="comment">//&#x6EE1;&#x8DB3;&#x957F;&#x5EA6;,&#x4ECE;&#x5F53;&#x524D;&#x7684;&#x7D2F;&#x52A0;&#x5668;&#x53BB;&#x622A;&#x53D6;&#x6307;&#x5B9A;&#x957F;&#x5EA6;&#x7684;ByteBuf</span></span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5F53;&#x5C0F;&#x4E8E;&#x5E27;&#x957F;&#x5EA6;&#x65F6;,&#x4F1A;&#x8FD4;&#x56DE;null,&#x5BFC;&#x81F4;&#x7236;&#x7C7B;&#x7684;<code>callDecode()</code>&#x65B9;&#x6CD5;&#x4F1A;&#x8FD4;&#x56DE;,&#x76F4;&#x5230;&#x4E0B;&#x6B21;&#x518D;&#x8FDB;&#x6570;&#x636E;&#x65F6;&#x7EE7;&#x7EED;&#x8FDB;&#x884C;&#x89E3;&#x6790;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.ByteToMessageDecoder#callDecode</span></span><br><span class="line"><span class="keyword">if</span> (outSize == out.size()) {</span><br><span class="line">    <span class="keyword">if</span> (oldInputLength == in.readableBytes()) {</span><br><span class="line">        <span class="comment">//&#x53EF;&#x8BFB;&#x5B57;&#x8282;&#x5C0F;&#x4E8E;&#x5E27;&#x957F;&#x5EA6;&#x65F6;&#x4F1A;&#x5230;&#x8FD9;&#x91CC;</span></span><br><span class="line">        <span class="keyword">break</span>;<span class="comment">//&#x6CA1;&#x6709;&#x8DB3;&#x591F;&#x7684;&#x6570;&#x636E;&#x5305;,&#x9000;&#x51FA;</span></span><br><span class="line">    } <span class="keyword">else</span> {</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="&#x57FA;&#x4E8E;&#x884C;&#x89E3;&#x7801;&#x5668;"><a href="#&#x57FA;&#x4E8E;&#x884C;&#x89E3;&#x7801;&#x5668;" class="headerlink" title="&#x57FA;&#x4E8E;&#x884C;&#x89E3;&#x7801;&#x5668;"></a>&#x57FA;&#x4E8E;&#x884C;&#x89E3;&#x7801;&#x5668;</h2><p>&#x5BF9;<code>\n</code>&#x6216;<code>\r\n</code>&#x8FDB;&#x884C;&#x5206;&#x5272;,<code>io.netty.handler.codec.LineBasedFrameDecoder</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LineBasedFrameDecoder</span> <span class="keyword">extends</span> <span class="title">ByteToMessageDecoder</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="comment">//&#x89E3;&#x6790;&#x6570;&#x636E;&#x5305;&#x7684;&#x6700;&#x5927;&#x957F;&#x5EA6;,&#x8D85;&#x8FC7;&#x957F;&#x5EA6;&#x65F6;&#x4E22;&#x5F03;&#x5F53;&#x524D;&#x7684;&#x89E3;&#x7801;&#x8FC7;&#x7A0B;.&#x4E0B;&#x9762;&#x7684;discarding&#x4F1A;&#x88AB;&#x8BBE;&#x7F6E;&#x4E3A;true</span></span><br><span class="line">    <span class="comment">//&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x6BCF;&#x4E00;&#x884C;&#x6570;&#x636E;&#x4E0D;&#x80FD;&#x8D85;&#x8FC7;&#x8FD9;&#x4E00;&#x884C;</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> maxLength;</span><br><span class="line">    <span class="comment">/** Whether or not to throw an exception as soon as we exceed maxLength. */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">boolean</span> failFast;<span class="comment">//&#x8D85;&#x8FC7;&#x6700;&#x5927;&#x957F;&#x5EA6;&#x65F6;&#x662F;&#x5426;&#x8BE5;&#x629B;&#x5F02;&#x5E38;.true&#x5219;&#x7ACB;&#x5373;&#x629B;&#x51FA;</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">boolean</span> stripDelimiter;<span class="comment">//&#x6700;&#x7EC8;&#x89E3;&#x6790;&#x51FA;&#x7684;&#x6570;&#x636E;&#x5305;&#x5E26;&#x4E0D;&#x5E26;&#x6362;&#x884C;&#x7B26;,true&#x5219;&#x4E0D;&#x5E26;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/** True if we&apos;re discarding input because we&apos;re already over maxLength.  */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> discarding;<span class="comment">//&#x8D85;&#x8FC7;&#x957F;&#x5EA6;&#x65F6;&#x8BBE;&#x4E3A;true,&#x4E22;&#x5F03;&#x5F53;&#x524D;&#x7684;&#x89E3;&#x7801;&#x8FC7;&#x7A0B;.</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> discardedBytes;<span class="comment">//&#x5F53;&#x524D;&#x4E22;&#x5F03;&#x4E86;&#x591A;&#x5C11;&#x5B57;&#x8282;</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5B83;&#x7684;<code>decode()</code>,&#x548C;&#x4E0A;&#x4E00;&#x8282;&#x7684;&#x4E00;&#x6A21;&#x4E00;&#x6837;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.LineBasedFrameDecoder#decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List&lt;java.lang.Object&gt;)</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">decode</span><span class="params">(ChannelHandlerContext ctx, ByteBuf in, List&lt;Object&gt; out)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">    Object decoded = decode(ctx, in);</span><br><span class="line">    <span class="keyword">if</span> (decoded != <span class="keyword">null</span>) {</span><br><span class="line">        out.add(decoded);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p><code>decode()</code>&#x5177;&#x4F53;&#x5B9E;&#x73B0;:</p>
+<p>&#x901A;&#x8FC7;<code>findEndOfLine</code>&#x53EF;&#x4EE5;&#x627E;&#x5230;&#x6362;&#x884C;&#x5904;&#x7684;&#x7D22;&#x5F15;,<code>\n</code>&#x6216;<code>\r\n</code>:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.LineBasedFrameDecoder#findEndOfLine</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">findEndOfLine</span><span class="params">(<span class="keyword">final</span> ByteBuf buffer)</span> </span>{</span><br><span class="line">        <span class="keyword">int</span> i = buffer.forEachByte(ByteProcessor.FIND_LF);<span class="comment">//&#x627E;\n</span></span><br><span class="line">        <span class="keyword">if</span> (i &gt; <span class="number">0</span> &amp;&amp; buffer.getByte(i - <span class="number">1</span>) == <span class="string">&apos;\r&apos;</span>) {<span class="comment">//&#x627E;\r\n</span></span><br><span class="line">            i--;</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">return</span> i;</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<p><img src="1548311912272.png" alt="1548311912272"></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> Object <span class="title">decode</span><span class="params">(ChannelHandlerContext ctx, ByteBuf buffer)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> eol = findEndOfLine(buffer);<span class="comment">//&#x627E;&#x8FD9;&#x4E00;&#x884C;&#x7684;&#x7ED3;&#x5C3E;&#x5904;,\n&#x6216;\r\n</span></span><br><span class="line">    <span class="keyword">if</span> (!discarding) {<span class="comment">//&#x9996;&#x6B21;&#x4F1A;&#x8FDB;&#x5165;</span></span><br><span class="line">        <span class="keyword">if</span> (eol &gt;= <span class="number">0</span>) {<span class="comment">//&#x627E;&#x5230;&#x6362;&#x884C;&#x7B26;</span></span><br><span class="line">            <span class="keyword">final</span> ByteBuf frame;</span><br><span class="line">            <span class="comment">//&#x4ECE;&#x6362;&#x884C;&#x7B26;&#x5230;&#x523B;&#x5EA6;&#x5B57;&#x8282;&#x4E4B;&#x95F4;&#x7684;&#x957F;&#x5EA6;.&#x4E5F;&#x5C31;&#x662F;&#x89E3;&#x7801;&#x540E;&#x7684;&#x6570;&#x636E;&#x5305;&#x7684;&#x957F;&#x5EA6;</span></span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> length = eol - buffer.readerIndex();</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> delimLength = buffer.getByte(eol) == <span class="string">&apos;\r&apos;</span>? <span class="number">2</span> : <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (length &gt; maxLength) {<span class="comment">//&#x672C;&#x884C;&#x7684;&#x957F;&#x5EA6;&#x8D85;&#x8FC7;&#x4E86;&#x957F;&#x5EA6;&#x9650;&#x5236;</span></span><br><span class="line">                <span class="comment">//&#x79FB;&#x52A8;&#x5230;&#x6362;&#x884C;&#x7B26;&#x4E4B;&#x540E;&#x7684;&#x6570;&#x636E;.&#x6709;&#x5C31;&#x662F;&#x8BF4;&#x5B83;&#x4F1A;&#x628A;&#x672C;&#x884C;&#x7684;&#x6570;&#x636E;&#x8FDB;&#x884C;&#x4E22;&#x5F03;</span></span><br><span class="line">                buffer.readerIndex(eol + delimLength);</span><br><span class="line">                fail(ctx, length);<span class="comment">//&#x4F20;&#x64AD;&#x5F02;&#x5E38;</span></span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">            }</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (stripDelimiter) {<span class="comment">//&#x662F;&#x5426;&#x4E0D;&#x7B97;&#x5165;&#x5206;&#x9694;&#x7B26;</span></span><br><span class="line">                frame = buffer.readRetainedSlice(length);</span><br><span class="line">                buffer.skipBytes(delimLength);</span><br><span class="line">            } <span class="keyword">else</span> {</span><br><span class="line">                frame = buffer.readRetainedSlice(length + delimLength);</span><br><span class="line">            }</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> frame;</span><br><span class="line">        } <span class="keyword">else</span> {<span class="comment">//&#x6CA1;&#x627E;&#x5230;&#x6362;&#x884C;&#x7B26;</span></span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> length = buffer.readableBytes();</span><br><span class="line">            <span class="keyword">if</span> (length &gt; maxLength) {<span class="comment">//&#x5982;&#x679C;&#x8D85;&#x8FC7;&#x6700;&#x5927;&#x957F;&#x5EA6;&#x4E86; </span></span><br><span class="line">                discardedBytes = length;</span><br><span class="line">                <span class="comment">//&#x628A;&#x8BFB;&#x6307;&#x9488;&#x79FB;&#x5230;&#x5199;&#x6307;&#x9488;,&#x6240;&#x6709;&#x6570;&#x636E;&#x90FD;&#x8FDB;&#x884C;&#x4E22;&#x5F03;</span></span><br><span class="line">                buffer.readerIndex(buffer.writerIndex());</span><br><span class="line">                discarding = <span class="keyword">true</span>;<span class="comment">//&#x6807;&#x8BB0;&#x4E3A;&#x4E22;&#x5F03;&#x6A21;&#x5F0F;</span></span><br><span class="line">                <span class="keyword">if</span> (failFast) {<span class="comment">//&#x4E22;&#x5F03;&#x524D;&#x89E6;&#x53D1;&#x5F02;&#x5E38;</span></span><br><span class="line">                    <span class="comment">//&#x4F20;&#x64AD;&#x5F02;&#x5E38;</span></span><br><span class="line">                    fail(ctx, <span class="string">&quot;over &quot;</span> + discardedBytes);</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line">            <span class="comment">//&#x6CA1;&#x6709;&#x6362;&#x884C;&#x7B26;,&#x4F46;&#x662F;&#x6240;&#x6709;&#x6570;&#x636E;&#x7684;&#x957F;&#x5EA6;&#x4E0D;&#x8D85;&#x8FC7;&#x957F;&#x5EA6;&#x9650;&#x5236;,&#x8FD4;&#x56DE;null.</span></span><br><span class="line">            <span class="comment">//&#x4E5F;&#x5C31;&#x662F;&#x4E0D;&#x8FDB;&#x884C;&#x89E3;&#x6790;</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        }</span><br><span class="line">    } <span class="keyword">else</span> {<span class="comment">//&#x4E22;&#x5F03;&#x6A21;&#x5F0F;&#x4E0B;.&#x5C31;&#x662F;&#x6CA1;&#x6709;&#x627E;&#x5230;&#x6362;&#x884C;&#x7B26;,&#x800C;&#x4E14;&#x5168;&#x6587;&#x5927;&#x5C0F;&#x53C8;&#x8D85;&#x8FC7;&#x9650;&#x5236;&#x6240;&#x4EE5;&#x8FDB;&#x884C;&#x4E22;&#x5F03;&#x7684;&#x90A3;&#x6BB5;&#x903B;&#x8F91;</span></span><br><span class="line">        <span class="keyword">if</span> (eol &gt;= <span class="number">0</span>) {<span class="comment">//&#x4E22;&#x5F03;&#x6A21;&#x5F0F;&#x4E0B;&#x627E;&#x5230;&#x4E86;&#x6362;&#x884C;&#x7B26;,</span></span><br><span class="line">            <span class="comment">//&#x76F4;&#x63A5;&#x4E22;&#x5F03;&#x672C;&#x884C;,&#x6307;&#x9488;&#x79FB;&#x5230;&#x4E0B;&#x4E00;&#x884C;&#x5F00;&#x59CB;&#x5904;</span></span><br><span class="line">            <span class="comment">//&#x524D;&#x9762;&#x5DF2;&#x7ECF;&#x4E22;&#x5F03;&#x7684;+&#x8FD9;&#x6B21;&#x8981;&#x4E22;&#x5F03;&#x7684;</span></span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> length = discardedBytes + eol - buffer.readerIndex();</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> delimLength = buffer.getByte(eol) == <span class="string">&apos;\r&apos;</span>? <span class="number">2</span> : <span class="number">1</span>;</span><br><span class="line">            buffer.readerIndex(eol + delimLength);</span><br><span class="line">            discardedBytes = <span class="number">0</span>;</span><br><span class="line">            discarding = <span class="keyword">false</span>;<span class="comment">//&#x8FD4;&#x56DE;&#x975E;&#x4E22;&#x5F03;&#x6A21;&#x5F0F;</span></span><br><span class="line">            <span class="keyword">if</span> (!failFast) {<span class="comment">//&#x4E22;&#x5F03;&#x4E4B;&#x540E;&#x89E6;&#x53D1;&#x5F02;&#x5E38;,&#x4E24;&#x8005;&#x53EA;&#x4F1A;&#x89E6;&#x53D1;&#x4E00;&#x4E2A;</span></span><br><span class="line">                fail(ctx, length);</span><br><span class="line">            }</span><br><span class="line">        } <span class="keyword">else</span> {<span class="comment">//&#x4E22;&#x5F03;&#x6A21;&#x5F0F;&#x4E0B;&#x6CA1;&#x6709;&#x6362;&#x884C;&#x7B26;</span></span><br><span class="line">            <span class="comment">//&#x76F4;&#x63A5;&#x4E22;&#x5F03;&#x5230;writeIndex</span></span><br><span class="line">            discardedBytes += buffer.readableBytes();</span><br><span class="line">            buffer.readerIndex(buffer.writerIndex());</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;<span class="comment">//&#x65E0;&#x8BBA;&#x662F;&#x5426;&#x6709;&#x6362;&#x884C;,&#x5728;&#x4E22;&#x5F03;&#x6A21;&#x5F0F;&#x4E0B;&#x90FD;&#x4E0D;&#x4F1A;&#x89E3;&#x6790;</span></span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x6CA1;&#x6709;&#x627E;&#x5230;&#x6362;&#x884C;&#x7B26;,&#x5C31;&#x662F;&#x4E0B;&#x9762;&#x8FD9;&#x79CD;&#x60C5;&#x51B5;:<img src="20190124/1548312578724.png" alt="1548312578724"></p>
+<p>&#x5982;&#x679C;&#x8FD9;&#x4E2A;readIndex&#x548C;writeIndex&#x4E4B;&#x95F4;&#x7684;&#x957F;&#x5EA6;&#x5927;&#x4E8E;&#x957F;&#x5EA6;&#x9650;&#x5236;&#x7684;&#x8BDD;,&#x4F1A;&#x628A;&#x6240;&#x6709;&#x6570;&#x636E;&#x8FDB;&#x884C;&#x4E22;&#x5F03;,&#x5E76;&#x6807;&#x8BB0;&#x4E3A;&#x4E22;&#x5F03;&#x6A21;&#x5F0F;</p>
+<h2 id="&#x57FA;&#x4E8E;&#x5206;&#x9694;&#x7B26;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;"><a href="#&#x57FA;&#x4E8E;&#x5206;&#x9694;&#x7B26;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;" class="headerlink" title="&#x57FA;&#x4E8E;&#x5206;&#x9694;&#x7B26;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;"></a>&#x57FA;&#x4E8E;&#x5206;&#x9694;&#x7B26;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;</h2><p><code>io.netty.handler.codec.DelimiterBasedFrameDecoder</code></p>
+<p>&#x5B83;&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">DelimiterBasedFrameDecoder</span><span class="params">(<span class="keyword">int</span> maxFrameLength, </span></span></span><br><span class="line"><span class="function"><span class="params">                                  ByteBuf... delimiters)</span> </span>{<span class="comment">//&#x8868;&#x793A;&#x5BF9;&#x8FD9;&#x4E9B;&#x5206;&#x5272;&#x7B26;&#x8FDB;&#x884C;&#x5904;&#x7406;</span></span><br><span class="line">    <span class="keyword">this</span>(maxFrameLength, <span class="keyword">true</span>, delimiters);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD8;&#x662F;&#x770B;&#x5B83;&#x7684;<code>decode()</code>,&#x62C6;&#x89E3;&#x6210;3&#x4E2A;&#x6B65;&#x9AA4;:</p>
+<ol>
+<li>&#x884C;&#x5904;&#x7406;&#x5668;<br>&#x5982;&#x679C;&#x5E26;&#x5165;&#x7684;&#x5206;&#x5272;&#x7B26;&#x662F;&#x57FA;&#x4E8E;&#x884C;&#x7684;&#x5206;&#x9694;&#x7B26;,&#x901A;&#x8FC7;&#x884C;&#x5904;&#x7406;&#x5668;&#x53BB;&#x5904;&#x7406;,&#x5C31;&#x662F;&#x4E0A;&#x5C0F;&#x8282;&#x7684;</li>
+<li>&#x627E;&#x5230;&#x6700;&#x5C0F;&#x5206;&#x9694;&#x7B26;<br>&#x56E0;&#x4E3A;&#x5B83;&#x652F;&#x6301;&#x57FA;&#x4E8E;&#x591A;&#x4E2A;&#x5206;&#x9694;&#x7B26;&#x673A;&#x8FDB;&#x884C;&#x5206;&#x5272;</li>
+<li>&#x89E3;&#x7801;</li>
+</ol>
+<h3 id="1-&#x884C;&#x5904;&#x7406;&#x5668;"><a href="#1-&#x884C;&#x5904;&#x7406;&#x5668;" class="headerlink" title="1.&#x884C;&#x5904;&#x7406;&#x5668;"></a>1.&#x884C;&#x5904;&#x7406;&#x5668;</h3><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.DelimiterBasedFrameDecoder#decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf)</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> Object <span class="title">decode</span><span class="params">(ChannelHandlerContext ctx, ByteBuf buffer)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">    	<span class="comment">//1.&#x884C;&#x5904;&#x7406;&#x5668;</span></span><br><span class="line">        <span class="keyword">if</span> (lineBasedDecoder != <span class="keyword">null</span>) {</span><br><span class="line">            <span class="keyword">return</span> lineBasedDecoder.decode(ctx, buffer);</span><br><span class="line">        }</span><br></pre></td></tr></tbody></table></figure>
+<p><code>lineBasedDecoder</code>&#x662F;&#x5728;&#x6784;&#x9020;&#x65B9;&#x6CD5;&#x4E2D;&#x88AB;&#x521D;&#x59CB;&#x5316;&#x7684;,&#x4E4B;&#x540E;&#x5206;&#x9694;&#x7B26;&#x4E3A;&#x884C;&#x5206;&#x9694;&#x7B26;&#x662F;&#x4F1A;&#x88AB;&#x521D;&#x59CB;&#x5316;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">DelimiterBasedFrameDecoder</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">...</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">if</span> (isLineBased(delimiters)</span> &amp;&amp; !<span class="title">isSubclass</span><span class="params">()</span>) </span>{<span class="comment">//&#x5206;&#x9694;&#x7B26;&#x4E3A;&#x884C;&#x5206;&#x9694;&#x7B26;</span></span><br><span class="line">        lineBasedDecoder = <span class="keyword">new</span> LineBasedFrameDecoder(maxFrameLength, stripDelimiter, failFast);</span><br><span class="line">        <span class="keyword">this</span>.delimiters = <span class="keyword">null</span>;</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="2-&#x627E;&#x5230;&#x6700;&#x5C0F;&#x5206;&#x9694;&#x7B26;"><a href="#2-&#x627E;&#x5230;&#x6700;&#x5C0F;&#x5206;&#x9694;&#x7B26;" class="headerlink" title="2.&#x627E;&#x5230;&#x6700;&#x5C0F;&#x5206;&#x9694;&#x7B26;"></a>2.&#x627E;&#x5230;&#x6700;&#x5C0F;&#x5206;&#x9694;&#x7B26;</h3><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.DelimiterBasedFrameDecoder#decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf)</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> Object <span class="title">decode</span><span class="params">(ChannelHandlerContext ctx, ByteBuf buffer)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 2.&#x627E;&#x5230;&#x6700;&#x5C0F;&#x5206;&#x9694;&#x7B26;</span></span><br><span class="line">    <span class="keyword">int</span> minFrameLength = Integer.MAX_VALUE;</span><br><span class="line">    ByteBuf minDelim = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">for</span> (ByteBuf delim: delimiters) {</span><br><span class="line">        <span class="keyword">int</span> frameLength = indexOf(buffer, delim);</span><br><span class="line">        <span class="keyword">if</span> (frameLength &gt;= <span class="number">0</span> &amp;&amp; frameLength &lt; minFrameLength) {<span class="comment">//&#x627E;min&#x7684;&#x5206;&#x9694;&#x7B26;</span></span><br><span class="line">            minFrameLength = frameLength;</span><br><span class="line">            minDelim = delim;</span><br><span class="line">        }</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="3-&#x89E3;&#x7801;"><a href="#3-&#x89E3;&#x7801;" class="headerlink" title="3.&#x89E3;&#x7801;"></a>3.&#x89E3;&#x7801;</h3><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.DelimiterBasedFrameDecoder#decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf)</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> Object <span class="title">decode</span><span class="params">(ChannelHandlerContext ctx, ByteBuf buffer)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">	<span class="comment">//3.&#x89E3;&#x7801;</span></span><br><span class="line">    <span class="keyword">if</span> (minDelim != <span class="keyword">null</span>) {<span class="comment">//&#x5DF2;&#x7ECF;&#x627E;&#x5230;&#x5206;&#x9694;&#x7B26;</span></span><br><span class="line">        <span class="keyword">int</span> minDelimLength = minDelim.capacity();</span><br><span class="line">        ByteBuf frame;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (discardingTooLongFrame) {<span class="comment">//&#x662F;&#x5426;&#x5C5E;&#x4E8E;&#x4E22;&#x5F03;&#x6A21;&#x5F0F;,&#x9996;&#x6B21;&#x662F;false</span></span><br><span class="line"></span><br><span class="line">            discardingTooLongFrame = <span class="keyword">false</span>;</span><br><span class="line">            <span class="comment">//&#x4E22;&#x5F03;&#x6389;&#x4E00;&#x6574;&#x6BB5;</span></span><br><span class="line">            buffer.skipBytes(minFrameLength + minDelimLength);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">int</span> tooLongFrameLength = <span class="keyword">this</span>.tooLongFrameLength;</span><br><span class="line">            <span class="keyword">this</span>.tooLongFrameLength = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">if</span> (!failFast) {</span><br><span class="line">                fail(tooLongFrameLength);</span><br><span class="line">            }</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        }</span><br><span class="line">		<span class="comment">//&#x5F53;&#x524D;&#x5C5E;&#x4E8E;&#x975E;&#x4E22;&#x5F03;&#x6A21;&#x5F0F;</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (minFrameLength &gt; maxFrameLength) {</span><br><span class="line">            <span class="comment">// &#x5927;&#x4E8E;&#x9650;&#x5236;&#x957F;&#x5EA6;,&#x628A;&#x4E0D;&#x5408;&#x6CD5;&#x7684;&#x90E8;&#x5206;&#x8FDB;&#x884C;&#x4E22;&#x5F03;</span></span><br><span class="line">            buffer.skipBytes(minFrameLength + minDelimLength);</span><br><span class="line">            fail(minFrameLength);<span class="comment">//&#x629B;&#x51FA;&#x5F02;&#x5E38;</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        }</span><br><span class="line">		<span class="comment">//&#x6B63;&#x5E38;&#x5206;&#x5272;</span></span><br><span class="line">        <span class="keyword">if</span> (stripDelimiter) {<span class="comment">//&#x5305;&#x4E0D;&#x5305;&#x542B;&#x5206;&#x9694;&#x7B26;</span></span><br><span class="line">            frame = buffer.readRetainedSlice(minFrameLength);</span><br><span class="line">            buffer.skipBytes(minDelimLength);</span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line">            frame = buffer.readRetainedSlice(minFrameLength + minDelimLength);</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> frame;</span><br><span class="line">    } <span class="keyword">else</span> {<span class="comment">//&#x6CA1;&#x6709;&#x627E;&#x5230;&#x5206;&#x5272;&#x7B26;</span></span><br><span class="line">        <span class="keyword">if</span> (!discardingTooLongFrame) {<span class="comment">//&#x975E;&#x4E22;&#x5F03;&#x6A21;&#x5F0F;</span></span><br><span class="line">            <span class="keyword">if</span> (buffer.readableBytes() &gt; maxFrameLength) {<span class="comment">//&#x5927;&#x4E8E;&#x957F;&#x5EA6;&#x9650;&#x5236;</span></span><br><span class="line">                <span class="comment">// Discard the content of the buffer until a delimiter is found.</span></span><br><span class="line">                tooLongFrameLength = buffer.readableBytes();</span><br><span class="line">                buffer.skipBytes(buffer.readableBytes());<span class="comment">//&#x4E22;&#x5F03;&#x6240;&#x6709;</span></span><br><span class="line">                discardingTooLongFrame = <span class="keyword">true</span>;<span class="comment">//&#x6807;&#x8BB0;&#x4E3A;&#x4E22;&#x5F03;&#x72B6;&#x6001;</span></span><br><span class="line">                <span class="keyword">if</span> (failFast) {</span><br><span class="line">                    fail(tooLongFrameLength);</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line">        } <span class="keyword">else</span> {</span><br><span class="line">            <span class="comment">//&#x4E22;&#x5F03;&#x6A21;&#x5F0F;&#x4E0B;&#x6CA1;&#x6709;&#x5206;&#x9694;&#x7B26;</span></span><br><span class="line">            tooLongFrameLength += buffer.readableBytes();<span class="comment">//&#x7D2F;&#x8BA1;</span></span><br><span class="line">            buffer.skipBytes(buffer.readableBytes());</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="&#x57FA;&#x4E8E;&#x957F;&#x5EA6;&#x57DF;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;"><a href="#&#x57FA;&#x4E8E;&#x957F;&#x5EA6;&#x57DF;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;" class="headerlink" title="&#x57FA;&#x4E8E;&#x957F;&#x5EA6;&#x57DF;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;"></a>&#x57FA;&#x4E8E;&#x957F;&#x5EA6;&#x57DF;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;</h2><p>&#x4E5F;&#x5C31;&#x662F;<code>io.netty.handler.codec.LengthFieldBasedFrameDecoder</code></p>
+<h3 id="&#x91CD;&#x8981;&#x53C2;&#x6570;"><a href="#&#x91CD;&#x8981;&#x53C2;&#x6570;" class="headerlink" title="&#x91CD;&#x8981;&#x53C2;&#x6570;"></a>&#x91CD;&#x8981;&#x53C2;&#x6570;</h3><p><img src="1548319665822.png" alt="1548319665822"></p>
+<ul>
+<li>lengthFieldOffset = 2:<br>&#x504F;&#x79FB;&#x91CF;&#x662F;&#x591A;&#x5C11;,&#x56FE;&#x4E2D;&#x4ECE;&#x5F00;&#x5934;&#x5230;00&#x8DDD;&#x79BB;2&#x4E2A;&#x5B57;&#x8282;,&#x6240;&#x4EE5;2</li>
+<li>lengthFieldLength = 2:<br>&#x4ECE;00&#x51FA;&#x5F00;&#x59CB;&#x51E0;&#x4E2A;&#x5B57;&#x8282;&#x4E3A;&#x6B62;&#x4E3A;&#x957F;&#x5EA6;,&#x56FE;&#x4E2D;&#x662F;2&#x4E2A;&#x5B57;&#x8282;,&#x6240;&#x4EE5;2</li>
+</ul>
+<p>&#x800C;0004 = 4&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x8FD9;&#x4E2A;&#x6570;&#x636E;&#x5305;&#x7684;&#x7ED3;&#x5C3E;&#x662F;&#x4ECE;04&#x5F00;&#x59CB;&#x5F80;&#x540E;&#x7684;4&#x4E2A;&#x5B57;&#x8282;.&#x6240;&#x4EE5;&#x6700;&#x7EC8;&#x7684;&#x51FA;&#x8FD9;&#x4E2A;&#x6570;&#x636E;&#x5305;&#x7684;&#x8303;&#x56F4;&#x5982;&#x56FE;&#x6240;&#x793A;</p>
+<h3 id="&#x4F8B;&#x5B50;"><a href="#&#x4F8B;&#x5B50;" class="headerlink" title="&#x4F8B;&#x5B50;"></a>&#x4F8B;&#x5B50;</h3><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">* &lt;b&gt;lengthFieldOffset&lt;/b&gt;   = &lt;b&gt;0&lt;/b&gt;&#x957F;&#x5EA6;&#x57DF;&#x4FBF;&#x5B9C;0</span><br><span class="line">* &lt;b&gt;lengthFieldLength&lt;/b&gt;   = &lt;b&gt;2&lt;/b&gt;0,1&#x5B57;&#x8282;&#x62FC;&#x8D77;&#x6765;&#x7684;&#x6570;&#x8868;&#x793A;&#x4E86;&#x8FD9;&#x4E2A;&#x6570;&#x636E;&#x5305;&#x7684;&#x957F;&#x5EA6;</span><br><span class="line">* lengthAdjustment    = <span class="number">0</span></span><br><span class="line">* initialBytesToStrip = <span class="number">0</span> (= <span class="keyword">do</span> not strip header)</span><br><span class="line">*</span><br><span class="line">* <span class="function">BEFORE <span class="title">DECODE</span> <span class="params">(<span class="number">14</span> bytes)</span>         AFTER <span class="title">DECODE</span> <span class="params">(<span class="number">14</span> bytes)</span></span></span><br><span class="line"><span class="function">* +--------+----------------+      +--------+----------------+</span></span><br><span class="line"><span class="function">* | Length | Actual Content |-----&gt;| Length | Actual Content |</span></span><br><span class="line"><span class="function">* | 0x000C | &quot;HELLO, WORLD&quot; |      | 0x000C | &quot;HELLO, WORLD&quot; |</span></span><br><span class="line"><span class="function">* +--------+----------------+      +--------+----------------+</span></span><br></pre></td></tr></tbody></table></figure>
+<p>0,1&#x5B57;&#x8282;&#x62FC;&#x63A5;&#x4E3A; 0x000C =12&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x6570;&#x636E;&#x5305;&#x7684;&#x7ED3;&#x5C3E;&#x662F;&#x4ECE;&#x8FD9;&#x91CC;&#x5F00;&#x59CB;12&#x4E2A;&#x5B57;&#x8282;&#x4E4B;&#x540E;,&#x4E5F;&#x5C31;&#x662F;<code>Hello,World</code>&#x90A3;&#x6BB5;.&#x7531;&#x4E8E;<code>lengthAdjustment</code>&#x548C;<code>initialBytesToStrip</code>&#x7684;&#x503C;&#x4E3A;0,&#x6240;&#x4EE5;&#x6700;&#x540E;&#x5B8C;&#x6210;&#x7684;&#x6570;&#x636E;&#x5305;&#x4E5F;&#x662F;&#x540C;&#x6837;&#x7684;.<br>&#x90A3;&#x4E48;&#x8FD9;&#x4E24;&#x4E2A;&#x53C2;&#x6570;&#x5206;&#x522B;&#x4EE3;&#x8868;&#x4EC0;&#x4E48;?</p>
+<ul>
+<li>lengthAdjustment<br>&#x6709;&#x65F6;&#x5019;&#x7B97;&#x51FA;&#x7684;Length( 0x000C )&#x53EF;&#x80FD;&#x4E0D;&#x4EE3;&#x8868;&#x540E;&#x9762;&#x7684;&#x6570;&#x636E;&#x5305;&#x7684;&#x957F;&#x5EA6;,&#x6240;&#x4EE5;&#x7528;&#x8FD9;&#x4E2A;&#x53C2;&#x6570;&#x8FDB;&#x884C;&#x8C03;&#x6574;<br>&#x6BD4;&#x5982;,&#x5F53;<code>lengthAdjustment= 1</code>&#x7684;&#x65F6;&#x5019;,&#x4ED6;&#x5C06;&#x4F1A;&#x5305;&#x62EC;<code>Hello,World</code>&#x90A3;&#x6BB5;&#x52A0;&#x4E0A;&#x540E;&#x9762;&#x7684;&#x4E00;&#x4E2A;&#x5B57;&#x8282;</li>
+<li>initialBytesToStrip<br>&#x89E3;&#x6790;&#x6570;&#x636E;&#x5305;&#x65F6;&#x662F;&#x5426;&#x9700;&#x8981;&#x8DF3;&#x8FC7;&#x5B57;&#x8282;</li>
+</ul>
+<h3 id="&#x4F8B;&#x5B50;2"><a href="#&#x4F8B;&#x5B50;2" class="headerlink" title="&#x4F8B;&#x5B50;2"></a>&#x4F8B;&#x5B50;2</h3><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">* lengthFieldOffset   = <span class="number">0</span></span><br><span class="line">* lengthFieldLength   = <span class="number">2</span>	</span><br><span class="line">* lengthAdjustment    = <span class="number">0</span> &#x540C;&#x6837;&#x7B97;&#x51FA;<span class="number">0x000C</span></span><br><span class="line">* &lt;b&gt;initialBytesToStrip = 2&lt;/b&gt; (= the length of the Length field)</span><br><span class="line">*</span><br><span class="line">* <span class="function">BEFORE <span class="title">DECODE</span> <span class="params">(<span class="number">14</span> bytes)</span>         AFTER <span class="title">DECODE</span> <span class="params">(<span class="number">12</span> bytes)</span></span></span><br><span class="line"><span class="function">* +--------+----------------+      +----------------+</span></span><br><span class="line"><span class="function">* | Length | Actual Content |-----&gt;| Actual Content |</span></span><br><span class="line"><span class="function">* | 0x000C | &quot;HELLO, WORLD&quot; |      | &quot;HELLO, WORLD&quot; |</span></span><br><span class="line"><span class="function">* +--------+----------------+      +----------------+</span></span><br></pre></td></tr></tbody></table></figure>
+<p>initialBytesToStrip = 2&#x8868;&#x793A;&#x8DF3;&#x8FC7;&#x5F00;&#x5934;&#x7684;&#x4E24;&#x4E2A;&#x5B57;&#x8282;,&#x56E0;&#x6B64;&#x5F97;&#x51FA;&#x7684;&#x6570;&#x636E;&#x5305;&#x4E0D;&#x5305;&#x542B;&#x5F00;&#x5934;&#x8868;&#x660E;&#x957F;&#x5EA6;&#x7684;&#x90A3;2&#x4E2A;&#x5B57;&#x8282;</p>
+<h3 id="&#x4F8B;&#x5B50;3"><a href="#&#x4F8B;&#x5B50;3" class="headerlink" title="&#x4F8B;&#x5B50;3"></a>&#x4F8B;&#x5B50;3</h3><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">* lengthFieldOffset   =  <span class="number">0</span></span><br><span class="line">* lengthFieldLength   =  <span class="number">2</span></span><br><span class="line">* lengthAdjustment = -2&lt;/b&gt; (= the length of the Length field)</span><br><span class="line">* initialBytesToStrip =  <span class="number">0</span></span><br><span class="line">*</span><br><span class="line">* <span class="function">BEFORE <span class="title">DECODE</span> <span class="params">(<span class="number">14</span> bytes)</span>         AFTER <span class="title">DECODE</span> <span class="params">(<span class="number">14</span> bytes)</span></span></span><br><span class="line"><span class="function">* +--------+----------------+      +--------+----------------+</span></span><br><span class="line"><span class="function">* | Length | Actual Content |-----&gt;| Length | Actual Content |</span></span><br><span class="line"><span class="function">* | 0x000E | &quot;HELLO, WORLD&quot; |      | 0x000E | &quot;HELLO, WORLD&quot; |</span></span><br><span class="line"><span class="function">* +--------+----------------+      +--------+----------------+</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD9;&#x91CC;&#x7684;Length&#x662F;4&#x4E2A;&#x5B57;&#x8282;( 0x000E ),&#x8FD9;&#x91CC;&#x628A;lengthAdjustment= -2,&#x8BA9;&#x5B83;&#x53EA;&#x7B97;12&#x4E2A;&#x5B57;&#x8282;</p>
+<h3 id="&#x4F8B;&#x5B50;4"><a href="#&#x4F8B;&#x5B50;4" class="headerlink" title="&#x4F8B;&#x5B50;4"></a>&#x4F8B;&#x5B50;4</h3><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">* &lt;b&gt;lengthFieldOffset = 2&lt;/b&gt; (= the length of Header 1)</span><br><span class="line">* &lt;b&gt;lengthFieldLength = 3&lt;/b&gt;</span><br><span class="line">* lengthAdjustment    = <span class="number">0</span></span><br><span class="line">* initialBytesToStrip = <span class="number">0</span></span><br><span class="line">*</span><br><span class="line">* <span class="function">BEFORE <span class="title">DECODE</span> <span class="params">(<span class="number">17</span> bytes)</span>                      AFTER <span class="title">DECODE</span> <span class="params">(<span class="number">17</span> bytes)</span></span></span><br><span class="line"><span class="function">* +----------+----------+----------------+      +----------+----------+----------------+</span></span><br><span class="line"><span class="function">* | Header 1 |  Length  | Actual Content |-----&gt;| Header 1 |  Length  | Actual Content |</span></span><br><span class="line"><span class="function">* |  0xCAFE  | 0x00000C | &quot;HELLO, WORLD&quot; |      |  0xCAFE  | 0x00000C | &quot;HELLO, WORLD&quot; |</span></span><br><span class="line"><span class="function">* +----------+----------+----------------+      +----------+----------+----------------+</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4ECE;2&#x5B57;&#x8282;&#x5904;&#x5F00;&#x59CB;&#x7684;3&#x4E2A;&#x5B57;&#x8282;&#x8868;&#x793A;&#x957F;&#x5EA6;,&#x56E0;&#x6B64;&#x7684;&#x51FA;&#x957F;&#x5EA6;&#x4E3A;&#x4ECE;&#x8FD9;&#x91CC;&#x5F00;&#x59CB;&#x7684;12(0x00000C)&#x4E2A;&#x5B57;&#x8282;</p>
+<h3 id="&#x4F8B;&#x5B50;5"><a href="#&#x4F8B;&#x5B50;5" class="headerlink" title="&#x4F8B;&#x5B50;5"></a>&#x4F8B;&#x5B50;5</h3><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">* lengthFieldOffset   = <span class="number">0</span></span><br><span class="line">* lengthFieldLength   = <span class="number">3</span></span><br><span class="line">* &lt;b&gt;lengthAdjustment = 2&lt;/b&gt; (= the length of Header 1)</span><br><span class="line">* initialBytesToStrip = <span class="number">0</span></span><br><span class="line">*</span><br><span class="line">* <span class="function">BEFORE <span class="title">DECODE</span> <span class="params">(<span class="number">17</span> bytes)</span>                      AFTER <span class="title">DECODE</span> <span class="params">(<span class="number">17</span> bytes)</span></span></span><br><span class="line"><span class="function">* +----------+----------+----------------+      +----------+----------+----------------+</span></span><br><span class="line"><span class="function">* |  Length  | Header 1 | Actual Content |-----&gt;|  Length  | Header 1 | Actual Content |</span></span><br><span class="line"><span class="function">* | 0x00000C |  0xCAFE  | &quot;HELLO, WORLD&quot; |      | 0x00000C |  0xCAFE  | &quot;HELLO, WORLD&quot; |</span></span><br><span class="line"><span class="function">* +----------+----------+----------------+      +----------+----------+----------------+</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5982;&#x679C;&#x4E0D;&#x8BA9;&#x5199;lengthAdjustment = 2,&#x90A3;&#x4E48;&#x7684;&#x51FA;&#x7684;&#x5B9E;&#x9645;&#x6570;&#x636E;&#x4F1A;&#x662F;<code>0xCAFEHELLO, WOR</code></p>
+<h3 id="&#x4F8B;&#x5B50;6"><a href="#&#x4F8B;&#x5B50;6" class="headerlink" title="&#x4F8B;&#x5B50;6"></a>&#x4F8B;&#x5B50;6</h3><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">* lengthFieldOffset   = <span class="number">1</span> (= the length of HDR1)</span><br><span class="line">* lengthFieldLength   = <span class="number">2</span></span><br><span class="line">* &lt;b&gt;lengthAdjustment = 1&lt;/b&gt; (= the length of HDR2)</span><br><span class="line">* &lt;b&gt;initialBytesToStrip = 3&lt;/b&gt; (= the length of HDR1 + LEN)</span><br><span class="line">*</span><br><span class="line">* <span class="function">BEFORE <span class="title">DECODE</span> <span class="params">(<span class="number">16</span> bytes)</span>                       AFTER <span class="title">DECODE</span> <span class="params">(<span class="number">13</span> bytes)</span></span></span><br><span class="line"><span class="function">* +------+--------+------+----------------+      +------+----------------+</span></span><br><span class="line"><span class="function">* | HDR1 | Length | HDR2 | Actual Content |-----&gt;| HDR2 | Actual Content |</span></span><br><span class="line"><span class="function">* | 0xCA | 0x000C | 0xFE | &quot;HELLO, WORLD&quot; |      | 0xFE | &quot;HELLO, WORLD&quot; |</span></span><br><span class="line"><span class="function">* +------+--------+------+----------------+      +------+----------------+</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4ECE;1&#x5B57;&#x8282;&#x5904;&#x5F00;&#x59CB;&#x7684;2&#x4E2A;&#x5B57;&#x8282;&#x8868;&#x793A;&#x957F;&#x5EA6;,&#x56E0;&#x6B64;&#x7684;&#x51FA;&#x957F;&#x5EA6;&#x4E3A;&#x4ECE;&#x8FD9;&#x91CC;&#x5F00;&#x59CB;&#x7684;12(0x00000C)&#x4E2A;&#x5B57;&#x8282;,&#x6B64;&#x65F6;&#x53EA;&#x4F1A;&#x622A;&#x5230;<code>HELLO, WORL</code>,&#x901A;&#x8FC7;lengthAdjustment&#x6269;&#x5927;1&#x4E2A;&#x5B57;&#x8282;,&#x518D;&#x901A;&#x8FC7;initialBytesToStrip&#x8DF3;&#x8FC7;&#x5F00;&#x5934;&#x7684;&#x4E0D;&#x5FC5;&#x8981;&#x7684;&#x4E24;&#x6BB5;</p>
+<h3 id="&#x4F8B;&#x5B50;7"><a href="#&#x4F8B;&#x5B50;7" class="headerlink" title="&#x4F8B;&#x5B50;7"></a>&#x4F8B;&#x5B50;7</h3><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">* lengthFieldOffset   =  <span class="number">1</span></span><br><span class="line">* lengthFieldLength   =  <span class="number">2</span></span><br><span class="line">* &lt;b&gt;lengthAdjustment = -3&lt;/b&gt; (= the length of HDR1 + LEN, negative)</span><br><span class="line">* &lt;b&gt;initialBytesToStrip = 3&lt;/b&gt;</span><br><span class="line">*</span><br><span class="line">* <span class="function">BEFORE <span class="title">DECODE</span> <span class="params">(<span class="number">16</span> bytes)</span>                       AFTER <span class="title">DECODE</span> <span class="params">(<span class="number">13</span> bytes)</span></span></span><br><span class="line"><span class="function">* +------+--------+------+----------------+      +------+----------------+</span></span><br><span class="line"><span class="function">* | HDR1 | Length | HDR2 | Actual Content |-----&gt;| HDR2 | Actual Content |</span></span><br><span class="line"><span class="function">* | 0xCA | 0x0010 | 0xFE | &quot;HELLO, WORLD&quot; |      | 0xFE | &quot;HELLO, WORLD&quot; |</span></span><br><span class="line"><span class="function">* +------+--------+------+----------------+      +------+----------------+</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5F97;&#x5230;Length = 16(0x0010),&#x663E;&#x7136;&#x592A;&#x957F;&#x4E86;,<code>lengthAdjustment = -3</code>&#x8C03;&#x6574;&#x957F;&#x5EA6;,&#x518D;&#x8BBE;&#x7F6E;initialBytesToStrip&#x8DF3;&#x8FC7;&#x5F00;&#x5934;&#x7684;&#x4E0D;&#x5FC5;&#x8981;&#x7684;&#x4E24;&#x6BB5;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LengthFieldBasedFrameDecoder</span> <span class="keyword">extends</span> <span class="title">ByteToMessageDecoder</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ByteOrder byteOrder;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> maxFrameLength;<span class="comment">//&#x8FD9;&#x4E2A;&#x6570;&#x636E;&#x5305;&#x80FD;&#x5305;&#x542B;&#x7684;&#x6700;&#x5927;&#x5B57;&#x8282;&#x7684;&#x957F;&#x5EA6;</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> lengthFieldOffset;<span class="comment">//&#x8868;&#x793A;&#x957F;&#x5EA6;&#x7684;&#x5B57;&#x8282;&#x7684;&#x8D77;&#x59CB;&#x4F4D;&#x7F6E;</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> lengthFieldLength;<span class="comment">//&#x8868;&#x793A;&#x957F;&#x5EA6;&#x7684;&#x5B57;&#x8282;&#x7684;&#x957F;&#x5EA6;</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> lengthFieldEndOffset;<span class="comment">//&#x8868;&#x793A;&#x5C3E;&#x90E8;&#x7684;&#x504F;&#x79FB;&#x91CF;,lengthFieldOffset+lengthFieldLength</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> lengthAdjustment;<span class="comment">//&#x957F;&#x5EA6;&#x8C03;&#x6574;</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> initialBytesToStrip;<span class="comment">//&#x4ECE;&#x5934;&#x8DF3;&#x8FC7;</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">boolean</span> failFast;<span class="comment">//&#x7ACB;&#x5373;&#x5931;&#x8D25;</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> discardingTooLongFrame;<span class="comment">//&#x4E22;&#x5F03;&#x6A21;&#x5F0F;</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> tooLongFrameLength;<span class="comment">//&#x5F53;&#x524D;&#x4E22;&#x5F03;&#x4E86;&#x591A;&#x5C11;&#x4E2A;&#x5B57;&#x8282;</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> bytesToDiscard;</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="&#x57FA;&#x4E8E;&#x957F;&#x5EA6;&#x57DF;&#x89E3;&#x7801;&#x5668;&#x6B65;&#x9AA4;"><a href="#&#x57FA;&#x4E8E;&#x957F;&#x5EA6;&#x57DF;&#x89E3;&#x7801;&#x5668;&#x6B65;&#x9AA4;" class="headerlink" title="&#x57FA;&#x4E8E;&#x957F;&#x5EA6;&#x57DF;&#x89E3;&#x7801;&#x5668;&#x6B65;&#x9AA4;"></a>&#x57FA;&#x4E8E;&#x957F;&#x5EA6;&#x57DF;&#x89E3;&#x7801;&#x5668;&#x6B65;&#x9AA4;</h3><ol>
+<li>&#x8BA1;&#x7B97;&#x9700;&#x8981;&#x62BD;&#x53D6;&#x7684;&#x6570;&#x636E;&#x5305;&#x957F;&#x5EA6;</li>
+<li>&#x8DF3;&#x8FC7;&#x5B57;&#x8282;&#x903B;&#x8F91;&#x5904;&#x7406;</li>
+<li>&#x4E22;&#x5F03;&#x6A21;&#x5F0F;&#x4E0B;&#x7684;&#x5904;&#x7406;<br>&#x5982;&#x679C;&#x5F53;&#x524D;&#x7684;&#x957F;&#x5EA6;&#x5927;&#x4E8E;&#x957F;&#x5EA6;&#x9650;&#x5236;,&#x628A;&#x63A5;&#x4E0B;&#x6765;&#x7684;&#x5B57;&#x8282;&#x6D41;&#x4E22;&#x5F03;.<strong>&#x4E22;&#x5F03;&#x5230;&#x957F;&#x5EA6;&#x57DF;&#x91CC;&#x9762;&#x6307;&#x5B9A;&#x7684;&#x5B57;&#x8282;&#x4E3A;&#x6B62;</strong></li>
+</ol>
+<h4 id="1-&#x8BA1;&#x7B97;&#x9700;&#x8981;&#x62BD;&#x53D6;&#x7684;&#x6570;&#x636E;&#x5305;&#x957F;&#x5EA6;"><a href="#1-&#x8BA1;&#x7B97;&#x9700;&#x8981;&#x62BD;&#x53D6;&#x7684;&#x6570;&#x636E;&#x5305;&#x957F;&#x5EA6;" class="headerlink" title="1.&#x8BA1;&#x7B97;&#x9700;&#x8981;&#x62BD;&#x53D6;&#x7684;&#x6570;&#x636E;&#x5305;&#x957F;&#x5EA6;"></a>1.&#x8BA1;&#x7B97;&#x9700;&#x8981;&#x62BD;&#x53D6;&#x7684;&#x6570;&#x636E;&#x5305;&#x957F;&#x5EA6;</h4> <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.LengthFieldBasedFrameDecoder#decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf)</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> Object <span class="title">decode</span><span class="params">(ChannelHandlerContext ctx, ByteBuf in)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        <span class="keyword">if</span> (discardingTooLongFrame) {</span><br><span class="line">            <span class="keyword">long</span> bytesToDiscard = <span class="keyword">this</span>.bytesToDiscard;</span><br><span class="line">            <span class="keyword">int</span> localBytesToDiscard = (<span class="keyword">int</span>) Math.min(bytesToDiscard, in.readableBytes());</span><br><span class="line">            in.skipBytes(localBytesToDiscard);</span><br><span class="line">            bytesToDiscard -= localBytesToDiscard;</span><br><span class="line">            <span class="keyword">this</span>.bytesToDiscard = bytesToDiscard;</span><br><span class="line"></span><br><span class="line">            failIfNecessary(<span class="keyword">false</span>);</span><br><span class="line">        }</span><br><span class="line">		</span><br><span class="line">    	<span class="comment">//&#x53EF;&#x8BFB;&#x5B57;&#x8282; &#x957F;&#x5EA6;&#x672A;&#x8FBE;&#x5230;&#x5C3E;&#x90E8;&#x504F;&#x79FB;&#x91CF;,&#x6CA1;&#x6709;&#x5B9E;&#x9645;&#x5185;&#x5BB9;&#x90E8;&#x5206;,&#x89E3;&#x6790;&#x5931;&#x8D25;</span></span><br><span class="line">        <span class="keyword">if</span> (in.readableBytes() &lt; lengthFieldEndOffset) {</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        }</span><br><span class="line">		<span class="comment">//&#x8BA1;&#x7B97;&#x5B9E;&#x9645;&#x7684;&#x957F;&#x5EA6;&#x57DF;&#x504F;&#x79FB;&#x91CF;,&#x4E4B;&#x524D;&#x662F;&#x76F8;&#x5BF9;&#x7684;</span></span><br><span class="line">        <span class="keyword">int</span> actualLengthFieldOffset = in.readerIndex() + lengthFieldOffset;</span><br><span class="line">        <span class="keyword">long</span> frameLength = getUnadjustedFrameLength(in, actualLengthFieldOffset, lengthFieldLength, byteOrder);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (frameLength &lt; <span class="number">0</span>) {<span class="comment">//&#x4E0D;&#x5408;&#x6CD5;</span></span><br><span class="line">            in.skipBytes(lengthFieldEndOffset);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">CorruptedFrameExcept <span class="title">ion</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">                    <span class="string">&quot;negative pre-adjustment length field: &quot;</span> + frameLength)</span></span>;</span><br><span class="line">        }</span><br><span class="line">		<span class="comment">//&#x5F97;&#x51FA;&#x4ECE;&#x5F53;&#x524D;&#x6D41;&#x4E2D;&#x9700;&#x8981;&#x62BD;&#x53D6;&#x7684;&#x4E8C;&#x8FDB;&#x5236;&#x6570;&#x636E;&#x5305;&#x7684;&#x957F;&#x5EA6;</span></span><br><span class="line">        frameLength += lengthAdjustment + lengthFieldEndOffset;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (frameLength &lt; lengthFieldEndOffset) {<span class="comment">//&#x6709;&#x95EE;&#x9898; </span></span><br><span class="line">            in.skipBytes(lengthFieldEndOffset);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> CorruptedFrameException(</span><br><span class="line">                    <span class="string">&quot;Adjusted frame length (&quot;</span> + frameLength + <span class="string">&quot;) is less &quot;</span> +</span><br><span class="line">                    <span class="string">&quot;than lengthFieldEndOffset: &quot;</span> + lengthFieldEndOffset);</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (frameLength &gt; maxFrameLength) {</span><br><span class="line">            <span class="keyword">long</span> discard = frameLength - in.readableBytes();</span><br><span class="line">            tooLongFrameLength = frameLength;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (discard &lt; <span class="number">0</span>) {</span><br><span class="line">                <span class="comment">// buffer contains more bytes then the frameLength so we can discard all now</span></span><br><span class="line">                in.skipBytes((<span class="keyword">int</span>) frameLength);</span><br><span class="line">            } <span class="keyword">else</span> {</span><br><span class="line">                <span class="comment">// Enter the discard mode and discard everything received so far.</span></span><br><span class="line">                discardingTooLongFrame = <span class="keyword">true</span>;</span><br><span class="line">                bytesToDiscard = discard;</span><br><span class="line">                in.skipBytes(in.readableBytes());</span><br><span class="line">            }</span><br><span class="line">            failIfNecessary(<span class="keyword">true</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="comment">// never overflows because it&apos;s less than maxFrameLength</span></span><br><span class="line">        <span class="keyword">int</span> frameLengthInt = (<span class="keyword">int</span>) frameLength;</span><br><span class="line">    	<span class="comment">//&#x53EF;&#x8BFB;&#x6570;&#x636E;&#x957F;&#x662F;&#x5426;&#x5C0F;&#x4E8E;&#x8FD9;&#x6B21;&#x60F3;&#x8BFB;&#x7684;&#x6570;&#x636E;&#x957F;</span></span><br><span class="line">        <span class="keyword">if</span> (in.readableBytes() &lt; frameLengthInt) {</span><br><span class="line">            <span class="comment">//&#x53EF;&#x80FD;&#x4E0B;&#x6B21;&#x8FD8;&#x4F1A;&#x6301;&#x7EED;&#x6709;&#x6570;&#x636E;&#x5305;&#x53D1;&#x6765;,&#x5230;&#x65F6;&#x518D;&#x8FDB;&#x884C;&#x89E3;&#x7801;</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (initialBytesToStrip &gt; frameLengthInt) {</span><br><span class="line">            in.skipBytes(frameLengthInt);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> CorruptedFrameException(</span><br><span class="line">                    <span class="string">&quot;Adjusted frame length (&quot;</span> + frameLength + <span class="string">&quot;) is less &quot;</span> +</span><br><span class="line">                    <span class="string">&quot;than initialBytesToStrip: &quot;</span> + initialBytesToStrip);</span><br><span class="line">        }</span><br><span class="line">        in.skipBytes(initialBytesToStrip);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// extract frame</span></span><br><span class="line">        <span class="keyword">int</span> readerIndex = in.readerIndex();</span><br><span class="line">        <span class="keyword">int</span> actualFrameLength = frameLengthInt - initialBytesToStrip;</span><br><span class="line">        ByteBuf frame = extractFrame(ctx, in, readerIndex, actualFrameLength);</span><br><span class="line">        in.readerIndex(readerIndex + actualFrameLength);</span><br><span class="line">        <span class="keyword">return</span> frame;</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<h4 id="2-&#x8DF3;&#x8FC7;&#x5B57;&#x8282;&#x903B;&#x8F91;&#x5904;&#x7406;"><a href="#2-&#x8DF3;&#x8FC7;&#x5B57;&#x8282;&#x903B;&#x8F91;&#x5904;&#x7406;" class="headerlink" title="2.&#x8DF3;&#x8FC7;&#x5B57;&#x8282;&#x903B;&#x8F91;&#x5904;&#x7406;"></a>2.&#x8DF3;&#x8FC7;&#x5B57;&#x8282;&#x903B;&#x8F91;&#x5904;&#x7406;</h4><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.LengthFieldBasedFrameDecoder#decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf)</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> Object <span class="title">decode</span><span class="params">(ChannelHandlerContext ctx, ByteBuf in)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">    </span><br><span class="line">..&#x7701;&#x7565;&#x4E0A;&#x4E00;&#x6B65;</span><br><span class="line">    	<span class="comment">//&#x8981;&#x8DF3;&#x8FC7;&#x7684;&#x957F;&#x5EA6;&gt;&#x5F53;&#x524D;&#x6570;&#x636E;&#x5305;&#x7684;&#x957F;&#x5EA6;</span></span><br><span class="line">        <span class="keyword">if</span> (initialBytesToStrip &gt; frameLengthInt) {</span><br><span class="line">            <span class="comment">//&#x629B;&#x5F02;&#x5E38;</span></span><br><span class="line">            in.skipBytes(frameLengthInt);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> CorruptedFrameException(</span><br><span class="line">                    <span class="string">&quot;Adjusted frame length (&quot;</span> + frameLength + <span class="string">&quot;) is less &quot;</span> +</span><br><span class="line">                    <span class="string">&quot;than initialBytesToStrip: &quot;</span> + initialBytesToStrip);</span><br><span class="line">        }</span><br><span class="line">    	<span class="comment">//&#x8DF3;&#x8FC7;initialBytesToStrip</span></span><br><span class="line">        in.skipBytes(initialBytesToStrip);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// extract frame</span></span><br><span class="line">        <span class="keyword">int</span> readerIndex = in.readerIndex();</span><br><span class="line">        <span class="keyword">int</span> actualFrameLength = frameLengthInt - initialBytesToStrip;<span class="comment">//&#x5B9E;&#x9645;&#x4E0A;&#x8981;&#x8BFB;&#x5230;&#x7684;&#x5B57;&#x8282;&#x957F;&#x5EA6;</span></span><br><span class="line">    	<span class="comment">//&#x5F00;&#x59CB;&#x62BD;&#x53D6;&#x5B57;&#x8282;</span></span><br><span class="line">        ByteBuf frame = extractFrame(ctx, in, readerIndex, actualFrameLength);</span><br><span class="line">    	<span class="comment">//&#x8BFB;&#x6307;&#x9488;&#x5F80;&#x540E;&#x79FB;</span></span><br><span class="line">        in.readerIndex(readerIndex + actualFrameLength);</span><br><span class="line">        <span class="keyword">return</span> frame;</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<h4 id="3-&#x4E22;&#x5F03;&#x6A21;&#x5F0F;&#x4E0B;&#x7684;&#x5904;&#x7406;"><a href="#3-&#x4E22;&#x5F03;&#x6A21;&#x5F0F;&#x4E0B;&#x7684;&#x5904;&#x7406;" class="headerlink" title="3.&#x4E22;&#x5F03;&#x6A21;&#x5F0F;&#x4E0B;&#x7684;&#x5904;&#x7406;"></a>3.&#x4E22;&#x5F03;&#x6A21;&#x5F0F;&#x4E0B;&#x7684;&#x5904;&#x7406;</h4><p>&#x60F3;&#x62BD;&#x53D6;&#x7684;&#x957F;&#x5EA6;&gt;<code>maxFrameLength</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.LengthFieldBasedFrameDecoder#decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf)</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> Object <span class="title">decode</span><span class="params">(ChannelHandlerContext ctx, ByteBuf in)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">        <span class="keyword">if</span> (discardingTooLongFrame) {<span class="comment">//&#x4E22;&#x5F03;&#x72B6;&#x6001;</span></span><br><span class="line">            <span class="keyword">long</span> bytesToDiscard = <span class="keyword">this</span>.bytesToDiscard;<span class="comment">//&#x8FD8;&#x9700;&#x8981;&#x4E22;&#x5F03;&#x591A;&#x5C11;&#x5B57;&#x8282;</span></span><br><span class="line">            <span class="comment">//&#x4E22;&#x5F03;&#x672C;&#x6B21;&#x80FD;&#x4E22;&#x5230;&#x7684;</span></span><br><span class="line">            <span class="keyword">int</span> localBytesToDiscard = (<span class="keyword">int</span>) Math.min(bytesToDiscard, in.readableBytes());</span><br><span class="line">            in.skipBytes(localBytesToDiscard);</span><br><span class="line">            bytesToDiscard -= localBytesToDiscard;</span><br><span class="line">            <span class="keyword">this</span>.bytesToDiscard = bytesToDiscard;</span><br><span class="line"></span><br><span class="line">            failIfNecessary(<span class="keyword">false</span>);<span class="comment">//&#x51B3;&#x5B9A;&#x662F;&#x5426;&#x629B;&#x51FA;&#x5F02;&#x5E38;</span></span><br><span class="line">        }</span><br><span class="line">		</span><br><span class="line">...</span><br><span class="line">        <span class="keyword">if</span> (frameLength &gt; maxFrameLength) {</span><br><span class="line">            <span class="keyword">long</span> discard = frameLength - in.readableBytes();<span class="comment">//&#x9700;&#x8981;&#x4E22;&#x5F03;&#x591A;&#x5C11;&#x5B57;&#x8282;</span></span><br><span class="line">            tooLongFrameLength = frameLength;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (discard &lt; <span class="number">0</span>) {</span><br><span class="line">                </span><br><span class="line">                in.skipBytes((<span class="keyword">int</span>) frameLength);</span><br><span class="line">            } <span class="keyword">else</span> {</span><br><span class="line">                <span class="comment">//&#x8FD8;&#x9700;&#x8981;&#x4E22;&#x5F03;&#x66F4;&#x591A;&#x7684;&#x5B57;&#x8282;</span></span><br><span class="line">                discardingTooLongFrame = <span class="keyword">true</span>;<span class="comment">//&#x5F00;&#x542F;&#x4E22;&#x5F03;&#x6A21;&#x5F0F; </span></span><br><span class="line">                bytesToDiscard = discard;</span><br><span class="line">                in.skipBytes(in.readableBytes());</span><br><span class="line">            }</span><br><span class="line">            failIfNecessary(<span class="keyword">true</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        }</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
+<h1 id="&#x603B;&#x7ED3;"><a href="#&#x603B;&#x7ED3;" class="headerlink" title="&#x603B;&#x7ED3;"></a>&#x603B;&#x7ED3;</h1><ul>
+<li>&#x89E3;&#x7801;&#x5668;&#x62BD;&#x8C61;&#x7684;&#x89E3;&#x7801;&#x8FC7;&#x7A0B;<ol>
+<li>&#x7D2F;&#x52A0;&#x5B57;&#x8282;&#x6D41;</li>
+<li>&#x8C03;&#x7528;&#x5B50;&#x7C7B;&#x7684;decode&#x65B9;&#x6CD5;&#x8FDB;&#x884C;&#x89E3;&#x6790;</li>
+<li>&#x5C06;&#x89E3;&#x6790;&#x5230;&#x7684;ByteBuf&#x5411;&#x4E0B;&#x4F20;&#x64AD;</li>
+</ol>
+</li>
+<li>netty&#x91CC;&#x9762;&#x6709;&#x54EA;&#x4E9B;&#x62C6;&#x7BB1;&#x5373;&#x7528;&#x7684;&#x89E3;&#x7801;&#x5668;<ul>
+<li>&#x57FA;&#x4E8E;&#x56FA;&#x5B9A;&#x957F;&#x5EA6;&#x89E3;&#x7801;&#x5668;</li>
+<li>&#x57FA;&#x4E8E;&#x884C;&#x89E3;&#x7801;&#x5668;</li>
+<li>&#x57FA;&#x4E8E;&#x5206;&#x9694;&#x7B26;&#x89E3;&#x7801;&#x5668;</li>
+<li>&#x57FA;&#x4E8E;&#x957F;&#x5EA6;&#x57DF;&#x89E3;&#x7801;&#x5668;</li>
+</ul>
+</li>
+</ul>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2019/01/21/20190121-2/" title="Netty源码剖析-ByteBuf-总结">
+                    <div class="prevTitle">Netty源码剖析-ByteBuf-总结</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MDUwMy8xNzAzMA==">
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:nnkwrik@gmail.com" class="iconfont-archer email" title="email"></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/nnkwrik" class="iconfont-archer github" target="_blank" title="github"></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title="wechat">
+                  
+                  <img class="profile-qr" src="/assets/qr.png">
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:30vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#解码器基类"><span class="toc-number">1.</span> <span class="toc-text">解码器基类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ByteToMessageDecoder解码步骤"><span class="toc-number">1.1.</span> <span class="toc-text">ByteToMessageDecoder解码步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-累加字节流"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.累加字节流</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-调用子类的decode方法进行解析"><span class="toc-number">1.1.2.</span> <span class="toc-text">2.调用子类的decode方法进行解析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-将解析到的ByteBuf向下传播"><span class="toc-number">1.1.3.</span> <span class="toc-text">3.将解析到的ByteBuf向下传播</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#netty中常见的解码器分析"><span class="toc-number">2.</span> <span class="toc-text">netty中常见的解码器分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#基于固定长度解码器分析"><span class="toc-number">2.1.</span> <span class="toc-text">基于固定长度解码器分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于行解码器"><span class="toc-number">2.2.</span> <span class="toc-text">基于行解码器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于分隔符解码器分析"><span class="toc-number">2.3.</span> <span class="toc-text">基于分隔符解码器分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-行处理器"><span class="toc-number">2.3.1.</span> <span class="toc-text">1.行处理器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-找到最小分隔符"><span class="toc-number">2.3.2.</span> <span class="toc-text">2.找到最小分隔符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-解码"><span class="toc-number">2.3.3.</span> <span class="toc-text">3.解码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于长度域解码器分析"><span class="toc-number">2.4.</span> <span class="toc-text">基于长度域解码器分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#重要参数"><span class="toc-number">2.4.1.</span> <span class="toc-text">重要参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#例子"><span class="toc-number">2.4.2.</span> <span class="toc-text">例子</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#例子2"><span class="toc-number">2.4.3.</span> <span class="toc-text">例子2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#例子3"><span class="toc-number">2.4.4.</span> <span class="toc-text">例子3</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#例子4"><span class="toc-number">2.4.5.</span> <span class="toc-text">例子4</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#例子5"><span class="toc-number">2.4.6.</span> <span class="toc-text">例子5</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#例子6"><span class="toc-number">2.4.7.</span> <span class="toc-text">例子6</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#例子7"><span class="toc-number">2.4.8.</span> <span class="toc-text">例子7</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#基于长度域解码器步骤"><span class="toc-number">2.4.9.</span> <span class="toc-text">基于长度域解码器步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-计算需要抽取的数据包长度"><span class="toc-number">2.4.9.1.</span> <span class="toc-text">1.计算需要抽取的数据包长度</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-跳过字节逻辑处理"><span class="toc-number">2.4.9.2.</span> <span class="toc-text">2.跳过字节逻辑处理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-丢弃模式下的处理"><span class="toc-number">2.4.9.3.</span> <span class="toc-text">3.丢弃模式下的处理</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 58
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href="/2019/01/24/20190124/">Netty源码剖析-解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/21</span><a class="archive-post-title" href="/2019/01/21/20190121-2/">Netty源码剖析-ByteBuf-总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/21</span><a class="archive-post-title" href="/2019/01/21/20190121/">Netty源码剖析-ByteBuf-3</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/19</span><a class="archive-post-title" href="/2019/01/19/20190119/">Netty源码剖析-ByteBuf-2</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href="/2019/01/18/20190118/">校招准备视频笔记-高级知识点</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span><a class="archive-post-title" href="/2019/01/17/20190117-1/">校招准备视频笔记-设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span><a class="archive-post-title" href="/2019/01/17/20190117/">校招准备视频笔记-面向对象</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href="/2019/01/15/20190115-1/">校招准备视频笔记-编码技巧</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href="/2019/01/15/20190115/">校招准备视频笔记-程序设计语言基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-3/">校招准备视频笔记-数据库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-2/">校招准备视频笔记-网络</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-1/">校招准备视频笔记-操作系统</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107/">Netty源码剖析-ByteBuf-1</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106-1/">校招准备视频</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106/">Netty源码剖析-pipeline创建</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228-1/">Netty源码剖析-新连接接入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228/">Netty源码剖析-NioEventLoop执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-2/">Netty源码剖析-NioEventLoop创建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-1/">Netty源码剖析-Netty服务端启动的过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225/">Netty源码剖析-Netty基本组件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224-3/">高性能MySQL-第5章-创建高性能的索引</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224/">高性能MySQL-第1章-MySQL架构与历史</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-7/">高性能MySQL-第4章-Schema与数据类型优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-6/">🍓 JVM知识点合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-5/">JVM知识点合集-4.Class文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-4/">JVM知识点合集-3.GC算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-3/">JVM知识点合集-2.内存结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-2/">JVM知识点合集-1.类的加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223/">深入理解Java虚拟机-第12章-Java内存模型与线程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222-2/">深入理解Java虚拟机-第8章-虚拟机字节码执行引擎</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222/">深入理解Java虚拟机-第7章-虚拟机类加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181221/">深入理解Java虚拟机-第6章-类文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/19</span><a class="archive-post-title" href="/2018/12/19/20181219/">重构的艺术？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/30</span><a class="archive-post-title" href="/2018/11/30/20181130/">万能的Jackson</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span><a class="archive-post-title" href="/2018/11/20/20181120/">Guava的Cache</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/19</span><a class="archive-post-title" href="/2018/11/19/20181119/">Spring Cloud中使用RabbitMQ的两种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href="/2018/11/12/20181112/">深入理解Java虚拟机-第4章-虚拟机性能监控与故障处理工具</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href="/2018/11/10/20181110/">深入理解Java虚拟机-第3章-垃圾收集器与内存分配策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109-2/">深入理解Java虚拟机-第2章-Java内存区域与内存溢出异常</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109/">深入理解Java虚拟机-第1章-走近Java</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/05</span><a class="archive-post-title" href="/2018/11/05/20181105/">Java并发编程实战-第7章-取消与关闭</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-5/">🍤 并发操作合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-4/">并发操作合集-11.ThreadLocal</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-3/">并发操作合集-10.Executor和线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-2/">并发操作合集-9.并发工具：Semaphore,CountDownLatch,CyclicBarrier</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104/">并发操作合集-8.并发容器：CopyOnWriteArrayList</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181102-3/">并发操作合集-7.并发容器：BlockingQueue</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102-2/">并发操作合集-6.并发容器：ConcurrentHashMap</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102/">并发操作合集-5.原子变量和volatile</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181030-2/">并发操作合集-1.线程的生命周期</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span><a class="archive-post-title" href="/2018/10/30/20181030/">Java并发编程实战-第6章-任务执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/29</span><a class="archive-post-title" href="/2018/10/29/20181029/">Java并发编程实战-第5章-基础构建模块</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href="/2018/10/28/20181028/">Java并发编程实战-第4章-对象的组合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span><a class="archive-post-title" href="/2018/10/27/20181027/">Java并发编程实战-第3章-对象的共享</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/25</span><a class="archive-post-title" href="/2018/10/25/20181025/">Java并发编程实战-第2章-线程安全性</a>
+        </li>
+    
+    </ul></div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发操作合集"><span class="iconfont-archer">&#xe606;</span>并发操作合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM"><span class="iconfont-archer">&#xe606;</span>JVM</span>
+    
+        <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
+    
+        <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
+    
+        <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
+    
+        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
+    
+        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
+    
+        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br>
+    1、请确保node版本大于6.2<br>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
+    
+        <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="框架使用"><span class="iconfont-archer">&#xe60a;</span>框架使用</span>
+    
+        <span class="sidebar-category-name" data-categories="瞎逼叨"><span class="iconfont-archer">&#xe60a;</span>瞎逼叨</span>
+    
+        <span class="sidebar-category-name" data-categories="JVM知识点合集"><span class="iconfont-archer">&#xe60a;</span>JVM知识点合集</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "曽生"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
