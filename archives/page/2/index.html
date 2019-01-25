@@ -361,6 +361,52 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2019/01/07/20190107-3/">
+            
+                <span>校招准备视频笔记-数据库</span>
+        </a>
+        <div class="abstract-content">
+            &#x5173;&#x7CFB;&#x578B;&#x6570;&#x636E;&#x5E93;
+&#x57FA;&#x4E8E;&#x5173;&#x7CFB;&#x4EE3;&#x6570;&#x7406;&#x8BBA;
+&#x7F3A;&#x70B9;:&#x8868;&#x7ED3;&#x6784;&#x4E0D;&#x76F4;&#x89C2;(&#x4E8C;&#x7EF4;&#x8868;),&#x5B9E;&#x73B0;&#x590D;&#x6742;,&#x901F;&#x5EA6;&#x6162;
+&#x4F18;&#x70B9;:&#x5065;&#x58EE;&#x6027;&#x9AD8;(&#x5916;&#x952E;&#x7B49;),&#x793E;&#x533A;&#x5E9E;&#x5927;
+&#x5206;&#x5E03;&#x5F0F;&#x7CFB;&#x7EDF;,&#x5BF9;&#x4E8E;&#x5065;&#x58EE;&#x6027;&#x7684;&#x9700;&#x6C42;&#x4E0D;&#x9AD8;(&#x9AD8;&#x4E5F;&#x6CA1;&#x7528;,&#x56E0;&#x4E3A;&#x662F;&#x76F8;&#x4E92;&#x72EC;&#x7ACB;&#x7684;) -&gt; NoSQL(&#x5065;&#x58EE;&#x6027;&#x4F4E;,&#x6027;&#x80FD;&#x9AD8;)
+
+
+
+&#x793A;&#x4F8B;
+
+product&#x8868;&#x4E2D;&#x7684;&#x5916;&#x952E;&#x8BBE;&#x7F6E;&#x5230;&#x4E86;category&#x8868;.
+&#x6C47;&#x603B;&#x8868;:
+1select * from product join category
+&#x7ED3;&#x679C;&#x4E3A;8&#x6761;&#x8BB0;&#x5F55;,4(product) * 2(category) = 8
+12select * from product p join category con p.categoryId = c.categoryId
+...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/01/07</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class="abstract-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java校招面试】">【Java校招面试】</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2019/01/07/20190107-2/">
             
                 <span>校招准备视频笔记-网络</span>
@@ -484,9 +530,9 @@ ByteBuf&#x7ED3;&#x6784;&#x4EE5;&#x53CA;&#x91CD;&#x8981;APIByteBuf&#x7684;&#x7ED3
             
             <div class="abstract-tags">
     
-        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
-    
         <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
     
@@ -530,9 +576,9 @@ ChannelInboundHandler,...
             
             <div class="abstract-tags">
     
-        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
-    
         <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
     
@@ -723,52 +769,6 @@ NioEventLoop&#x521B;&#x5EFA;1234567new NioEventLoopGroup()[&#x7EBF;&#x7A0B;&#x65
         </a>
         <div class="abstract-content">
             &#x4E00;&#x4E2A;&#x7B80;&#x5355;&#x7684;netty&#x670D;&#x52A1;&#x7AEF;12345678910111213141516171819202122232425262728293031public final class Server {    public static void main(String[] args) throws Exception {        //&#x4E24;&#x79CD;&#x7C7B;&#x578B;&#x7684;event loop        EventLoopGroup bossGroup = new NioEventLoopGroup(1);    //&#x5BF9;&#x5E94;com.imooc.netty.ch2.Server.start,&#x65B0;&#x8FDE;&#x63A5;        EventLoopGroup workerGroup = new NioEventLoopGroup();   //&#x5BF9;&#x5E94;com.imooc.netty.ch2.Client.start&#xFF0C;&#x5BF9;&#x8FDE;&#x63A5;&#x8FDB;&#x884C;&#x903B;&#x8F91;&#x64CD;&#x4F5C;        try {            ServerBootstrap b = new ServerBootstrap();            b.group(bossGroup, workerGroup)//&#x914D;&#x7F6E;&#x4E24;&#x79CD;event loop                    .channel(NioServerSocketChannel.class)//&#x8BBE;&#x7F6E;&#x670D;&#x52A1;&#x7AEF;&#x7684;channel                    .childOption(ChannelOption.TCP_NODELAY, true)//&#x7ED9;&#x6BCF;&#x4E2A;&#x8FDE;&#x63A5;&#x8BBE;&#x7F6E;TC...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/12/25</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/12/25/20181225/">
-            
-                <span>Netty源码剖析-Netty基本组件</span>
-        </a>
-        <div class="abstract-content">
-            Netty&#x57FA;&#x672C;&#x7EC4;&#x4EF6;netty&#x4E2D;&#x4E8E;&#x5BF9;&#x4E8E;&#x539F;&#x59CB;socket&#x76F8;&#x5BF9;&#x5E94;&#x7684;&#x6982;&#x5FF5;
-
-NioEventLoop&#xFF08;Nio&#x4E8B;&#x4EF6;&#x5FAA;&#x73AF;&#xFF09;
-&#x76D1;&#x542C;&#x4EE5;&#x4E0B;&#x4E24;&#x79CD;
-
-&#x65B0;&#x8FDE;&#x63A5;&#x7684;&#x63A5;&#x5165;
-&#x6570;&#x636E;&#x7684;&#x8BFB;&#x5199;
-
-Channel
-&#x8868;&#x793A;&#x8FDE;&#x63A5;&#x3002;&#x5BF9;&#x5E94;&#x4E8E;&#x5728;IO&#x4E2D;&#x7684;Socket&#xFF0C;NIO&#x4E2D;&#x5219;&#x662F;SocketChannel&#x3002;&#x5B9E;&#x9645;&#x4E0A;&#x5C31;&#x662F;Socket&#x7684;&#x62BD;&#x8C61;&#x3002;
-ByteBuf
-&#x5C01;&#x88C5;&#x4E86;&#x4E00;&#x4E9B;&#x63A5;&#x53D7;&#x53D1;&#x9001;&#x6570;&#x636E;&#x7684;API
-ChannelHandler
-&#x5BF9;&#x4E8C;&#x8FDB;&#x5236;&#x534F;&#x8BAE;&#x8FDB;&#x884C;&#x6570;&#x636E;&#x5305;&#x7684;&#x62C6;&#x5206;&#xFF0C;&#x8F6C;&#x6362;&#x4E3A;Java&#x7C7B;&#x578B;&#x7B49;&#xFF0C;&#x670D;&#x52A1;&#x7AEF;&#x5BF9;&#x6570;&#x636E;&#x7684;&#x903B;&#x8F91;&#x3002;
-PipeLine
-&#x903B;&#x8F9...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -1722,9 +1722,28 @@ PipeLine
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 58
+        Total : 59
         </div>
         <!-- search  -->
         
@@ -1741,6 +1760,11 @@ PipeLine
     
     <div class="archive-year"> 2019 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href="/2019/01/25/20190125/">Netty源码剖析-编码</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -2046,13 +2070,13 @@ PipeLine
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
-        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
-    
         <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
     
-        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
-    
         <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
+    
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
     
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
