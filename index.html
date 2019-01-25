@@ -374,6 +374,46 @@ height:50vh;
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2019/01/25/20190125-2/">
+            
+                <span>Netty源码剖析-性能优化工具类</span>
+        </a>
+        <div class="abstract-content">
+            
+FastThreadLocal
+Recycler
+
+FastThreadLocalFastThreadLocal&#x7684;&#x4F7F;&#x7528;&#x793A;&#x4F8B;&#x4EE3;&#x7801;
+12345678910111213141516171819private static FastThreadLocal&lt;Object&gt; threadLocal0 = new FastThreadLocal&lt;Object&gt;() {    @Override    protected Object initialValue() {        return new Object();    }};public static void main(String[] args) {    //&#x4E24;&#x4E2A;&#x7EBF;&#x7A0B;    new Thread(() -&gt; {        Object object = threadLocal0.get();        // .... do with object        System.out.println(object);    }).start();    new Thread(() -&gt; {        Object object = threadLocal0.get();        // .... do with object        System.out.println(object);    }).start();}
+&#x4E0E;ThreadLocal&#x76F8;&#x540C;,&#x5C31;&#x7B97;Thread&#x4E2D;&#x83B7;&#x53D6;&#x4E86;&#x540C;&#x4E00;&#x4E2A;object,&#x4E24;&#x4E2A;&#x7EBF;&#x7A0B;&#x5BF9;&#x8FD9;&#x4E2A;object&#x7684;&#x66F4;&#x53D8;&#x90FD;&#x4E0D;&#x4F1A;&#x76F8;&#x4E92;&#x5F71;&#x54CD;
+&#x793A;&#x4F8B;&#x7684;&#x8FD0;...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/01/25</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class="abstract-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2019/01/25/20190125/">
             
                 <span>Netty源码剖析-编码</span>
@@ -752,47 +792,6 @@ Singleton&#x7684;&#x521B;&#x5EFA;
 
 &#x4E25;&#x683C;&#x5B9A;&#x4E49;&#x9012;&#x5F52;&#x51FD;&#x6570;&#x4F5C;&#x7528;,&#x5305;&#x62EC;&#x51FD;&#x6570;,&#x8FD4;&#x56DE;&#x503C;,Side-effect(&#x526F;&#x4F5C;&#x7528;)
 &#x5148;&#x5199;&#x4E00;&#x822C;,&#x518D;&#x540E;&#x7279;&#x6B8A;(&#x5982;,&#...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/01/15</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="【Java校招面试】">【Java校招面试】</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2019/01/15/20190115/">
-            
-                <span>校招准备视频笔记-程序设计语言基础</span>
-        </a>
-        <div class="abstract-content">
-            
-&#x7A0B;&#x5E8F;&#x8BBE;&#x8BA1;&#x8BED;&#x8A00;&#x5F52;&#x7C7B;
-&#x6570;&#x636E;&#x7C7B;&#x578B;
-
-&#x7A0B;&#x5E8F;&#x8BBE;&#x8BA1;&#x8BED;&#x8A00;&#x7C7B;&#x578B;&#x68C0;&#x67E5;&#x7684;&#x65B9;&#x5F0F;&#x5F52;&#x7C7B;
-&#x7F16;&#x8BD1;&#x65F6;:C,C++,Java,Go&#x2026;&#x8BA9;&#x4ED6;&#x5728;&#x7F16;&#x8BD1;&#x65F6;&#x80FD;&#x62A5;&#x9519;,&#x66F4;&#x52A0;&#x5065;&#x58EE;&#x53D8;&#x91CF;&#x4E00;&#x65E6;&#x5B9A;&#x4E49;&#x4E86;,&#x4ED6;&#x5C31;&#x4E00;&#x76F4;&#x662F;&#x90A3;&#x4E2A;&#x7C7B;&#x578B;.&#x5982; int a,String b
-&#x8FD0;&#x884C;&#x65F6;:Python,Perl,JavaScript,Ruby..&#x8FD0;&#x884C;&#x65F6;&#x624D;&#x4F1A;&#x76F4;&#x5230;&#x4E00;&#x4E2A;&#x53D8;&#x91CF;&#x7684;&#x5177;&#x4F53;&#x7C7B;&#x578B;
-
-&#x8FD0;&#x884C;/&#x7F16;&#x8BD1;&#x7684;&#x65B9;&#x5F0F;&#x5F52;&#x7C7B;
-&#x7F16;&#x8BD1;&#x4E3A;&#x673A;&#x5668;&#x4EE3;&#x7801;&#x8FD0;&#x884C;:C,C++&#x901F;&#x5EA6;&#x5FEB;
-&#x7F16;&#x8BD1;&#x4E3A;&#x4E2D;&#x95F4;&#x4EE3;&#x7801;,&#x5728;&#x865A;&#x62DF;&#x673A;&#x8FD0;&#x884C;:Java...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -1843,9 +1842,28 @@ Singleton&#x7684;&#x521B;&#x5EFA;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 59
+        Total : 60
         </div>
         <!-- search  -->
         
@@ -1862,6 +1880,11 @@ Singleton&#x7684;&#x521B;&#x5EFA;
     
     <div class="archive-year"> 2019 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href="/2019/01/25/20190125-2/">Netty源码剖析-性能优化工具类</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -2134,12 +2157,12 @@ Singleton&#x7684;&#x521B;&#x5EFA;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     

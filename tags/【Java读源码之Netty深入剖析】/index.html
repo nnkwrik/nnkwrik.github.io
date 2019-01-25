@@ -361,6 +361,46 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2019/01/25/20190125-2/">
+            
+                <span>Netty源码剖析-性能优化工具类</span>
+        </a>
+        <div class="abstract-content">
+            
+FastThreadLocal
+Recycler
+
+FastThreadLocalFastThreadLocal&#x7684;&#x4F7F;&#x7528;&#x793A;&#x4F8B;&#x4EE3;&#x7801;
+12345678910111213141516171819private static FastThreadLocal&lt;Object&gt; threadLocal0 = new FastThreadLocal&lt;Object&gt;() {    @Override    protected Object initialValue() {        return new Object();    }};public static void main(String[] args) {    //&#x4E24;&#x4E2A;&#x7EBF;&#x7A0B;    new Thread(() -&gt; {        Object object = threadLocal0.get();        // .... do with object        System.out.println(object);    }).start();    new Thread(() -&gt; {        Object object = threadLocal0.get();        // .... do with object        System.out.println(object);    }).start();}
+&#x4E0E;ThreadLocal&#x76F8;&#x540C;,&#x5C31;&#x7B97;Thread&#x4E2D;&#x83B7;&#x53D6;&#x4E86;&#x540C;&#x4E00;&#x4E2A;object,&#x4E24;&#x4E2A;&#x7EBF;&#x7A0B;&#x5BF9;&#x8FD9;&#x4E2A;object&#x7684;&#x66F4;&#x53D8;&#x90FD;&#x4E0D;&#x4F1A;&#x76F8;&#x4E92;&#x5F71;&#x54CD;
+&#x793A;&#x4F8B;&#x7684;&#x8FD0;...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/01/25</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class="abstract-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2019/01/25/20190125/">
             
                 <span>Netty源码剖析-编码</span>
@@ -730,40 +770,6 @@ Netty&#x65B0;&#x8FDE;&#x63A5;&#x63A5;&#x5165;&#x5904;&#x7406;&#x903B;&#x8F91;
 &#x7ED9;&#x8FD9;&#x4E2A;&#x5BA2;&#x6237;&#x7AEF;channel&#x5206;&#x914D;&#x4E00;&#x4E2A;NioEventLoop,&#x5E76;&#x628A;&#x5B83;&#x6CE8;&#x518C;&#x5230;NioEventLoop&#x7684;selector&#x4E0A;,&#x4E4B;&#x540E;&#x90FD;&#x7531;&#x8FD9;&#x4E2A;NioEventLoop&#x8FDB;&#x884C;&#x7BA1;&#x7406;
 
 &#x5411;s...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/12/28</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/12/28/20181228/">
-            
-                <span>Netty源码剖析-NioEventLoop执行</span>
-        </a>
-        <div class="abstract-content">
-            NioEventLoop&#x6267;&#x884C;nioEventLoop&#x5728;&#x7EBF;&#x7A0B;&#x88AB;&#x9996;&#x6B21;&#x521B;&#x5EFA;&#x7684;&#x65F6;&#x5019;&#x4F1A;&#x901A;&#x8FC7;run&#x65B9;&#x6CD5;&#x6267;&#x884C; (SingleThreadEventExecutor.this.run()).Netty&#x57FA;&#x672C;&#x7EC4;&#x4EF6;&#x90A3;&#x6B21;&#x7684;&#x7B14;&#x8BB0;&#x91CC;&#x6709;&#x6D89;&#x53CA;&#x5230;.
-NioEventLoop.run()1234567run() -&gt; for(;;)	|	select()[&#x68C0;&#x67E5;&#x662F;&#x5426;&#x6709;io&#x4E8B;&#x4EF6;]	|	processSelectKeys()[&#x5904;&#x7406;io&#x4E8B;&#x4EF6;]	|	runAllTask()[&#x5904;&#x7406;&#x5F02;&#x6B65;&#x4EFB;&#x52A1;&#x961F;&#x5217;,&#x5C31;&#x662F;&#x4E0A;&#x4E00;&#x8282;&#x6700;&#x540E;&#x8BF4;&#x7684;taskQueue]
-&#x5B9E;&#x9645;&#x4EE3;&#x7801;io.netty.channel.nio.NioEventLoop#run
-123456789101112131415161718192021222324252627282930313233@Overrideprotected void run() {    for (;;) {        switch (selectStrategy.calculateStrategy(selectNowSupplier, hasTasks())) {            case SelectStrategy.CONTINUE:                con...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -1736,9 +1742,28 @@ NioEventLoop.run()1234567run() -&gt; for(;;)	|	select()[&#x68C0;&#x67E5;&#x662F;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 59
+        Total : 60
         </div>
         <!-- search  -->
         
@@ -1755,6 +1780,11 @@ NioEventLoop.run()1234567run() -&gt; for(;;)	|	select()[&#x68C0;&#x67E5;&#x662F;
     
     <div class="archive-year"> 2019 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href="/2019/01/25/20190125-2/">Netty源码剖析-性能优化工具类</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -2027,12 +2057,12 @@ NioEventLoop.run()1234567run() -&gt; for(;;)	|	select()[&#x68C0;&#x67E5;&#x662F;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     
