@@ -416,7 +416,7 @@ height:30vh;
             <main class="main post-page">
     <article class="article-entry">
         <p>&#x89E3;&#x7801;:&#x628A;&#x4E00;&#x4E32;&#x4E8C;&#x8FDB;&#x5236;&#x6570;&#x636E;&#x6D41;&#x89E3;&#x6790;&#x6210;ByteBuf</p>
-<p> <img src="20190124/1548308752766.png" alt="1548308752766"></p>
+<p><img src="1548308752766.png" alt="1548308752766"></p>
 <ul>
 <li>&#x89E3;&#x7801;&#x5668;&#x62BD;&#x8C61;&#x7684;&#x89E3;&#x7801;&#x8FC7;&#x7A0B;</li>
 <li>netty&#x91CC;&#x9762;&#x6709;&#x54EA;&#x4E9B;&#x62C6;&#x7BB1;&#x5373;&#x7528;&#x7684;&#x89E3;&#x7801;&#x5668;</li>
@@ -466,7 +466,8 @@ height:30vh;
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//io.netty.handler.codec.LineBasedFrameDecoder#findEndOfLine</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">findEndOfLine</span><span class="params">(<span class="keyword">final</span> ByteBuf buffer)</span> </span>{</span><br><span class="line">        <span class="keyword">int</span> i = buffer.forEachByte(ByteProcessor.FIND_LF);<span class="comment">//&#x627E;\n</span></span><br><span class="line">        <span class="keyword">if</span> (i &gt; <span class="number">0</span> &amp;&amp; buffer.getByte(i - <span class="number">1</span>) == <span class="string">&apos;\r&apos;</span>) {<span class="comment">//&#x627E;\r\n</span></span><br><span class="line">            i--;</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">return</span> i;</span><br><span class="line">    }</span><br></pre></td></tr></tbody></table></figure>
 <p><img src="1548311912272.png" alt="1548311912272"></p>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> Object <span class="title">decode</span><span class="params">(ChannelHandlerContext ctx, ByteBuf buffer)</span> <span class="keyword">throws</span> Exception </span>{</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> eol = findEndOfLine(buffer);<span class="comment">//&#x627E;&#x8FD9;&#x4E00;&#x884C;&#x7684;&#x7ED3;&#x5C3E;&#x5904;,\n&#x6216;\r\n</span></span><br><span class="line">    <span class="keyword">if</span> (!discarding) {<span class="comment">//&#x9996;&#x6B21;&#x4F1A;&#x8FDB;&#x5165;</span></span><br><span class="line">        <span class="keyword">if</span> (eol &gt;= <span class="number">0</span>) {<span class="comment">//&#x627E;&#x5230;&#x6362;&#x884C;&#x7B26;</span></span><br><span class="line">            <span class="keyword">final</span> ByteBuf frame;</span><br><span class="line">            <span class="comment">//&#x4ECE;&#x6362;&#x884C;&#x7B26;&#x5230;&#x523B;&#x5EA6;&#x5B57;&#x8282;&#x4E4B;&#x95F4;&#x7684;&#x957F;&#x5EA6;.&#x4E5F;&#x5C31;&#x662F;&#x89E3;&#x7801;&#x540E;&#x7684;&#x6570;&#x636E;&#x5305;&#x7684;&#x957F;&#x5EA6;</span></span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> length = eol - buffer.readerIndex();</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> delimLength = buffer.getByte(eol) == <span class="string">&apos;\r&apos;</span>? <span class="number">2</span> : <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (length &gt; maxLength) {<span class="comment">//&#x672C;&#x884C;&#x7684;&#x957F;&#x5EA6;&#x8D85;&#x8FC7;&#x4E86;&#x957F;&#x5EA6;&#x9650;&#x5236;</span></span><br><span class="line">                <span class="comment">//&#x79FB;&#x52A8;&#x5230;&#x6362;&#x884C;&#x7B26;&#x4E4B;&#x540E;&#x7684;&#x6570;&#x636E;.&#x6709;&#x5C31;&#x662F;&#x8BF4;&#x5B83;&#x4F1A;&#x628A;&#x672C;&#x884C;&#x7684;&#x6570;&#x636E;&#x8FDB;&#x884C;&#x4E22;&#x5F03;</span></span><br><span class="line">                buffer.readerIndex(eol + delimLength);</span><br><span class="line">                fail(ctx, length);<span class="comment">//&#x4F20;&#x64AD;&#x5F02;&#x5E38;</span></span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">            }</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (stripDelimiter) {<span class="comment">//&#x662F;&#x5426;&#x4E0D;&#x7B97;&#x5165;&#x5206;&#x9694;&#x7B26;</span></span><br><span class="line">                frame = buffer.readRetainedSlice(length);</span><br><span class="line">                buffer.skipBytes(delimLength);</span><br><span class="line">            } <span class="keyword">else</span> {</span><br><span class="line">                frame = buffer.readRetainedSlice(length + delimLength);</span><br><span class="line">            }</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> frame;</span><br><span class="line">        } <span class="keyword">else</span> {<span class="comment">//&#x6CA1;&#x627E;&#x5230;&#x6362;&#x884C;&#x7B26;</span></span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> length = buffer.readableBytes();</span><br><span class="line">            <span class="keyword">if</span> (length &gt; maxLength) {<span class="comment">//&#x5982;&#x679C;&#x8D85;&#x8FC7;&#x6700;&#x5927;&#x957F;&#x5EA6;&#x4E86; </span></span><br><span class="line">                discardedBytes = length;</span><br><span class="line">                <span class="comment">//&#x628A;&#x8BFB;&#x6307;&#x9488;&#x79FB;&#x5230;&#x5199;&#x6307;&#x9488;,&#x6240;&#x6709;&#x6570;&#x636E;&#x90FD;&#x8FDB;&#x884C;&#x4E22;&#x5F03;</span></span><br><span class="line">                buffer.readerIndex(buffer.writerIndex());</span><br><span class="line">                discarding = <span class="keyword">true</span>;<span class="comment">//&#x6807;&#x8BB0;&#x4E3A;&#x4E22;&#x5F03;&#x6A21;&#x5F0F;</span></span><br><span class="line">                <span class="keyword">if</span> (failFast) {<span class="comment">//&#x4E22;&#x5F03;&#x524D;&#x89E6;&#x53D1;&#x5F02;&#x5E38;</span></span><br><span class="line">                    <span class="comment">//&#x4F20;&#x64AD;&#x5F02;&#x5E38;</span></span><br><span class="line">                    fail(ctx, <span class="string">&quot;over &quot;</span> + discardedBytes);</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line">            <span class="comment">//&#x6CA1;&#x6709;&#x6362;&#x884C;&#x7B26;,&#x4F46;&#x662F;&#x6240;&#x6709;&#x6570;&#x636E;&#x7684;&#x957F;&#x5EA6;&#x4E0D;&#x8D85;&#x8FC7;&#x957F;&#x5EA6;&#x9650;&#x5236;,&#x8FD4;&#x56DE;null.</span></span><br><span class="line">            <span class="comment">//&#x4E5F;&#x5C31;&#x662F;&#x4E0D;&#x8FDB;&#x884C;&#x89E3;&#x6790;</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        }</span><br><span class="line">    } <span class="keyword">else</span> {<span class="comment">//&#x4E22;&#x5F03;&#x6A21;&#x5F0F;&#x4E0B;.&#x5C31;&#x662F;&#x6CA1;&#x6709;&#x627E;&#x5230;&#x6362;&#x884C;&#x7B26;,&#x800C;&#x4E14;&#x5168;&#x6587;&#x5927;&#x5C0F;&#x53C8;&#x8D85;&#x8FC7;&#x9650;&#x5236;&#x6240;&#x4EE5;&#x8FDB;&#x884C;&#x4E22;&#x5F03;&#x7684;&#x90A3;&#x6BB5;&#x903B;&#x8F91;</span></span><br><span class="line">        <span class="keyword">if</span> (eol &gt;= <span class="number">0</span>) {<span class="comment">//&#x4E22;&#x5F03;&#x6A21;&#x5F0F;&#x4E0B;&#x627E;&#x5230;&#x4E86;&#x6362;&#x884C;&#x7B26;,</span></span><br><span class="line">            <span class="comment">//&#x76F4;&#x63A5;&#x4E22;&#x5F03;&#x672C;&#x884C;,&#x6307;&#x9488;&#x79FB;&#x5230;&#x4E0B;&#x4E00;&#x884C;&#x5F00;&#x59CB;&#x5904;</span></span><br><span class="line">            <span class="comment">//&#x524D;&#x9762;&#x5DF2;&#x7ECF;&#x4E22;&#x5F03;&#x7684;+&#x8FD9;&#x6B21;&#x8981;&#x4E22;&#x5F03;&#x7684;</span></span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> length = discardedBytes + eol - buffer.readerIndex();</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> delimLength = buffer.getByte(eol) == <span class="string">&apos;\r&apos;</span>? <span class="number">2</span> : <span class="number">1</span>;</span><br><span class="line">            buffer.readerIndex(eol + delimLength);</span><br><span class="line">            discardedBytes = <span class="number">0</span>;</span><br><span class="line">            discarding = <span class="keyword">false</span>;<span class="comment">//&#x8FD4;&#x56DE;&#x975E;&#x4E22;&#x5F03;&#x6A21;&#x5F0F;</span></span><br><span class="line">            <span class="keyword">if</span> (!failFast) {<span class="comment">//&#x4E22;&#x5F03;&#x4E4B;&#x540E;&#x89E6;&#x53D1;&#x5F02;&#x5E38;,&#x4E24;&#x8005;&#x53EA;&#x4F1A;&#x89E6;&#x53D1;&#x4E00;&#x4E2A;</span></span><br><span class="line">                fail(ctx, length);</span><br><span class="line">            }</span><br><span class="line">        } <span class="keyword">else</span> {<span class="comment">//&#x4E22;&#x5F03;&#x6A21;&#x5F0F;&#x4E0B;&#x6CA1;&#x6709;&#x6362;&#x884C;&#x7B26;</span></span><br><span class="line">            <span class="comment">//&#x76F4;&#x63A5;&#x4E22;&#x5F03;&#x5230;writeIndex</span></span><br><span class="line">            discardedBytes += buffer.readableBytes();</span><br><span class="line">            buffer.readerIndex(buffer.writerIndex());</span><br><span class="line">        }</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;<span class="comment">//&#x65E0;&#x8BBA;&#x662F;&#x5426;&#x6709;&#x6362;&#x884C;,&#x5728;&#x4E22;&#x5F03;&#x6A21;&#x5F0F;&#x4E0B;&#x90FD;&#x4E0D;&#x4F1A;&#x89E3;&#x6790;</span></span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
-<p>&#x6CA1;&#x6709;&#x627E;&#x5230;&#x6362;&#x884C;&#x7B26;,&#x5C31;&#x662F;&#x4E0B;&#x9762;&#x8FD9;&#x79CD;&#x60C5;&#x51B5;:<img src="20190124/1548312578724.png" alt="1548312578724"></p>
+<p>&#x6CA1;&#x6709;&#x627E;&#x5230;&#x6362;&#x884C;&#x7B26;,&#x5C31;&#x662F;&#x4E0B;&#x9762;&#x8FD9;&#x79CD;&#x60C5;&#x51B5;:</p>
+<p><img src="1548312578724.png" alt="1548312578724"></p>
 <p>&#x5982;&#x679C;&#x8FD9;&#x4E2A;readIndex&#x548C;writeIndex&#x4E4B;&#x95F4;&#x7684;&#x957F;&#x5EA6;&#x5927;&#x4E8E;&#x957F;&#x5EA6;&#x9650;&#x5236;&#x7684;&#x8BDD;,&#x4F1A;&#x628A;&#x6240;&#x6709;&#x6570;&#x636E;&#x8FDB;&#x884C;&#x4E22;&#x5F03;,&#x5E76;&#x6807;&#x8BB0;&#x4E3A;&#x4E22;&#x5F03;&#x6A21;&#x5F0F;</p>
 <h2 id="&#x57FA;&#x4E8E;&#x5206;&#x9694;&#x7B26;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;"><a href="#&#x57FA;&#x4E8E;&#x5206;&#x9694;&#x7B26;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;" class="headerlink" title="&#x57FA;&#x4E8E;&#x5206;&#x9694;&#x7B26;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;"></a>&#x57FA;&#x4E8E;&#x5206;&#x9694;&#x7B26;&#x89E3;&#x7801;&#x5668;&#x5206;&#x6790;</h2><p><code>io.netty.handler.codec.DelimiterBasedFrameDecoder</code></p>
 <p>&#x5B83;&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;:</p>
@@ -1593,9 +1594,40 @@ top:30vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 61
+        Total : 62
         </div>
         <!-- search  -->
         
@@ -1612,6 +1644,11 @@ top:30vh;
     
     <div class="archive-year"> 2019 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span><a class="archive-post-title" href="/2019/02/10/20190210/">Netty源码剖析-总结</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -1695,7 +1732,7 @@ top:30vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106-1/">校招准备视频</a>
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106-1/">事件和异常的传播</a>
         </li>
     
     
