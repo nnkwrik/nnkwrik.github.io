@@ -519,7 +519,7 @@ height:30vh;
 <p>&#x6700;&#x540E;&#x56DE;&#x5230;ServiceConfig#doExportUrls().&#x6B64;&#x65F6;,&#x672C;&#x5730;exporter&#x548C;&#x8FDC;&#x7A0B;exporter&#x7684;&#x4E24;&#x4E2A;exporter&#x90FD;&#x88AB;&#x4FDD;&#x5B58;&#x5230;exporters&#x4E2D;&#x4E86;</p>
 <p><img src="1555381073652.png" alt="1555381073652"></p>
 <h2 id="&#x603B;&#x7ED3;"><a href="#&#x603B;&#x7ED3;" class="headerlink" title="&#x603B;&#x7ED3;"></a>&#x603B;&#x7ED3;</h2><p>&#x56DE;&#x987E;&#x4E00;&#x4E0B;&#x4ECE;&#x670D;&#x52A1;&#x5BFC;&#x51FA;&#x5230;&#x6CE8;&#x518C;&#x670D;&#x52A1;&#x7684;&#x6D41;&#x7A0B;</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">ServiceConfig#doExportUrls()</span><br><span class="line">	|</span><br><span class="line">	loadRegistries() /&#x6784;&#x5EFA;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;URL</span><br><span class="line">	|</span><br><span class="line">	doExportUrlsFor1Protocol() //&#x904D;&#x5386;&#x534F;&#x8BAE;,&#x6BCF;&#x4E2A;&#x534F;&#x8BAE;&#x4E0A;&#x90FD;&#x8FDB;&#x884C;&#x5BFC;&#x51FA;</span><br><span class="line">		|</span><br><span class="line">		1. &#x6784;&#x5EFA;ProviderURL</span><br><span class="line">		2. exportLocal() //&#x5BFC;&#x51FA;&#x670D;&#x52A1;&#x5230;&#x672C;&#x5730;,&#x6784;&#x5EFA;exporter</span><br><span class="line">		3. RegistryProtocol#export() //&#x5BFC;&#x51FA;&#x670D;&#x52A1;&#x5230;&#x8FDC;&#x7A0B;,&#x6784;&#x5EFA;exporter</span><br><span class="line">			|</span><br><span class="line">			1. doLocalExport()</span><br><span class="line">				|</span><br><span class="line">				DubboProtocol#export //&#x5BFC;&#x51FA;&#x670D;&#x52A1;,&#x5B9E;&#x9645;&#x5C31;&#x662F;&#x5F00;&#x542F;Provider&#x7684;Netty&#x670D;&#x52A1;&#x5668;</span><br><span class="line">			|</span><br><span class="line">			2. register() //&#x5411;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x6CE8;&#x518C;&#x670D;&#x52A1;</span><br><span class="line">				|</span><br><span class="line">				1. &#x521B;&#x5EFA;ZookeeperRegistry,&#x6784;&#x5EFA;zk&#x5BA2;&#x6237;&#x7AEF;</span><br><span class="line">				2. ZookeeperRegistry#register() //&#x6839;&#x636E;providerURL&#x521B;&#x5EFA;zk&#x8282;&#x70B9;,&#x5B8C;&#x6210;&#x670D;&#x52A1;&#x6CE8;&#x518C;.</span><br><span class="line">				3. &#x521B;&#x5EFA;&#x5E76;&#x8FD4;&#x56DE; DestroyableExporter //&#x6CA1;&#x8BB2;</span><br><span class="line">		|</span><br><span class="line">		4. &#x4FDD;&#x5B58;&#x8FD9;&#x4E24;&#x4E2A;exporter</span><br></pre></td></tr></tbody></table></figure><script>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">ServiceConfig#doExportUrls()</span><br><span class="line">	|</span><br><span class="line">	loadRegistries() /&#x6784;&#x5EFA;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;URL</span><br><span class="line">	|</span><br><span class="line">	doExportUrlsFor1Protocol() //&#x904D;&#x5386;&#x534F;&#x8BAE;,&#x6BCF;&#x4E2A;&#x534F;&#x8BAE;&#x4E0A;&#x90FD;&#x8FDB;&#x884C;&#x5BFC;&#x51FA;</span><br><span class="line">		|</span><br><span class="line">		1. &#x6784;&#x5EFA;ProviderURL</span><br><span class="line">		2. exportLocal() //&#x5BFC;&#x51FA;&#x670D;&#x52A1;&#x5230;&#x672C;&#x5730;,&#x6784;&#x5EFA;exporter</span><br><span class="line">		3. RegistryProtocol#export() //&#x5BFC;&#x51FA;&#x670D;&#x52A1;&#x5230;&#x8FDC;&#x7A0B;,&#x6784;&#x5EFA;exporter</span><br><span class="line">			|</span><br><span class="line">			1. doLocalExport()</span><br><span class="line">				|</span><br><span class="line">				DubboProtocol#export //&#x5BFC;&#x51FA;&#x670D;&#x52A1;,&#x5B9E;&#x9645;&#x5C31;&#x662F;&#x5F00;&#x542F;Provider&#x7684;Netty&#x670D;&#x52A1;&#x5668;</span><br><span class="line">			|</span><br><span class="line">			2. &#x6784;&#x5EFA;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x5B9E;&#x4F8B;,&#x540C;&#x65F6;&#x521B;&#x5EFA;zk&#x5BA2;&#x6237;&#x7AEF;&#x8FDE;&#x63A5;</span><br><span class="line">			3. register() //&#x5411;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x6CE8;&#x518C;&#x670D;&#x52A1;</span><br><span class="line">				|</span><br><span class="line">				1. &#x521B;&#x5EFA;ZookeeperRegistry,&#x6784;&#x5EFA;zk&#x5BA2;&#x6237;&#x7AEF;</span><br><span class="line">				2. ZookeeperRegistry#register() //&#x6839;&#x636E;providerURL&#x521B;&#x5EFA;zk&#x8282;&#x70B9;,&#x5B8C;&#x6210;&#x670D;&#x52A1;&#x6CE8;&#x518C;.</span><br><span class="line">				3. &#x521B;&#x5EFA;&#x5E76;&#x8FD4;&#x56DE; DestroyableExporter //&#x6CA1;&#x8BB2;</span><br><span class="line">		|</span><br><span class="line">		4. &#x4FDD;&#x5B58;&#x8FD9;&#x4E24;&#x4E2A;exporter</span><br></pre></td></tr></tbody></table></figure><script>
         document.querySelectorAll('.github-emoji')
           .forEach(el => {
             if (!el.dataset.src) { return; }
@@ -690,12 +690,6 @@ top:30vh;
     <div class="sidebar-content sidebar-content-show-archive">
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
-    
-    
     
     
     
@@ -1958,12 +1952,12 @@ top:30vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
         </li>
     
     
@@ -1996,13 +1990,13 @@ top:30vh;
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
-        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
-    
-        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
-    
         <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
     
+        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
+    
         <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
     
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
@@ -2030,9 +2024,9 @@ top:30vh;
     
         <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
     
-        <span class="sidebar-tag-name" data-tags="ProtoBuffer"><span class="iconfont-archer">&#xe606;</span>ProtoBuffer</span>
-    
         <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
+    
+        <span class="sidebar-tag-name" data-tags="ProtoBuffer"><span class="iconfont-archer">&#xe606;</span>ProtoBuffer</span>
     
         <span class="sidebar-tag-name" data-tags="dubbo"><span class="iconfont-archer">&#xe606;</span>dubbo</span>
     
