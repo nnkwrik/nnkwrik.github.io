@@ -1,0 +1,2142 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="曽生">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="曽生">
+    
+    <meta name="keywords" content="nnkwrik,曽生,曾丽桦">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Dubbo源码跟踪实录-从Consumer启动到服务引入 · 农场主的黑科技.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin="">
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin="">
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"输入关键字 :D","hits_empty":"没有找到相关信息 :(","hits_stats":"找到 ${hits} 个相关信息,耗时 ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'LXR3VBZBS6',
+                apiKey: '17d6d4ab4ba943bab3232eced0eea766',
+                indexName: 'index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">农场主的黑科技.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Dubbo源码跟踪实录-从Consumer启动到服务引入</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href="/">农场主的黑科技.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:30vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/andrew-leu-1113236-unsplash.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Dubbo源码跟踪实录-从Consumer启动到服务引入
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class="post-intro-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="dubbo">dubbo</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Dubbo源码跟踪实录">Dubbo源码跟踪实录</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">3.2k</span>阅读时长: <span class="post-count reading-time">19 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/04/19</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="&#x524D;&#x8A00;"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</h2><p>&#x4E0A;&#x4E00;&#x7AE0;&#x4E3B;&#x8981;&#x5BF9;Provider&#x7684;&#x542F;&#x52A8;&#x8FC7;&#x7A0B;&#x8FDB;&#x884C;&#x4E86;&#x5206;&#x6790;,&#x63A5;&#x4E0B;&#x6765;&#x4E3B;&#x8981;&#x770B;Consumer&#x7684;&#x542F;&#x52A8;&#x8FC7;&#x7A0B;.Consumer&#x7684;&#x8BB8;&#x591A;&#x90E8;&#x5206;&#x4E0E;Provider&#x90FD;&#x662F;&#x5BF9;&#x79F0;&#x7684;,&#x751A;&#x81F3;&#x6709;&#x5F88;&#x591A;&#x901A;&#x7528;&#x7684;&#x4EE3;&#x7801;,&#x6587;&#x4E2D;&#x4F1A;&#x7701;&#x7565;&#x4E0E;Provider&#x4E2D;&#x76F8;&#x540C;&#x90E8;&#x5206;&#x7684;&#x89E3;&#x91CA;.&#x6240;&#x8C13;&#x7684;&#x670D;&#x52A1;&#x5F15;&#x5165;&#x5C31;&#x662F;Consumer&#x5BF9;&#x5728;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x83B7;&#x53D6;&#x5230;&#x7684;&#x4FE1;&#x606F;&#x521B;&#x5EFA;Invoker&#x7684;&#x8FC7;&#x7A0B;.</p>
+<p>&#x6587;&#x7AE0;&#x4E2D;&#x8FD0;&#x884C;&#x7684;&#x662F;&#x5B98;&#x65B9;&#x7684;Demo:</p>
+<p><a href="https://github.com/apache/incubator-dubbo/tree/dubbo-2.6.4/dubbo-demo" target="_blank" rel="noopener">https://github.com/apache/incubator-dubbo/tree/dubbo-2.6.4/dubbo-demo</a></p>
+<p>Demo&#x4E2D;&#x91C7;&#x7528;&#x7684;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x662F;multicast&#x7684;&#x65B9;&#x5F0F;,&#x4F46;dubbo&#x66F4;&#x63D0;&#x5021;&#x628A;zookeeper&#x4F5C;&#x4E3A;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;.&#x6240;&#x4EE5;&#x6211;&#x628A;</p>
+<p>dubbo-demo-consumer/src/main/resources/META-INF/spring/dubbo-demo-consumer.xml</p>
+<p>dubbo-demo-provider/src/main/resources/META-INF/spring/dubbo-demo-provider.xml&#x4E2D;&#x7684;<code>&lt;dubbo:registry&gt;</code>&#x6807;&#x7B7E;&#x66FF;&#x6362;&#x6210;&#x4E86;&#x4EE5;&#x4E0B;:</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;dubbo:registry address=&quot;zookeeper://127.0.0.1:2181&quot;/&gt;</span><br></pre></td></tr></tbody></table></figure>
+<blockquote>
+<p>&#x63A8;&#x8350;&#x9605;&#x8BFB;:</p>
+<p><a href="https://dubbo.incubator.apache.org/zh-cn/" target="_blank" rel="noopener">https://dubbo.incubator.apache.org/zh-cn/</a></p>
+<p><a href="https://segmentfault.com/blog/dubboanalysis" target="_blank" rel="noopener">https://segmentfault.com/blog/dubboanalysis</a></p>
+</blockquote>
+<h2 id="Consumer&#x542F;&#x52A8;"><a href="#Consumer&#x542F;&#x52A8;" class="headerlink" title="Consumer&#x542F;&#x52A8;"></a>Consumer&#x542F;&#x52A8;</h2><p><img src="1555648817449.png" alt="1555648817449"></p>
+<p>&#x4ECE;&#x4E0A;&#x56FE;&#x53EF;&#x4EE5;&#x770B;&#x5230;Consumer&#x7684;&#x542F;&#x52A8;&#x65B9;&#x5F0F;&#x4E0E;Provider&#x6709;&#x8BB8;&#x591A;&#x76F8;&#x4F3C;&#x7684;&#x5730;&#x65B9;,&#x4ECE;xml&#x52A0;&#x8F7D;&#x914D;&#x7F6E;,&#x6700;&#x540E;&#x8C03;&#x7528;ReferenceConfig&#x7684;init()&#x5F00;&#x59CB;&#x670D;&#x52A1;&#x5F15;&#x5165;&#x7684;&#x8FC7;&#x7A0B;.&#x4E0E;Provider&#x4E0D;&#x540C;&#x7684;&#x662F;,Provider&#x662F;&#x5728;Spring&#x5BB9;&#x5668;&#x5237;&#x65B0;&#x65F6;&#x5F00;&#x59CB;&#x542F;&#x52A8;,&#x800C;Consumer&#x9ED8;&#x8BA4;&#x5219;&#x662F;&#x5BF9;&#x5E94;&#x7684;&#x670D;&#x52A1;&#x88AB;&#x6CE8;&#x518C;&#x5230;&#x5176;&#x4ED6;&#x7C7B;&#x65F6;&#x5F00;&#x59CB;&#x542F;&#x52A8;.</p>
+<h1 id="&#x670D;&#x52A1;&#x5F15;&#x5165;"><a href="#&#x670D;&#x52A1;&#x5F15;&#x5165;" class="headerlink" title="&#x670D;&#x52A1;&#x5F15;&#x5165;"></a>&#x670D;&#x52A1;&#x5F15;&#x5165;</h1><p>&#x5728;ReferenceConfig#init&#x7684;&#x76EE;&#x7684;&#x662F;&#x521B;&#x5EFA;xml&#x914D;&#x7F6E;&#x671F;&#x671B;&#x7684;&#x670D;&#x52A1;&#x7684;&#x4EE3;&#x7406;&#x5BF9;&#x8C61;:</p>
+<ol>
+<li>&#x521B;&#x5EFA;&#x670D;&#x52A1;&#x63A5;&#x53E3;&#x7684;Class&#x5BF9;&#x8C61;,&#x8FDB;&#x884C;&#x4FDD;&#x5B58;</li>
+<li>&#x6536;&#x96C6;&#x60C5;&#x62A5;,&#x6784;&#x5EFA;map</li>
+<li>ref = createProxy(map);//&#x521B;&#x5EFA;&#x4EE3;&#x7406;&#x5BF9;&#x8C61;</li>
+<li>&#x628A;ref&#x521B;&#x5EFA;&#x6210;ConsumerModel,&#x628A;ConsumerModel&#x4FDD;&#x5B58;&#x5230;ApplicationModel</li>
+</ol>
+<p>&#x6240;&#x4EE5;&#x6211;&#x4EEC;&#x53EF;&#x4EE5;&#x4ECE;<code>ReferenceConfig#createProxy</code>&#x5F00;&#x59CB;&#x5206;&#x6790;.</p>
+<p>&#x6B64;&#x65F6;&#x7684;&#x53C2;&#x6570;map&#x5E26;&#x5165;&#x7684;&#x662F;&#x4E00;&#x4E9B;&#x6D88;&#x8D39;&#x8005;&#x7684;&#x914D;&#x7F6E;,&#x5982;&#x4E0B;:</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">map = {HashMap@1964}  size = 10</span><br><span class="line"> 0 = {HashMap$Node@1985} &quot;side&quot; -&gt; &quot;consumer&quot;</span><br><span class="line"> 1 = {HashMap$Node@1986} &quot;application&quot; -&gt; &quot;demo-consumer&quot;</span><br><span class="line"> 2 = {HashMap$Node@1987} &quot;register.ip&quot; -&gt; &quot;172.17.0.1&quot;</span><br><span class="line"> 3 = {HashMap$Node@1988} &quot;methods&quot; -&gt; &quot;sayHello&quot;</span><br><span class="line"> 4 = {HashMap$Node@1989} &quot;qos.port&quot; -&gt; &quot;33333&quot;</span><br><span class="line"> 5 = {HashMap$Node@1990} &quot;dubbo&quot; -&gt; &quot;2.0.2&quot;</span><br><span class="line"> 6 = {HashMap$Node@1991} &quot;pid&quot; -&gt; &quot;28271&quot;</span><br><span class="line"> 7 = {HashMap$Node@1992} &quot;check&quot; -&gt; &quot;false&quot;</span><br><span class="line"> 8 = {HashMap$Node@1993} &quot;interface&quot; -&gt; &quot;com.alibaba.dubbo.demo.DemoService&quot;</span><br><span class="line"> 9 = {HashMap$Node@1994} &quot;timestamp&quot; -&gt; &quot;1555634256457&quot;</span><br></pre></td></tr></tbody></table></figure>
+<p>Provider&#x4E2D;&#x4E5F;&#x51FA;&#x73B0;&#x4E86;&#x7C7B;&#x4F3C;&#x7684;&#x914D;&#x7F6E;map,&#x5F53;&#x65F6;ProviderURL&#x5C31;&#x662F;&#x57FA;&#x4E8E;&#x8FD9;&#x4E48;&#x4E00;&#x4E2A;map&#x6784;&#x5EFA;&#x7684;.&#x7EE7;&#x7EED;&#x6765;&#x770B;Consumer&#x4E2D;&#x7684;&#x505A;&#x6CD5;.</p>
+<p>ReferenceConfig#createProxy&#x4E2D;&#x505A;&#x7684;&#x4E8B;&#x60C5;:</p>
+<ol>
+<li><p>&#x6839;&#x636E;&#x914D;&#x7F6E;&#x6784;&#x5EFA;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x7684;url.&#x56E0;&#x4E3A;Provider&#x76F8;&#x540C;&#x4E5F;&#x662F;&#x8C03;&#x7528;&#x7684;loadRegistries(),&#x6240;&#x4EE5;&#x8FD9;&#x91CC;&#x5C31;&#x4E0D;&#x5206;&#x6790;&#x4E86;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">registry://127.0.0.1:2181/com.alibaba.dubbo.registry.RegistryService?</span><br><span class="line">application=demo-consumer&amp; </span><br><span class="line">dubbo=2.0.2&amp;</span><br><span class="line">pid=30305&amp;</span><br><span class="line">qos.port=33333&amp;</span><br><span class="line">registry=zookeeper&amp;</span><br><span class="line">timestamp=1555635096072</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>&#x5728;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;url&#x4E2D;&#x52A0;&#x5165;Consumer&#x76F8;&#x5173;&#x7684;&#x914D;&#x7F6E;map(&#x6709;&#x70B9;&#x50CF;Provider&#x7684;export).&#x7ED3;&#x679C;&#x4E3A;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">registry://127.0.0.1:2181/com.alibaba.dubbo.registry.RegistryService?</span><br><span class="line">application=demo-consumer&amp;</span><br><span class="line">dubbo=2.0.2&amp;</span><br><span class="line">pid=30305&amp;</span><br><span class="line">qos.port=33333&amp;</span><br><span class="line"></span><br><span class="line">refer=application%3Ddemo-consumer%26check%3Dfalse%26dubbo%3D2.0.2%26interface%3Dcom.alibaba.dubbo.demo.DemoService%26methods%3DsayHello%26pid%3D30305%26qos.port%3D33333%26register.ip%3D172.17.0.1%26side%3Dconsumer%26timestamp%3D1555634966726&amp;</span><br><span class="line"></span><br><span class="line">registry=zookeeper&amp;</span><br><span class="line">timestamp=1555635096072</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>refprotocol.refer(interfaceClass, url)<br>&#x63A5;&#x4E0B;&#x5C31;&#x662F;&#x521B;&#x5EFA;&#x670D;&#x52A1;&#x7684;invoker&#x7684;&#x8FC7;&#x7A0B;.&#x4E5F;&#x5C31;&#x662F;&#x8C03;&#x7528;protocol.refer&#x521B;&#x5EFA;invoker.<br>&#x5982;&#x679C;&#x6709;&#x591A;&#x4E2A;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#xFF0C;&#x591A;&#x4E2A;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#xFF0C;&#x8FD9;&#x4E2A;&#x65F6;&#x5019;&#x4F1A;&#x5F97;&#x5230;&#x4E00;&#x7EC4; Invoker &#x5B9E;&#x4F8B;&#xFF0C;&#x6B64;&#x65F6;&#x9700;&#x8981;&#x901A;&#x8FC7;&#x96C6;&#x7FA4;&#x7BA1;&#x7406;&#x7C7B; Cluster &#x5C06;&#x591A;&#x4E2A; Invoker &#x5408;&#x5E76;&#x6210;&#x4E00;&#x4E2A;&#x5B9E;&#x4F8B;.</p>
+</li>
+<li><p>proxyFactory.getProxy(invoker)<br>&#x4E3A;&#x8BE5;Invoker&#x521B;&#x5EFA;Proxy</p>
+</li>
+</ol>
+<p>&#x63A5;&#x4E0B;&#x6765;&#x4E3B;&#x8981;&#x5206;&#x6790;&#x8FD9;&#x91CC;&#x7684;&#x7B2C;3&#x6B65;&#x548C;&#x7B2C;4&#x6B65;</p>
+<h2 id="&#x521B;&#x5EFA;Invoker"><a href="#&#x521B;&#x5EFA;Invoker" class="headerlink" title="&#x521B;&#x5EFA;Invoker"></a>&#x521B;&#x5EFA;Invoker</h2><p>&#x521B;&#x5EFA;invoker&#x662F;&#x901A;&#x8FC7;&#x8C03;&#x7528;protocol.refer().&#x800C;&#x8FD9;&#x91CC;&#x6709;&#x4E24;&#x4E2A;protocol&#x5BF9;&#x8C61;,&#x5206;&#x522B;&#x662F;:RegistryProtocol&#x548C;DubboProtocol.&#x5728;ReferenceConfig&#x4E2D;&#x8C03;&#x7528;&#x7684;&#x662F;&#x54EA;&#x4E00;&#x4E2A;&#x5462;?</p>
+<p>&#x7B54;&#x6848;&#x662F;ReferenceConfig&#x9996;&#x5148;&#x4F1A;&#x8C03;&#x7528;RegistryProtocol,&#x518D;&#x7531;RegistryProtocol&#x8C03;&#x7528;DubboProtocol&#x7684;refer&#x65B9;&#x6CD5;&#x7684;.</p>
+<p>&#x6240;&#x4EE5;&#x8FD9;&#x91CC;&#x5148;&#x4ECE;RegistryProtocol&#x5F00;&#x59CB;&#x5206;&#x6790;,&#x4EE3;&#x7801;&#x5982;&#x4E0B;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="meta">@SuppressWarnings</span>(<span class="string">&quot;unchecked&quot;</span>)</span><br><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">Invoker&lt;T&gt; <span class="title">refer</span><span class="params">(Class&lt;T&gt; type, URL url)</span> <span class="keyword">throws</span> RpcException </span>{</span><br><span class="line">    <span class="comment">//&#x628A;&#x534F;&#x8BAE;&#x5934;&#x6539;&#x6210;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;,zookeeper://</span></span><br><span class="line">    url = url.setProtocol(url.getParameter(Constants.REGISTRY_KEY, Constants.DEFAULT_REGISTRY)).removeParameter(Constants.REGISTRY_KEY);</span><br><span class="line">    <span class="comment">// &#x53D6;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x5B9E;&#x4F8B;,&#x521B;&#x5EFA;zk&#x5BA2;&#x6237;&#x7AEF;&#x8FDE;&#x63A5;</span></span><br><span class="line">    Registry registry = registryFactory.getRegistry(url);<span class="comment">//&#x83B7;&#x53D6;zookeeperRegistry</span></span><br><span class="line">    <span class="keyword">if</span> (RegistryService.class.equals(type)) {</span><br><span class="line">        <span class="keyword">return</span> proxyFactory.getInvoker((T) registry, type, url);</span><br><span class="line">    }</span><br><span class="line">    <span class="comment">//${&#x65E0;&#x5173;&#x4EE3;&#x7801;}</span></span><br><span class="line">    <span class="comment">// &#x8C03;&#x7528; doRefer &#x7EE7;&#x7EED;&#x6267;&#x884C;&#x670D;&#x52A1;&#x5F15;&#x7528;&#x903B;&#x8F91;</span></span><br><span class="line">    <span class="keyword">return</span> doRefer(cluster, registry, type, url);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5B83;&#x505A;&#x4E86;&#x4EC0;&#x4E48;?</p>
+<ol>
+<li><p>&#x5BF9;&#x4F20;&#x5165;&#x7684;url&#x7684;&#x534F;&#x8BAE;&#x5934;&#x8FDB;&#x884C;&#x66F4;&#x6539;,&#x6784;&#x5EFA;&#x4E3A;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;URL</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">registry://127.0.0.1:2181/com.alibaba.dubbo.registry.RegistryService?</span><br><span class="line">application=demo-consumer&amp;</span><br><span class="line">dubbo=2.0.2&amp;</span><br><span class="line">pid=9914&amp;</span><br><span class="line">qos.port=33333&amp;</span><br><span class="line"></span><br><span class="line">refer=application%3Ddemo-consumer%26check%3Dfalse%26dubbo%3D2.0.2%26interface%3Dcom.alibaba.dubbo.demo.DemoService%26methods%3DsayHello%26pid%3D9914%26qos.port%3D33333%26register.ip%3D172.17.0.1%26side%3Dconsumer%26timestamp%3D1555638452753&amp;</span><br><span class="line"></span><br><span class="line">registry=zookeeper&amp;</span><br><span class="line">timestamp=1555638452774</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>&#x6784;&#x5EFA;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x5B9E;&#x4F8B;,&#x540C;&#x65F6;&#x521B;&#x5EFA;zk&#x5BA2;&#x6237;&#x7AEF;&#x8FDE;&#x63A5;.&#x8FD9;&#x91CC;registry&#x662F;<code>ZookeeperRegistry</code></p>
+</li>
+<li><p>&#x8C03;&#x7528;&#x91CD;&#x8F7D;&#x65B9;&#x6CD5;</p>
+</li>
+</ol>
+<p>&#x6784;&#x5EFA;ZookeeperRegistry&#x4E0E;Provider&#x7C7B;&#x4F3C;,&#x8FD9;&#x91CC;&#x5C31;&#x4E0D;&#x5206;&#x6790;&#x4E86;.&#x7EE7;&#x7EED;&#x770B;&#x5B83;&#x8C03;&#x7528;&#x7684;&#x91CD;&#x8F7D;&#x65B9;&#x6CD5;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> &lt;T&gt; <span class="function">Invoker&lt;T&gt; <span class="title">doRefer</span><span class="params">(Cluster cluster, Registry registry, Class&lt;T&gt; type, URL url)</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="comment">// &#x521B;&#x5EFA; RegistryDirectory &#x5B9E;&#x4F8B;</span></span><br><span class="line">    RegistryDirectory&lt;T&gt; directory = <span class="keyword">new</span> RegistryDirectory&lt;T&gt;(type, url);</span><br><span class="line">    directory.setRegistry(registry);<span class="comment">//zookeeperRegistry</span></span><br><span class="line">    directory.setProtocol(protocol);<span class="comment">//DubboProtocol</span></span><br><span class="line">    <span class="comment">// all attributes of REFER_KEY</span></span><br><span class="line">    Map&lt;String, String&gt; parameters </span><br><span class="line">        = <span class="keyword">new</span> HashMap&lt;String, String&gt;(directory.getUrl().getParameters());</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// &#x6784;&#x5EFA;&#x8BA2;&#x9605;&#x8005;(&#x6D88;&#x8D39;&#x8005;)URL</span></span><br><span class="line">    URL subscribeUrl = <span class="keyword">new</span> URL(Constants.CONSUMER_PROTOCOL, parameters.remove(Constants.REGISTER_IP_KEY), <span class="number">0</span>, type.getName(), parameters);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (!Constants.ANY_VALUE.equals(url.getServiceInterface())</span><br><span class="line">        &amp;&amp; url.getParameter(Constants.REGISTER_KEY, <span class="keyword">true</span>)) {</span><br><span class="line">        <span class="comment">//&#x8C03;&#x7528;ZookeeperRegistry.doSubscribe&#x8FDB;&#x884C;&#x6CE8;&#x518C;</span></span><br><span class="line">        registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,</span><br><span class="line">                                                     Constants.CHECK_KEY, String.valueOf(<span class="keyword">false</span>)));</span><br><span class="line">    }</span><br><span class="line">    <span class="comment">//&#x8BA2;&#x9605; providers&#x3001;configurators&#x3001;routers &#x7B49;&#x8282;&#x70B9;&#x6570;&#x636E;</span></span><br><span class="line">    <span class="comment">//subscribeURL&#x52A0;&#x5165;category=providers,configurators,routers</span></span><br><span class="line">    directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY,</span><br><span class="line">                                                  Constants.PROVIDERS_CATEGORY</span><br><span class="line">                                                  + <span class="string">&quot;,&quot;</span> + Constants.CONFIGURATORS_CATEGORY</span><br><span class="line">                                                  + <span class="string">&quot;,&quot;</span> + Constants.ROUTERS_CATEGORY));</span><br><span class="line"></span><br><span class="line">    Invoker invoker = cluster.join(directory);</span><br><span class="line">    ProviderConsumerRegTable.registerConsumer(invoker, url, subscribeUrl, directory);</span><br><span class="line">    <span class="keyword">return</span> invoker;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5728;&#x8FD9;&#x4E00;&#x90E8;&#x5206;&#x6211;&#x4EEC;</p>
+<p>&#x8FD9;&#x4E00;&#x90E8;&#x5206;&#x505A;&#x4E86;&#x4EC0;&#x4E48;?</p>
+<ol>
+<li><p>&#x521B;&#x5EFA;&#x4E86;&#x4E00;&#x4E2A;<code>RegistryDirectory</code>&#x7684;&#x5B9E;&#x4F8B;.&#x544A;&#x8BC9;&#x5B83;zookeeperRegistry&#x548C;DubboProtocol</p>
+</li>
+<li><p>&#x6784;&#x5EFA;&#x8BA2;&#x9605;&#x8005;(&#x6D88;&#x8D39;&#x8005;)URL.</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">consumer://172.17.0.1/com.alibaba.dubbo.demo.DemoService?</span><br><span class="line">application=demo-consumer&amp;check=false&amp;dubbo=2.0.2&amp;</span><br><span class="line">interface=com.alibaba.dubbo.demo.DemoService&amp;</span><br><span class="line">methods=sayHello&amp;</span><br><span class="line">pid=25186&amp;</span><br><span class="line">qos.port=33333&amp;</span><br><span class="line">side=consumer&amp;</span><br><span class="line">timestamp=1555652263169</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>&#x8C03;&#x7528;ZookeeperRegistry.doRegister()&#x628A;&#x8BA2;&#x9605;&#x8005;URL&#x521B;&#x5EFA;&#x5E76;&#x653E;&#x7F6E;&#x5230;&#x5408;&#x9002;&#x7684;&#x8282;&#x70B9;&#x4E0A;</p>
+<p><img src="20190419/1555652275844.png" alt="1555652275844"></p>
+</li>
+<li><p>subscribeURL&#x52A0;&#x5165;category=providers,configurators,routers</p>
+</li>
+<li><p>directory.subscribe(subscribeURL).&#x8BA2;&#x9605; providers&#x3001;configurators&#x3001;routers &#x7B49;&#x8282;&#x70B9;&#x6570;&#x636E;</p>
+</li>
+<li><p>Invoker invoker = cluster.join(directory).&#x628A;directory&#x6784;&#x5EFA;&#x6210;Invoker&#x5E76;&#x8FD4;&#x56DE;</p>
+</li>
+</ol>
+<p>&#x4E0B;&#x4E00;&#x5C0F;&#x8282;&#x7B80;&#x5355;&#x5206;&#x6790;&#x4E00;&#x4E0B;directory.subscribe(subscribeURL)&#x7684;&#x8FC7;&#x7A0B;,&#x5B83;&#x6700;&#x7EC8;&#x4F1A;&#x8C03;&#x7528;DubboProtocol&#x7684;refer()</p>
+<h3 id="&#x8BA2;&#x9605;&#x670D;&#x52A1;"><a href="#&#x8BA2;&#x9605;&#x670D;&#x52A1;" class="headerlink" title="&#x8BA2;&#x9605;&#x670D;&#x52A1;"></a>&#x8BA2;&#x9605;&#x670D;&#x52A1;</h3><figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//RegistryDirectory#subscribe</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">subscribe</span><span class="params">(URL url)</span> </span>{</span><br><span class="line">    setConsumerUrl(url);</span><br><span class="line">    <span class="comment">//&#x8C03;&#x7528;zkRegistry&#x7684;subscribe&#x65B9;&#x6CD5;.NotifyListener = this</span></span><br><span class="line">    registry.subscribe(url, <span class="keyword">this</span>);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x5B83;&#x8C03;&#x7528;&#x4E86;zkRegistry&#x7684;subscribe().&#x6211;&#x4EEC;&#x7EE7;&#x7EED;&#x5F80;&#x4E0B;&#x770B;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//com.alibaba.dubbo.registry.zookeeper.ZookeeperRegistry#doSubscribe</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doSubscribe</span><span class="params">(<span class="keyword">final</span> URL url, <span class="keyword">final</span> NotifyListener listener)</span> </span>{</span><br><span class="line">    <span class="keyword">if</span> (Constants.ANY_VALUE.equals(url.getServiceInterface())) {</span><br><span class="line">        <span class="comment">//${&#x65E0;&#x5173;&#x4EE3;&#x7801;}</span></span><br><span class="line">    } <span class="keyword">else</span> {</span><br><span class="line">        <span class="comment">// &#x5904;&#x7406;&#x6307;&#x5B9A; Service &#x5C42;&#x7684;&#x53D1;&#x8D77;&#x8BA2;&#x9605;&#xFF0C;&#x4F8B;&#x5982;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x7684;&#x8BA2;&#x9605;.&#x8C03;&#x7528;&#x4E24;&#x6B21;notify</span></span><br><span class="line">        List&lt;URL&gt; urls = <span class="keyword">new</span> ArrayList&lt;URL&gt;();</span><br><span class="line">        <span class="comment">// &#x628A;url&#x4E2D;&#x7684;category&#x9879;&#x6539;&#x6210;zk&#x7684;Path,&#x5982;&#x4E0B;:</span></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">                 * categoriesPath:</span></span><br><span class="line"><span class="comment">                 * 0 = &quot;/dubbo/com.alibaba.dubbo.demo.DemoService/providers&quot;</span></span><br><span class="line"><span class="comment">                 * 1 = &quot;/dubbo/com.alibaba.dubbo.demo.DemoService/configurators&quot;</span></span><br><span class="line"><span class="comment">                 * 2 = &quot;/dubbo/com.alibaba.dubbo.demo.DemoService/routers&quot;</span></span><br><span class="line"><span class="comment">                 */</span></span><br><span class="line">        <span class="keyword">for</span> (String path : toCategoriesPath(url)) {</span><br><span class="line">            <span class="comment">// &#x83B7;&#x5F97;&#x76D1;&#x542C;&#x5668;&#x96C6;&#x5408;</span></span><br><span class="line">            ConcurrentMap&lt;NotifyListener, ChildListener&gt; listeners = zkListeners.get(url);</span><br><span class="line">            <span class="comment">// &#x5982;&#x679C;&#x6CA1;&#x6709;&#x5219;&#x521B;&#x5EFA;</span></span><br><span class="line">            <span class="keyword">if</span> (listeners == <span class="keyword">null</span>) {</span><br><span class="line">                zkListeners.putIfAbsent(url, <span class="keyword">new</span> ConcurrentHashMap&lt;NotifyListener, ChildListener&gt;());</span><br><span class="line">                listeners = zkListeners.get(url);</span><br><span class="line">            }</span><br><span class="line">            <span class="comment">// &#x83B7;&#x5F97;&#x8282;&#x70B9;&#x76D1;&#x542C;&#x5668;</span></span><br><span class="line">            ChildListener zkListener = listeners.get(listener);</span><br><span class="line">            <span class="keyword">if</span> (zkListener == <span class="keyword">null</span>) {<span class="comment">//null</span></span><br><span class="line">                <span class="comment">//&#x521B;&#x5EFA;&#x8BE5;&#x8282;&#x70B9;&#x7684;&#x76D1;&#x542C;&#x5668;</span></span><br><span class="line">                listeners.putIfAbsent(listener, <span class="keyword">new</span> ChildListener() {</span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">childChanged</span><span class="params">(String parentPath, List&lt;String&gt; currentChilds)</span> </span>{</span><br><span class="line">                        <span class="comment">// &#x901A;&#x77E5;&#x670D;&#x52A1;&#x53D8;&#x5316; &#x56DE;&#x8C03;NotifyListener</span></span><br><span class="line">                        ZookeeperRegistry.<span class="keyword">this</span>.notify(url, listener, toUrlsWithEmpty(url, parentPath, currentChilds));</span><br><span class="line">                    }</span><br><span class="line">                });</span><br><span class="line">                <span class="comment">// &#x91CD;&#x65B0;&#x83B7;&#x53D6;&#x8282;&#x70B9;&#x76D1;&#x542C;&#x5668;&#xFF0C;&#x4FDD;&#x8BC1;&#x4E00;&#x81F4;&#x6027;</span></span><br><span class="line">                zkListener = listeners.get(listener);</span><br><span class="line">            }</span><br><span class="line">            <span class="comment">// &#x521B;&#x5EFA;type&#x8282;&#x70B9;&#xFF0C;&#x8BE5;&#x8282;&#x70B9;&#x4E3A;&#x6301;&#x4E45;&#x8282;&#x70B9;</span></span><br><span class="line">            <span class="comment">// &#x6BD4;&#x5982; &#x521B;&#x5EFA;/dubbo/com.alibaba.dubbo.demo.DemoService/providers&#x8282;&#x70B9;</span></span><br><span class="line">            zkClient.create(path, <span class="keyword">false</span>);</span><br><span class="line">            <span class="comment">// &#x6BD4;&#x5982; &#x5411;zookeeper&#x7684;/dubbo/com.alibaba.dubbo.demo.DemoService/providers&#x8282;&#x70B9;&#x53D1;&#x8D77;&#x8BA2;&#x9605;</span></span><br><span class="line">            <span class="comment">// &#x83B7;&#x5F97;providers&#x63D0;&#x4F9B;&#x7684;service</span></span><br><span class="line">            List&lt;String&gt; children = zkClient.addChildListener(path, zkListener);</span><br><span class="line">            <span class="keyword">if</span> (children != <span class="keyword">null</span>) {</span><br><span class="line">                <span class="comment">// &#x52A0;&#x5165;&#x5230;&#x81EA;&#x5B50;&#x8282;&#x70B9;&#x6570;&#x636E;&#x6570;&#x7EC4;</span></span><br><span class="line">                urls.addAll(toUrlsWithEmpty(url, path, children));</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">        <span class="comment">// &#x901A;&#x77E5;&#x6570;&#x636E;&#x53D8;&#x5316;</span></span><br><span class="line">        <span class="comment">//url = consumer&#x4E5F;&#x5C31;&#x662F;subscribeURL,listener = registryDirectory,urls = providers,configurators,routers &#x7684;URL</span></span><br><span class="line">        notify(url, listener, urls);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD9;&#x4E00;&#x90E8;&#x5206;&#x6BD4;&#x8F83;&#x590D;&#x6742;,&#x4E3B;&#x8981;&#x53EF;&#x4EE5;&#x5206;&#x6210;&#x4E0B;&#x9762;&#x51E0;&#x6B65;:</p>
+<ol>
+<li><p>&#x53D6;&#x51FA;ConsumerURL&#x4E2D;&#x7684;category&#x9879;&#x6784;&#x5EFA;&#x6210;zk&#x8282;&#x70B9;Path&#x7684;List&#x5E76;&#x904D;&#x5386;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">0 = &quot;/dubbo/com.alibaba.dubbo.demo.DemoService/providers&quot;</span><br><span class="line">1 = &quot;/dubbo/com.alibaba.dubbo.demo.DemoService/configurators&quot;</span><br><span class="line">2 = &quot;/dubbo/com.alibaba.dubbo.demo.DemoService/routers&quot;</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>&#x521B;&#x5EFA;&#x8BE5;&#x8282;&#x70B9;&#x7684;&#x76D1;&#x542C;&#x5668;</p>
+</li>
+<li><p>&#x5982;&#x679C;zk&#x4E0A;&#x4E0D;&#x5B58;&#x5728;path&#x8282;&#x70B9;&#x5219;&#x521B;&#x5EFA;&#x8BE5;&#x8282;&#x70B9;</p>
+</li>
+<li><p>&#x83B7;&#x53D6;&#x8282;&#x70B9;&#x4E0A;&#x5B58;&#x50A8;&#x7684;URL&#x5E76;&#x628A;&#x5B83;&#x52A0;&#x5165;urls</p>
+</li>
+<li><p>notify(url, listener, urls)</p>
+</li>
+</ol>
+<p>&#x9996;&#x5148;&#x5173;&#x6CE8;&#x4E00;&#x4E0B;&#x8FD9;&#x4E2A;category&#x9879;.&#x7B2C;&#x4E00;&#x9879;&#x7684;providers&#x7684;path&#x662F;&#x4E4B;&#x524D;Provider&#x670D;&#x52A1;&#x5BFC;&#x51FA;&#x65F6;&#x521B;&#x5EFA;&#x7684;,&#x6240;&#x4EE5;&#x4E0A;&#x9762;&#x6709;ProviderURL.&#x4F46;&#x662F;&#x63A5;&#x4E0B;&#x6765;&#x7684;configurators&#x548C;routers&#x662F;provider&#x548C;consumer&#x4ECE;&#x672A;&#x4F7F;&#x7528;&#x8FC7;&#x5F97;&#x8282;&#x70B9;.&#x6240;&#x4EE5;&#x8282;&#x70B9;&#x4E0A;&#x4E0D;&#x5B58;&#x5728;&#x4E1C;&#x897F;.</p>
+<p>&#x5F53;&#x8C03;&#x7528;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">List&lt;String&gt; children = zkClient.addChildListener(path, zkListener);</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x7684;&#x65F6;&#x5019;,provider&#x8FD4;&#x56DE;&#x7684;&#x662F;&#x7F16;&#x7801;&#x540E;&#x7684;ProviderURL,&#x4F46;&#x662F;&#x53E6;&#x5916;&#x4E24;&#x4E2A;&#x8FD4;&#x56DE;&#x540E;children.size=0(&#x975E;&#x7A7A;).&#x5BF9;&#x4E8E;&#x7A7A;&#x7684;&#x5185;&#x5BB9;</p>
+<p>&#x6211;&#x4EEC;&#x5C06;&#x5728;<code>toUrlsWithEmpty()</code>&#x4E2D;&#x4E3A;&#x5B83;&#x6784;&#x5EFA;&#x7279;&#x6B8A;&#x7684;url.&#x8FD9;&#x4E48;&#x8BF4;&#x53EF;&#x80FD;&#x6709;&#x4E9B;&#x6655;,&#x7B80;&#x5355;&#x603B;&#x7ED3;&#x4E00;&#x4E0B;&#x5C31;&#x662F;:</p>
+<p>&#x5BF9;&#x4E8E;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0 = &quot;/dubbo/com.alibaba.dubbo.demo.DemoService/providers&quot;</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x662F;&#x4ECE;zk&#x83B7;&#x53D6;ProviderURL:</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">dubbo://172.17.0.1:20880/com.alibaba.dubbo.demo.DemoService?anyhost=true&amp;</span><br><span class="line">application=demo-provider&amp;</span><br><span class="line">dubbo=2.0.2&amp;</span><br><span class="line">generic=false&amp;</span><br><span class="line">interface=com.alibaba.dubbo.demo.DemoService&amp;</span><br><span class="line">methods=sayHello&amp;</span><br><span class="line">pid=24006&amp;</span><br><span class="line">side=provider&amp;</span><br><span class="line">timestamp=1555633157677</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5BF9;&#x4E8E;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 = &quot;/dubbo/com.alibaba.dubbo.demo.DemoService/configurators&quot;</span><br><span class="line">2 = &quot;/dubbo/com.alibaba.dubbo.demo.DemoService/routers&quot;</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5219;&#x662F;&#x521B;&#x5EFA;zk&#x8282;&#x70B9;&#x5E76;&#x521B;&#x5EFA;&#x7279;&#x6B8A;url</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">empty://172.17.0.1/com.alibaba.dubbo.demo.DemoService?</span><br><span class="line">application=demo-consumer&amp;</span><br><span class="line">category=configurators&amp; //&#x6216;&#x8005; category=routers</span><br><span class="line">check=false&amp;</span><br><span class="line">dubbo=2.0.2&amp;</span><br><span class="line">interface=com.alibaba.dubbo.demo.DemoService&amp;</span><br><span class="line">methods=sayHello&amp;</span><br><span class="line">pid=28212&amp;</span><br><span class="line">qos.port=33333&amp;</span><br><span class="line">side=consumer&amp;</span><br><span class="line">timestamp=1555644356890</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x6700;&#x540E;urls&#x7684;size&#x5C06;&#x4F1A;&#x662F;3</p>
+<p><img src="1555654122415.png" alt="1555654122415"></p>
+<p>&#x5173;&#x4E8E;&#x7B2C;5&#x6B65;&#x7684;notify(url, listener, urls):</p>
+<p>&#x5C06;&#x4F1A;&#x5BF9;&#x4E0A;&#x9762;&#x7684;3&#x4E2A;url&#x5FAA;&#x73AF;&#x8C03;&#x7528;listener.notify(url);.&#x4E5F;&#x5C31;&#x662F;RegistryDirectory#notify&#x65B9;&#x6CD5;.</p>
+<p>&#x8FD9;&#x4E2A;&#x65B9;&#x6CD5;&#x4E2D;&#x6BCF;&#x79CD;category&#x90FD;&#x4F1A;&#x6709;&#x4E0D;&#x540C;&#x7684;&#x5904;&#x7406;&#x65B9;&#x5F0F;.&#x4F46;&#x662F;&#x6211;&#x4EEC;&#x7684;configurators&#x548C;routers&#x7684;URL&#x5F00;&#x5934;&#x90FD;&#x662F;<code>empty://</code>,&#x8FD9;&#x8BF4;&#x660E;&#x6CA1;&#x6709;&#x5408;&#x9002;&#x7684;&#x65B9;&#x5F0F;,&#x6240;&#x4EE5;&#x4F1A;&#x88AB;&#x76F4;&#x63A5;retuen.</p>
+<p>&#x800C;providers&#x5219;&#x4E0E;&#x524D;&#x9762;&#x7684;&#x4E24;&#x4E2A;&#x4E0D;&#x540C;.&#x5B83;&#x4F1A;&#x8C03;&#x7528;refreshInvoker(),&#x5F53;&#x6211;&#x4EEC;&#x6DF1;&#x5165;&#x8FDB;&#x53BB;&#x65F6;&#x53D1;&#x73B0;&#x4ED6;&#x6700;&#x7EC8;&#x8C03;&#x7528;&#x4E86;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//com.alibaba.dubbo.registry.integration.RegistryDirectory#toInvokers</span></span><br><span class="line">invoker = <span class="keyword">new</span> InvokerDelegate&lt;T&gt;(protocol.refer(serviceType, url), url, providerUrl);</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD9;&#x91CC;&#x7684;protocol&#x5C31;&#x662F;DubboProtocol.&#x8FD9;&#x90E8;&#x5206;&#x4EE3;&#x7801;&#x6BD4;&#x8F83;&#x590D;&#x6742;,&#x6211;&#x4E2A;&#x4EBA;&#x4E5F;&#x6709;&#x4E0D;&#x660E;&#x767D;&#x7684;&#x90E8;&#x5206;,&#x65E0;&#x8BBA;&#x5982;&#x4F55;DubboProtocol&#x5728;&#x8FD9;&#x91CC;&#x7EC8;&#x4E8E;&#x767B;&#x573A;&#x4E86;</p>
+<h3 id="DubboProtocol-refer-&#x6784;&#x5EFA;netty&#x5BA2;&#x6237;&#x7AEF;"><a href="#DubboProtocol-refer-&#x6784;&#x5EFA;netty&#x5BA2;&#x6237;&#x7AEF;" class="headerlink" title="DubboProtocol#refer &#x6784;&#x5EFA;netty&#x5BA2;&#x6237;&#x7AEF;"></a>DubboProtocol#refer &#x6784;&#x5EFA;netty&#x5BA2;&#x6237;&#x7AEF;</h3><p>&#x7B80;&#x5355;&#x770B;&#x4E00;&#x4E0B;DubboProtocol&#x7684;refer.&#x5B83;&#x4E0E;&#x524D;&#x9762;&#x7684;RegistryProtocol&#x76F8;&#x6BD4;&#x8981;&#x7B80;&#x5355;&#x53BB;&#x591A;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">Invoker&lt;T&gt; <span class="title">refer</span><span class="params">(Class&lt;T&gt; serviceType, URL url)</span> <span class="keyword">throws</span> RpcException </span>{</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * &#x8FD9;&#x91CC;&#x4F20;&#x8FDB;&#x6765;&#x7684;url,&#x5DF2;&#x7ECF;&#x5728;&#x522B;&#x6539;&#x6210;&#x4E86;.</span></span><br><span class="line"><span class="comment">         * dubbo://172.17.0.1:20880/com.alibaba.dubbo.demo.DemoService?</span></span><br><span class="line"><span class="comment">         * anyhost=true&amp;</span></span><br><span class="line"><span class="comment">         * application=demo-consumer&amp;</span></span><br><span class="line"><span class="comment">         * check=false&amp;</span></span><br><span class="line"><span class="comment">         * dubbo=2.0.2&amp;</span></span><br><span class="line"><span class="comment">         * generic=false&amp;</span></span><br><span class="line"><span class="comment">         * interface=com.alibaba.dubbo.demo.DemoService&amp;</span></span><br><span class="line"><span class="comment">         * methods=sayHello&amp;</span></span><br><span class="line"><span class="comment">         * pid=5580&amp;</span></span><br><span class="line"><span class="comment">         * qos.port=33333&amp;</span></span><br><span class="line"><span class="comment">         * register.ip=172.17.0.1&amp;</span></span><br><span class="line"><span class="comment">         * remote.timestamp=1555633157677&amp;</span></span><br><span class="line"><span class="comment">         * side=consumer&amp;</span></span><br><span class="line"><span class="comment">         * timestamp=1555637046917</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">    optimizeSerialization(url);</span><br><span class="line">    <span class="comment">// &#x521B;&#x5EFA; DubboInvoker. getClient()&#x6784;&#x5EFA;netty&#x5BA2;&#x6237;&#x7AEF;</span></span><br><span class="line">    DubboInvoker&lt;T&gt; invoker = <span class="keyword">new</span> DubboInvoker&lt;T&gt;(serviceType, url, getClients(url), invokers);<span class="comment">//invokers.size = 0</span></span><br><span class="line">    invokers.add(invoker);</span><br><span class="line">    <span class="keyword">return</span> invoker;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x6211;&#x6CE8;&#x610F;&#x5230;&#x6B64;&#x65F6;&#x53C2;&#x6570;&#x7684;url&#x662F;&#x901A;&#x8FC7;RegistryDirectory&#x7684;mergeUrl(providerUrl)&#x6784;&#x5EFA;&#x7684;.&#x6240;&#x4EE5;&#x8FD9;&#x91CC;&#x4F20;&#x5165;&#x7684;URL&#x7684;&#x5730;&#x5740;&#x548C;&#x7AEF;&#x53E3;&#x5E94;&#x8BE5;&#x90FD;&#x662F;&#x4ECE;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x83B7;&#x53D6;&#x5230;&#x7684;&#x670D;&#x52A1;&#x7AEF;&#x7684;&#x5730;&#x5740;&#x7AEF;&#x53E3;</p>
+<p>&#x6B65;&#x9AA4;&#x7B80;&#x5355;&#x53EF;&#x4EE5;&#x5206;&#x4E3A;:</p>
+<ol>
+<li>getClients(url). &#x6839;&#x636E;ProviderURL&#x548C;ConsumerURL&#x6784;&#x5EFA;netty&#x5BA2;&#x6237;&#x7AEF;</li>
+<li>&#x628A;netty&#x5BA2;&#x6237;&#x7AEF;&#x5305;&#x88C5;&#x6210;invoker</li>
+</ol>
+<p>&#x8FD9;&#x4E48;&#x4E00;&#x6765;&#x670D;&#x52A1;&#x7684;Invoker&#x5C31;&#x521B;&#x5EFA;&#x5B8C;&#x6210;&#x4E86;.</p>
+<h2 id="&#x751F;&#x6210;&#x4EE3;&#x7406;&#x7C7B;"><a href="#&#x751F;&#x6210;&#x4EE3;&#x7406;&#x7C7B;" class="headerlink" title="&#x751F;&#x6210;&#x4EE3;&#x7406;&#x7C7B;"></a>&#x751F;&#x6210;&#x4EE3;&#x7406;&#x7C7B;</h2><p>&#x518D;&#x56DE;&#x5230;<code>ReferenceConfig#createProxy</code>.&#x5176;&#x5B9E;&#x6211;&#x4EEC;&#x7684;&#x76EE;&#x7684;&#x5E76;&#x4E0D;&#x53EA;&#x662F;&#x521B;&#x5EFA;&#x8FDC;&#x7A0B;&#x670D;&#x52A1;&#x7684;invoker.&#x800C;&#x662F;&#x901A;&#x8FC7;invoker&#x521B;&#x5EFA;&#x670D;&#x52A1;&#x7684;proxy.</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//com.alibaba.dubbo.config.ReferenceConfig#createProxy</span></span><br><span class="line"><span class="keyword">return</span> (T) proxyFactory.getProxy(invoker);</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD9;&#x91CC;&#x6700;&#x7EC8;&#x4F1A;&#x8C03;&#x7528;JavassistProxyFactory &#x7C7B;&#x4E2D;getProxy()&#x6765;&#x751F;&#x6210;Proxy&#x7684;&#x4EE3;&#x7801;.&#x8FC7;&#x7A0B;&#x8FD9;&#x91CC;&#x5C31;&#x4E0D;&#x5206;&#x6790;&#x4E86;,&#x6700;&#x540E;&#x4EA7;&#x751F;&#x7684;Proxy&#x7684;&#x4EE3;&#x7801;&#x5982;&#x4E0B;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.apache.dubbo.common.bytecode;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">proxy0</span> <span class="keyword">implements</span> <span class="title">org</span>.<span class="title">apache</span>.<span class="title">dubbo</span>.<span class="title">demo</span>.<span class="title">DemoService</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> java.lang.reflect.Method[] methods;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> java.lang.reflect.InvocationHandler handler;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">proxy0</span><span class="params">()</span> </span>{</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">proxy0</span><span class="params">(java.lang.reflect.InvocationHandler arg0)</span> </span>{</span><br><span class="line">        handler = $<span class="number">1</span>;</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> java.lang.<span class="function">String <span class="title">sayHello</span><span class="params">(java.lang.String arg0)</span> </span>{</span><br><span class="line">        Object[] args = <span class="keyword">new</span> Object[<span class="number">1</span>];</span><br><span class="line">        args[<span class="number">0</span>] = ($w) $<span class="number">1</span>;</span><br><span class="line">        Object ret = handler.invoke(<span class="keyword">this</span>, methods[<span class="number">0</span>], args);</span><br><span class="line">        <span class="keyword">return</span> (java.lang.String) ret;</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="&#x603B;&#x7ED3;"><a href="#&#x603B;&#x7ED3;" class="headerlink" title="&#x603B;&#x7ED3;"></a>&#x603B;&#x7ED3;</h2><p>&#x56DE;&#x987E;&#x4E00;&#x4E0B;&#x4EE3;&#x7801;&#x7684;&#x8C03;&#x7528;&#x94FE;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">ReferenceConfig#init</span><br><span class="line">	|</span><br><span class="line">	createProxy(map) //&#x521B;&#x5EFA;&#x4EE3;&#x7406;&#x5BF9;&#x8C61;</span><br><span class="line">		|</span><br><span class="line">		1. loadRegistries() //&#x6784;&#x5EFA;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x7684;url</span><br><span class="line">		2. RegistryProtocol.refer()</span><br><span class="line">			|</span><br><span class="line">			1. &#x6784;&#x5EFA;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x5B9E;&#x4F8B;,&#x540C;&#x65F6;&#x521B;&#x5EFA;zk&#x5BA2;&#x6237;&#x7AEF;&#x8FDE;&#x63A5;</span><br><span class="line">			2. RegistryProtocol.doRefer()</span><br><span class="line">				|</span><br><span class="line">                1. &#x521B;&#x5EFA;&#x4E86;&#x4E00;&#x4E2A;RegistryDirectory&#x7684;&#x5B9E;&#x4F8B;</span><br><span class="line">                2. &#x6784;&#x5EFA;&#x8BA2;&#x9605;&#x8005;(&#x6D88;&#x8D39;&#x8005;)URL</span><br><span class="line">                3. ZookeeperRegistry#register()//&#x6839;&#x636E;&#x8BA2;&#x9605;&#x8005;URL&#x521B;&#x5EFA;zk&#x8282;&#x70B9;,&#x5E76;&#x653E;&#x5165;</span><br><span class="line">                4. directory.subscribe(subscribeURL) //&#x8BA2;&#x9605;&#x670D;&#x52A1;</span><br><span class="line">                    |</span><br><span class="line">                    1. &#x4ECE;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x83B7;&#x53D6;providerURL</span><br><span class="line">                    2. DubboRegistry#refer &#x521B;&#x5EFA;&#x4E0E;provider&#x8FDE;&#x63A5;&#x7684;netty&#x5BA2;&#x6237;&#x7AEF;</span><br><span class="line">                    3. &#x8FD4;&#x56DE;invoker</span><br><span class="line">		|</span><br><span class="line">		3. proxyFactory.getProxy(invoker)//&#x751F;&#x6210;invoker&#x7684;&#x4EE3;&#x7406;&#x7C7B;</span><br><span class="line">	|</span><br><span class="line">	&#x4FDD;&#x5B58;&#x4EE3;&#x7406;&#x5BF9;&#x8C61;&#x5230;ConsumerModel,ApplicationModel</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x548C;Provider&#x5BFC;&#x51FA;&#x65F6;&#x8C03;&#x7528;&#x987A;&#x5E8F;&#x6709;&#x660E;&#x663E;&#x7684;&#x533A;&#x522B;:</p>
+<ul>
+<li>Provider:&#x5148;&#x5F00;netty&#x670D;&#x52A1;&#x7AEF;&#x518D;&#x6CE8;&#x518C;&#x670D;&#x52A1;</li>
+<li>Consumer:&#x5148;&#x53BB;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x653E;&#x5165;&#x81EA;&#x5DF1;&#x7684;URL,&#x7136;&#x540E;&#x627E;ProviderURL,&#x518D;&#x521B;&#x5EFA;netty&#x5BA2;&#x6237;&#x7AEF;</li>
+</ul>
+<p>&#x5173;&#x4E8E;directory&#x548C;cluster&#x7684;&#x90E8;&#x5206;,&#x6211;&#x76EE;&#x524D;&#x4E5F;&#x8FD8;&#x6709;&#x4E0D;&#x7406;&#x89E3;&#x7684;&#x5730;&#x65B9;.&#x5E0C;&#x671B;&#x540E;&#x671F;&#x80FD;&#x5B8C;&#x5584;&#x8FD9;&#x90E8;&#x5206;&#x7684;&#x89E3;&#x91CA;.</p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2019/04/16/20190416/" title="Dubbo源码跟踪实录-从Provider启动到服务注册">
+                    <div class="prevTitle">Dubbo源码跟踪实录-从Provider启动到服务注册</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MDUwMy8xNzAzMA==">
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:nnkwrik@gmail.com" class="iconfont-archer email" title="email"></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/nnkwrik" class="iconfont-archer github" target="_blank" title="github"></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title="wechat">
+                  
+                  <img class="profile-qr" src="/assets/qr.png">
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:30vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Consumer启动"><span class="toc-number">2.</span> <span class="toc-text">Consumer启动</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#服务引入"><span class="toc-number"></span> <span class="toc-text">服务引入</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#创建Invoker"><span class="toc-number">1.</span> <span class="toc-text">创建Invoker</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#订阅服务"><span class="toc-number">1.1.</span> <span class="toc-text">订阅服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DubboProtocol-refer-构建netty客户端"><span class="toc-number">1.2.</span> <span class="toc-text">DubboProtocol#refer 构建netty客户端</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#生成代理类"><span class="toc-number">2.</span> <span class="toc-text">生成代理类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 65
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/19</span><a class="archive-post-title" href="/2019/04/19/20190419/">Dubbo源码跟踪实录-从Consumer启动到服务引入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href="/2019/04/16/20190416/">Dubbo源码跟踪实录-从Provider启动到服务注册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/05</span><a class="archive-post-title" href="/2019/04/05/20190405/">ProtoBuffer的数据格式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span><a class="archive-post-title" href="/2019/02/10/20190210/">Netty源码剖析-总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/26</span><a class="archive-post-title" href="/2019/01/26/20190126/">Netty源码剖析-性能优化工具类2</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href="/2019/01/25/20190125-2/">Netty源码剖析-性能优化工具类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href="/2019/01/25/20190125/">Netty源码剖析-编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href="/2019/01/24/20190124/">Netty源码剖析-解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/21</span><a class="archive-post-title" href="/2019/01/21/20190121-2/">Netty源码剖析-ByteBuf-总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/21</span><a class="archive-post-title" href="/2019/01/21/20190121/">Netty源码剖析-ByteBuf-3</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/19</span><a class="archive-post-title" href="/2019/01/19/20190119/">Netty源码剖析-ByteBuf-2</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href="/2019/01/18/20190118/">校招准备视频笔记-高级知识点</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span><a class="archive-post-title" href="/2019/01/17/20190117-1/">校招准备视频笔记-设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span><a class="archive-post-title" href="/2019/01/17/20190117/">校招准备视频笔记-面向对象</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href="/2019/01/15/20190115-1/">校招准备视频笔记-编码技巧</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href="/2019/01/15/20190115/">校招准备视频笔记-程序设计语言基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-3/">校招准备视频笔记-数据库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-2/">校招准备视频笔记-网络</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-1/">校招准备视频笔记-操作系统</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107/">Netty源码剖析-ByteBuf-1</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106-1/">事件和异常的传播</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106/">Netty源码剖析-pipeline创建</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228-1/">Netty源码剖析-新连接接入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228/">Netty源码剖析-NioEventLoop执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-2/">Netty源码剖析-NioEventLoop创建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-1/">Netty源码剖析-Netty服务端启动的过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225/">Netty源码剖析-Netty基本组件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224-3/">高性能MySQL-第5章-创建高性能的索引</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224/">高性能MySQL-第1章-MySQL架构与历史</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-7/">高性能MySQL-第4章-Schema与数据类型优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-6/">🍓 JVM知识点合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-5/">JVM知识点合集-4.Class文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-4/">JVM知识点合集-3.GC算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-3/">JVM知识点合集-2.内存结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-2/">JVM知识点合集-1.类的加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223/">深入理解Java虚拟机-第12章-Java内存模型与线程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222-2/">深入理解Java虚拟机-第8章-虚拟机字节码执行引擎</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222/">深入理解Java虚拟机-第7章-虚拟机类加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181221/">深入理解Java虚拟机-第6章-类文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/19</span><a class="archive-post-title" href="/2018/12/19/20181219/">重构的艺术？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/30</span><a class="archive-post-title" href="/2018/11/30/20181130/">万能的Jackson</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span><a class="archive-post-title" href="/2018/11/20/20181120/">Guava的Cache</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/19</span><a class="archive-post-title" href="/2018/11/19/20181119/">Spring Cloud中使用RabbitMQ的两种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href="/2018/11/12/20181112/">深入理解Java虚拟机-第4章-虚拟机性能监控与故障处理工具</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href="/2018/11/10/20181110/">深入理解Java虚拟机-第3章-垃圾收集器与内存分配策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109-2/">深入理解Java虚拟机-第2章-Java内存区域与内存溢出异常</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109/">深入理解Java虚拟机-第1章-走近Java</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/05</span><a class="archive-post-title" href="/2018/11/05/20181105/">Java并发编程实战-第7章-取消与关闭</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-5/">🍤 并发操作合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-4/">并发操作合集-11.ThreadLocal</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-3/">并发操作合集-10.Executor和线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-2/">并发操作合集-9.并发工具：Semaphore,CountDownLatch,CyclicBarrier</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104/">并发操作合集-8.并发容器：CopyOnWriteArrayList</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181102-3/">并发操作合集-7.并发容器：BlockingQueue</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102-2/">并发操作合集-6.并发容器：ConcurrentHashMap</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102/">并发操作合集-5.原子变量和volatile</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181030-2/">并发操作合集-1.线程的生命周期</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span><a class="archive-post-title" href="/2018/10/30/20181030/">Java并发编程实战-第6章-任务执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/29</span><a class="archive-post-title" href="/2018/10/29/20181029/">Java并发编程实战-第5章-基础构建模块</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href="/2018/10/28/20181028/">Java并发编程实战-第4章-对象的组合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span><a class="archive-post-title" href="/2018/10/27/20181027/">Java并发编程实战-第3章-对象的共享</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/25</span><a class="archive-post-title" href="/2018/10/25/20181025/">Java并发编程实战-第2章-线程安全性</a>
+        </li>
+    
+    </ul></div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发操作合集"><span class="iconfont-archer">&#xe606;</span>并发操作合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM"><span class="iconfont-archer">&#xe606;</span>JVM</span>
+    
+        <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
+    
+        <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
+    
+        <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
+    
+        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
+    
+        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
+    
+        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
+    
+        <span class="sidebar-tag-name" data-tags="ProtoBuffer"><span class="iconfont-archer">&#xe606;</span>ProtoBuffer</span>
+    
+        <span class="sidebar-tag-name" data-tags="dubbo"><span class="iconfont-archer">&#xe606;</span>dubbo</span>
+    
+        <span class="sidebar-tag-name" data-tags="Dubbo源码跟踪实录"><span class="iconfont-archer">&#xe606;</span>Dubbo源码跟踪实录</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br>
+    1、请确保node版本大于6.2<br>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
+    
+        <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="框架使用"><span class="iconfont-archer">&#xe60a;</span>框架使用</span>
+    
+        <span class="sidebar-category-name" data-categories="瞎逼叨"><span class="iconfont-archer">&#xe60a;</span>瞎逼叨</span>
+    
+        <span class="sidebar-category-name" data-categories="JVM知识点合集"><span class="iconfont-archer">&#xe60a;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-category-name" data-categories="框架原理"><span class="iconfont-archer">&#xe60a;</span>框架原理</span>
+    
+        <span class="sidebar-category-name" data-categories="源码解析"><span class="iconfont-archer">&#xe60a;</span>源码解析</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "曽生"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
