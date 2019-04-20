@@ -374,6 +374,49 @@ height:50vh;
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2018/11/04/20181104-4/">
+            
+                <span>并发操作合集-11.ThreadLocal</span>
+        </a>
+        <div class="abstract-content">
+            
+&#x1F364; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;
+&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
+
+ThreadLocal&#x7684;&#x7528;&#x6CD5;ThreadLocal&#x7528;&#x4E8E;&#x4FDD;&#x5B58;&#x67D0;&#x4E2A;&#x7EBF;&#x7A0B;&#x5171;&#x4EAB;&#x53D8;&#x91CF;&#xFF1A;&#x5BF9;&#x4E8E;&#x540C;&#x4E00;&#x4E2A;static ThreadLocal&#xFF0C;&#x4E0D;&#x540C;&#x7EBF;&#x7A0B;&#x53EA;&#x80FD;&#x4ECE;&#x4E2D;get&#xFF0C;set&#xFF0C;remove&#x81EA;&#x5DF1;&#x7684;&#x53D8;&#x91CF;&#xFF0C;&#x800C;&#x4E0D;&#x4F1A;&#x5F71;&#x54CD;&#x5176;&#x4ED6;&#x7EBF;&#x7A0B;&#x7684;&#x53D8;&#x91CF;&#x3002;
+
+ThreadLocal.get: &#x83B7;&#x53D6;ThreadLocal&#x4E2D;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x5171;&#x4EAB;&#x53D8;&#x91CF;&#x7684;&#x503C;&#x3002;
+
+ThreadLocal.set: &#x8BBE;&#x7F6E;ThreadLocal&#x4E2D;&#x5F53;&#x524D;&#x7EBF;&#x7A0B;&#x5171;&#x4EAB;&#x53D8;&#x91CF;&#x7684;&#x503C;&#x3002;
+
+ThreadLocal.remove: &#x79FB;&#x9664;ThreadLocal&#x4E2D;&#...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/04</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class="abstract-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2018/11/04/20181104-3/">
             
                 <span>并发操作合集-10.Executor和线程池</span>
@@ -708,48 +751,6 @@ wait() &#x548C; notify() &#x65B9;&#x6CD5;&#x9996;&#x5148;&#xFF0C;&#x8FD9;&#x4E24
 
 Object.wait() &#x2013; &#x6302;&#x8D77;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;
 Object.notify() &#x2013; &#x5524;&#x9192;&#x4E00;&#x4E2...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/01</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/01/20181030-2/">
-            
-                <span>并发操作合集-1.线程的生命周期</span>
-        </a>
-        <div class="abstract-content">
-            
-&#x1F364; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;
-&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
-
-&#x5728;&#x4ECB;&#x7ECD;&#x5E76;&#x53D1;&#x7684;&#x64CD;&#x4F5C;&#x4E4B;&#x524D;&#xFF0C;&#x5FC5;&#x9700;&#x5148;&#x7406;&#x89E3;&#x7EBF;&#x7A0B;&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;&#x3002;
-&#x7EBF;&#x7A0B;&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;&#x4E0B;&#x56FE;&#x662F;Java&#x4E2D;&#x7EBF;&#x7A0B;&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;&#xFF0C;&#x4EE5;&#x53CA;&#x5207;&#x6362;&#x72B6;&#x6001;&#x7684;&#x5E38;&#x7528;&#x65B9;&#x6CD5;&#x3002;java.lang.Thread&#x7C7B;&#x5305;&#x542B;&#x7684;&#x72B6;&#x6001;&#x679A;&#x4E3E;&#x5B9A;&#x4E49;&#x4E86;&#x8FD9;6&#x4E2A;&#x72B6;&#x6001;&#x3002;
-
-&#x4E0D;&#x7BA1;&#x5728;&#x4EFB;&#x4F55;&#x65F6;&#x5019;&#xFF0C;&#x7EBF;&#x7A0B;&#x4F1A;&#x662F;&#x4EE5;&#x4E0B;&#x72B6;&#x6001;&#x7684;&#x5176;&#x4E2D;&#x4E00;&#x4E2A;&#xFF1A;
-
-New&#xFF08;&#x65B0;&#x5EFA;&#x72B...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -1856,9 +1857,84 @@ New&#xFF08;&#x65B0;&#x5EFA;&#x72B...
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 65
+        Total : 66
         </div>
         <!-- search  -->
         
@@ -1875,6 +1951,11 @@ New&#xFF08;&#x65B0;&#x5EFA;&#x72B...
     
     <div class="archive-year"> 2019 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href="/2019/04/20/20190420/">Dubbo源码跟踪实录-集群容错:服务目录Directory</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -2215,11 +2296,7 @@ New&#xFF08;&#x65B0;&#x5EFA;&#x72B...
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
-        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
-    
         <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
-    
-        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
     
         <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
     
@@ -2237,21 +2314,25 @@ New&#xFF08;&#x65B0;&#x5EFA;&#x72B...
     
         <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
     
-        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
+        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
     
         <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
     
-        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
+        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
     
         <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
     
         <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
     
         <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
     
-        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
-    
         <span class="sidebar-tag-name" data-tags="ProtoBuffer"><span class="iconfont-archer">&#xe606;</span>ProtoBuffer</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
         <span class="sidebar-tag-name" data-tags="dubbo"><span class="iconfont-archer">&#xe606;</span>dubbo</span>
     

@@ -361,6 +361,49 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2019/01/07/20190107/">
+            
+                <span>Netty源码剖析-ByteBuf-1</span>
+        </a>
+        <div class="abstract-content">
+            
+&#x5185;&#x5B58;&#x7684;&#x7C7B;&#x522B;&#x6709;&#x54EA;&#x4E9B;
+&#x5982;&#x4F55;&#x51CF;&#x5C11;&#x591A;&#x7EBF;&#x7A0B;&#x5185;&#x5B58;&#x5206;&#x914D;&#x4E4B;&#x95F4;&#x7684;&#x7ADE;&#x4E89;
+&#x4E0D;&#x540C;&#x5927;&#x5C0F;&#x7684;&#x5185;&#x5B58;&#x662F;&#x5982;&#x4F55;&#x8FDB;&#x884C;&#x5206;&#x914D;&#x7684;
+
+ByteBuf
+&#x5185;&#x5B58;&#x4E0E;&#x5185;&#x5B58;&#x7BA1;&#x7406;&#x5668;&#x7684;&#x62BD;&#x8C61;
+&#x4E0D;&#x540C;&#x89C4;&#x683C;&#x5927;&#x5C0F;&#x548C;&#x4E0D;&#x540C;&#x7C7B;&#x522B;&#x7684;&#x5185;&#x5B58;&#x7684;&#x5206;&#x914D;&#x7B56;&#x7565;
+&#x5185;&#x5B58;&#x7684;&#x56DE;&#x6536;&#x8FC7;&#x7A0B;
+
+ByteBuf&#x7ED3;&#x6784;&#x4EE5;&#x53CA;&#x91CD;&#x8981;APIByteBuf&#x7684;&#x7ED3;&#x6784;1234567*      +-------------------+------------------+------------------+*      | discardable bytes |  readable bytes  |  writable bytes  |    		&#x65E0;&#x6548;&#x7684;				&#x53EF;&#x4EE5;&#x8BFB;&#x7684;&#x7A7A;&#x95F4;			&#x53EF;&#x4EE5;&#x5199;&#x7684;&#x7A7A;&#x95F4;*      +---...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/01/07</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class="abstract-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2019/01/06/20190106-1/">
             
                 <span>事件和异常的传播</span>
@@ -390,9 +433,9 @@ ChannelInboundHandler,...
             
             <div class="abstract-tags">
     
-        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
-    
         <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
     
@@ -1454,9 +1497,84 @@ pipeline&#x5728;...
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 65
+        Total : 66
         </div>
         <!-- search  -->
         
@@ -1473,6 +1591,11 @@ pipeline&#x5728;...
     
     <div class="archive-year"> 2019 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href="/2019/04/20/20190420/">Dubbo源码跟踪实录-集群容错:服务目录Directory</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -1813,11 +1936,7 @@ pipeline&#x5728;...
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
-        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
-    
         <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
-    
-        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
     
         <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
     
@@ -1835,21 +1954,25 @@ pipeline&#x5728;...
     
         <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
     
-        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
+        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
     
         <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
     
-        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
+        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
     
         <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
     
         <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
     
         <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
     
-        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
-    
         <span class="sidebar-tag-name" data-tags="ProtoBuffer"><span class="iconfont-archer">&#xe606;</span>ProtoBuffer</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
         <span class="sidebar-tag-name" data-tags="dubbo"><span class="iconfont-archer">&#xe606;</span>dubbo</span>
     
