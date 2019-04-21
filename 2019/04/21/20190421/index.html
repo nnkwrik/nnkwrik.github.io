@@ -22,7 +22,7 @@
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>20190421 · 农场主的黑科技.</title>
+    <title>Dubbo源码跟踪实录-集群容错:服务路由Router · 农场主的黑科技.</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -232,7 +232,7 @@
                 <a href="/">农场主的黑科技.</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">20190421</a>
+                <a href="#" class="post-name">Dubbo源码跟踪实录-集群容错:服务路由Router</a>
             </div>
     </div>
     
@@ -262,7 +262,7 @@ height:30vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            20190421
+            Dubbo源码跟踪实录-集群容错:服务路由Router
             <!-- 404 -->
             
         </h1>
@@ -413,7 +413,7 @@ height:30vh;
         <div class="container container-unloaded">
             <main class="main post-page">
     <article class="article-entry">
-        <p>&#x9996;&#x5148;,&#x670D;&#x52A1;&#x8DEF;&#x7531;&#x662F;&#x5E72;&#x4EC0;&#x4E48;&#x7684;?</p>
+        <h2 id="&#x524D;&#x8A00;"><a href="#&#x524D;&#x8A00;" class="headerlink" title="&#x524D;&#x8A00;"></a>&#x524D;&#x8A00;</h2><p>&#x9996;&#x5148;,&#x670D;&#x52A1;&#x8DEF;&#x7531;&#x662F;&#x5E72;&#x4EC0;&#x4E48;&#x7684;?</p>
 <p>&#x5237;&#x65B0;invoker&#x7684;&#x8FC7;&#x7A0B;&#x4E2D;&#xFF0C;&#x4F1A;&#x901A;&#x8FC7; Router &#x8FDB;&#x884C;&#x670D;&#x52A1;&#x8DEF;&#x7531;&#xFF0C;&#x7B5B;&#x9009;&#x51FA;&#x7B26;&#x5408;&#x8DEF;&#x7531;&#x89C4;&#x5219;&#x7684;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#x3002;</p>
 <p>&#x670D;&#x52A1;&#x8DEF;&#x7531;&#x5305;&#x542B;&#x4E00;&#x6761;&#x8DEF;&#x7531;&#x89C4;&#x5219;&#xFF0C;&#x89C4;&#x5B9A;&#x4E86;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x53EF;&#x8C03;&#x7528;&#x54EA;&#x4E9B;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#x3002;</p>
 <p>Dubbo &#x76EE;&#x524D;&#x63D0;&#x4F9B;&#x4E86;&#x4E09;&#x79CD;&#x670D;&#x52A1;&#x8DEF;&#x7531;&#x5B9E;&#x73B0;&#xFF0C;&#x5206;&#x522B;&#x4E3A;&#x6761;&#x4EF6;&#x8DEF;&#x7531; ConditionRouter&#x3001;&#x811A;&#x672C;&#x8DEF;&#x7531; ScriptRouter &#x548C;&#x6807;&#x7B7E;&#x8DEF;&#x7531; TagRouter&#x3002;&#x6587;&#x4E2D;&#x4E3B;&#x8981;&#x5206;&#x6790;&#x6700;&#x5E38;&#x7528;&#x7684;<strong>&#x6761;&#x4EF6;&#x8DEF;&#x7531; ConditionRouter</strong>.</p>
@@ -619,7 +619,7 @@ top:30vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#路由规则"><span class="toc-number">1.</span> <span class="toc-text">路由规则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#表达式解析"><span class="toc-number">2.</span> <span class="toc-text">表达式解析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#服务路由"><span class="toc-number">3.</span> <span class="toc-text">服务路由</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#最后"><span class="toc-number">4.</span> <span class="toc-text">最后</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#路由规则"><span class="toc-number">2.</span> <span class="toc-text">路由规则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#表达式解析"><span class="toc-number">3.</span> <span class="toc-text">表达式解析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#服务路由"><span class="toc-number">4.</span> <span class="toc-text">服务路由</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#最后"><span class="toc-number">5.</span> <span class="toc-text">最后</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -632,42 +632,6 @@ top:30vh;
     <div class="sidebar-content sidebar-content-show-archive">
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -1649,7 +1613,7 @@ top:30vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">04/21</span><a class="archive-post-title" href="/2019/04/21/20190421/">20190421</a>
+            <span class="archive-post-date">04/21</span><a class="archive-post-title" href="/2019/04/21/20190421/">Dubbo源码跟踪实录-集群容错:服务路由Router</a>
         </li>
     
     
@@ -2020,19 +1984,19 @@ top:30vh;
     
         <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
     
-        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
-    
         <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
     
+        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
+    
         <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
         <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
     
         <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
     
         <span class="sidebar-tag-name" data-tags="ProtoBuffer"><span class="iconfont-archer">&#xe606;</span>ProtoBuffer</span>
-    
-        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
         <span class="sidebar-tag-name" data-tags="dubbo"><span class="iconfont-archer">&#xe606;</span>dubbo</span>
     
