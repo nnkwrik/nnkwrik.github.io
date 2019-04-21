@@ -361,6 +361,52 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2018/12/25/20181225/">
+            
+                <span>Netty源码剖析-Netty基本组件</span>
+        </a>
+        <div class="abstract-content">
+            Netty&#x57FA;&#x672C;&#x7EC4;&#x4EF6;netty&#x4E2D;&#x4E8E;&#x5BF9;&#x4E8E;&#x539F;&#x59CB;socket&#x76F8;&#x5BF9;&#x5E94;&#x7684;&#x6982;&#x5FF5;
+
+NioEventLoop&#xFF08;Nio&#x4E8B;&#x4EF6;&#x5FAA;&#x73AF;&#xFF09;
+&#x76D1;&#x542C;&#x4EE5;&#x4E0B;&#x4E24;&#x79CD;
+
+&#x65B0;&#x8FDE;&#x63A5;&#x7684;&#x63A5;&#x5165;
+&#x6570;&#x636E;&#x7684;&#x8BFB;&#x5199;
+
+Channel
+&#x8868;&#x793A;&#x8FDE;&#x63A5;&#x3002;&#x5BF9;&#x5E94;&#x4E8E;&#x5728;IO&#x4E2D;&#x7684;Socket&#xFF0C;NIO&#x4E2D;&#x5219;&#x662F;SocketChannel&#x3002;&#x5B9E;&#x9645;&#x4E0A;&#x5C31;&#x662F;Socket&#x7684;&#x62BD;&#x8C61;&#x3002;
+ByteBuf
+&#x5C01;&#x88C5;&#x4E86;&#x4E00;&#x4E9B;&#x63A5;&#x53D7;&#x53D1;&#x9001;&#x6570;&#x636E;&#x7684;API
+ChannelHandler
+&#x5BF9;&#x4E8C;&#x8FDB;&#x5236;&#x534F;&#x8BAE;&#x8FDB;&#x884C;&#x6570;&#x636E;&#x5305;&#x7684;&#x62C6;&#x5206;&#xFF0C;&#x8F6C;&#x6362;&#x4E3A;Java&#x7C7B;&#x578B;&#x7B49;&#xFF0C;&#x670D;&#x52A1;&#x7AEF;&#x5BF9;&#x6570;&#x636E;&#x7684;&#x903B;&#x8F91;&#x3002;
+PipeLine
+&#x903B;&#x8F9...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/12/25</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class="abstract-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2018/12/24/20181224-3/">
             
                 <span>高性能MySQL-第5章-创建高性能的索引</span>
@@ -707,40 +753,6 @@ Java&#x5185;&#x5B58;&#x6A21;&#x578B;&#x4E3B;&#x5185;&#x5B58;&#x4E0E;&#x5DE5;&#x4
             <!-- date  -->
             <div class="abstract-date">
                 <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/12/23</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="JVM">JVM</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="《深入理解Java虚拟机》">《深入理解Java虚拟机》</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/12/21/20181222-2/">
-            
-                <span>深入理解Java虚拟机-第8章-虚拟机字节码执行引擎</span>
-        </a>
-        <div class="abstract-content">
-            &#x8FD0;&#x884C;&#x65F6;&#x6808;&#x5E27;&#x7ED3;&#x6784;&#x6808;&#x5E27;(Stack Frame)&#x662F;&#x7528;&#x4E8E;&#x652F;&#x6301;&#x865A;&#x62DF;&#x673A;&#x8FDB;&#x884C;&#x65B9;&#x6CD5;&#x8C03;&#x7528;&#x548C;&#x65B9;&#x6CD5;&#x6267;&#x884C;&#x7684;&#x6570;&#x636E;&#x7ED3;&#x6784;,&#x5B83;&#x662F;&#x865A;&#x62DF;&#x673A;&#x8FD0;&#x884C;&#x65F6;&#x6570;&#x636E;&#x533A;&#x4E2D;&#x7684;&#x865A;&#x62DF;&#x673A;&#x6808;(Virtual Machine Stack) &#x7684;&#x6808;&#x5143;&#x7D20;&#x3002;
-&#x6808;&#x5E27;&#x5B58;&#x50A8;&#x4E86;&#x65B9;&#x6CD5;&#x7684;&#x5C40;&#x90E8;&#x53D8;&#x91CF;&#x8868;&#x3001;&#x64CD;&#x4F5C;&#x6570;&#x6808;&#x3001;&#x52A8;&#x6001;&#x8FDE;&#x63A5;&#x548C;&#x65B9;&#x6CD5;&#x8FD4;&#x56DE;&#x5730;&#x5740;&#x7B49;&#x4FE1;&#x606F;&#x3002;&#x6BCF;&#x4E00;&#x4E2A;&#x65B9;&#x6CD5;&#x4ECE;&#x8C03;&#x7528;&#x5F00;&#x59CB;&#x81F3;&#x6267;&#x884C;&#x5B8C;&#x6210;&#x7684;&#x8FC7;&#x7A0B;,&#x90FD;&#x5BF9;&#x5E94;&#x7740;&#x4E00;&#x4E2A;&#x6808;&#x5E27;&#x5728;&#x865A;&#x62DF;&#x673A;&#x68...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/12/21</span>
             </div>
             <!-- tags  -->
             
@@ -1867,9 +1879,26 @@ Java&#x5185;&#x5B58;&#x6A21;&#x578B;&#x4E3B;&#x5185;&#x5B58;&#x4E0E;&#x5DE5;&#x4
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 68
+        Total : 69
         </div>
         <!-- search  -->
         
@@ -1886,6 +1915,11 @@ Java&#x5185;&#x5B58;&#x6A21;&#x578B;&#x4E3B;&#x5185;&#x5B58;&#x4E0E;&#x5DE5;&#x4
     
     <div class="archive-year"> 2019 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/21</span><a class="archive-post-title" href="/2019/04/21/20190421-3/">Dubbo源码跟踪实录-集群容错:负载均衡LoadBalance</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -2241,9 +2275,11 @@ Java&#x5185;&#x5B58;&#x6A21;&#x578B;&#x4E3B;&#x5185;&#x5B58;&#x4E0E;&#x5DE5;&#x4
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
         <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
     
-        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
     
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
@@ -2267,15 +2303,13 @@ Java&#x5185;&#x5B58;&#x6A21;&#x578B;&#x4E3B;&#x5185;&#x5B58;&#x4E0E;&#x5DE5;&#x4
     
         <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
     
-        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
-    
         <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
     
         <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
     
-        <span class="sidebar-tag-name" data-tags="ProtoBuffer"><span class="iconfont-archer">&#xe606;</span>ProtoBuffer</span>
+        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
     
-        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+        <span class="sidebar-tag-name" data-tags="ProtoBuffer"><span class="iconfont-archer">&#xe606;</span>ProtoBuffer</span>
     
         <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
