@@ -22,7 +22,7 @@
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>农场主的黑科技.</title>
+    <title>20190421 · 农场主的黑科技.</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -218,12 +218,23 @@
 </head>
 
     
+        <body class="post-body">
+    
     
 <header class="header">
 
     <div class="read-progress"></div>
     <div class="header-sidebar-menu">&#xe775;</div>
     <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">农场主的黑科技.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">20190421</a>
+            </div>
+    </div>
     
     <a class="home-link" href="/">农场主的黑科技.</a>
 </header>
@@ -235,24 +246,71 @@
 
 
 
+
+height:30vh;
 ">
     
     <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
             
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/)"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/andrew-leu-1113236-unsplash.jpg)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
+            
+            20190421
+            <!-- 404 -->
             
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
             
+            
+            <!-- 404 -->
+            
         </p>
         <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class="post-intro-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="dubbo">dubbo</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Dubbo源码跟踪实录">Dubbo源码跟踪实录</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">2.2k</span>阅读时长: <span class="post-count reading-time">13 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/04/21</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
         
     </div>
 </div>
@@ -353,278 +411,121 @@
 </script>        
         <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
         <div class="container container-unloaded">
-            <main class="main index-page">
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/01/20181031/">
-            
-                <span>并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</span>
-        </a>
-        <div class="abstract-content">
-            
-&#x1F364; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;
-&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
-
-&#x8FD9;&#x7BC7;&#x6587;&#x7AE0;&#x4E2D;&#x4F1A;&#x8BE6;&#x7EC6;&#x4ECB;&#x7ECD;&#x90A3;&#x4E9B;&#x5207;&#x6362;&#x7EBF;&#x7A0B;&#x72B6;&#x6001;&#x7684;&#x5E38;&#x7528;&#x65B9;&#x6CD5;(wait,notify,sleep,join,yield)&#x3002;
-&#x7EBF;&#x7A0B;&#x7684;&#x72B6;&#x6001;&#x548C;&#x5E38;&#x7528;&#x65B9;&#x6CD5;&#x8FD8;&#x662F;&#x8FD9;&#x5F20;&#x56FE;&#x3002;&#x672C;&#x7AE0;&#x4E2D;&#x4ECB;&#x7ECD;&#x7684;&#x65B9;&#x6CD5;&#x4E0E;&#x7EBF;&#x7A0B;&#x72B6;&#x6001;&#x7684;&#x5173;&#x7CFB;&#x5982;&#x4E0B;&#x56FE;&#x6240;&#x793A;
-
-wait() &#x548C; notify() &#x65B9;&#x6CD5;&#x9996;&#x5148;&#xFF0C;&#x8FD9;&#x4E24;&#x4E2A;&#x65B9;&#x6CD5;&#x662F;&#x505A;&#x4EC0;&#x4E48;&#x7684;&#xFF1A;
-
-Object.wait() &#x2013; &#x6302;&#x8D77;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;
-Object.notify() &#x2013; &#x5524;&#x9192;&#x4E00;&#x4E2...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/01</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
-    
-</div>
-            
-        </div>
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>&#x9996;&#x5148;,&#x670D;&#x52A1;&#x8DEF;&#x7531;&#x662F;&#x5E72;&#x4EC0;&#x4E48;&#x7684;?</p>
+<p>&#x5237;&#x65B0;invoker&#x7684;&#x8FC7;&#x7A0B;&#x4E2D;&#xFF0C;&#x4F1A;&#x901A;&#x8FC7; Router &#x8FDB;&#x884C;&#x670D;&#x52A1;&#x8DEF;&#x7531;&#xFF0C;&#x7B5B;&#x9009;&#x51FA;&#x7B26;&#x5408;&#x8DEF;&#x7531;&#x89C4;&#x5219;&#x7684;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#x3002;</p>
+<p>&#x670D;&#x52A1;&#x8DEF;&#x7531;&#x5305;&#x542B;&#x4E00;&#x6761;&#x8DEF;&#x7531;&#x89C4;&#x5219;&#xFF0C;&#x89C4;&#x5B9A;&#x4E86;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x53EF;&#x8C03;&#x7528;&#x54EA;&#x4E9B;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#x3002;</p>
+<p>Dubbo &#x76EE;&#x524D;&#x63D0;&#x4F9B;&#x4E86;&#x4E09;&#x79CD;&#x670D;&#x52A1;&#x8DEF;&#x7531;&#x5B9E;&#x73B0;&#xFF0C;&#x5206;&#x522B;&#x4E3A;&#x6761;&#x4EF6;&#x8DEF;&#x7531; ConditionRouter&#x3001;&#x811A;&#x672C;&#x8DEF;&#x7531; ScriptRouter &#x548C;&#x6807;&#x7B7E;&#x8DEF;&#x7531; TagRouter&#x3002;&#x6587;&#x4E2D;&#x4E3B;&#x8981;&#x5206;&#x6790;&#x6700;&#x5E38;&#x7528;&#x7684;<strong>&#x6761;&#x4EF6;&#x8DEF;&#x7531; ConditionRouter</strong>.</p>
+<blockquote>
+<p>&#x63A8;&#x8350;&#x9605;&#x8BFB;:</p>
+<p><a href="https://dubbo.incubator.apache.org/zh-cn/" target="_blank" rel="noopener">https://dubbo.incubator.apache.org/zh-cn/</a></p>
+<p><a href="https://segmentfault.com/blog/dubboanalysis" target="_blank" rel="noopener">https://segmentfault.com/blog/dubboanalysis</a></p>
+</blockquote>
+<h2 id="&#x8DEF;&#x7531;&#x89C4;&#x5219;"><a href="#&#x8DEF;&#x7531;&#x89C4;&#x5219;" class="headerlink" title="&#x8DEF;&#x7531;&#x89C4;&#x5219;"></a>&#x8DEF;&#x7531;&#x89C4;&#x5219;</h2><p>&#x6761;&#x4EF6;&#x8DEF;&#x7531;&#x89C4;&#x5219;&#x7531;&#x4E24;&#x4E2A;&#x6761;&#x4EF6;&#x7EC4;&#x6210;&#xFF0C;&#x5206;&#x522B;&#x7528;&#x4E8E;&#x5BF9;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x548C;&#x63D0;&#x4F9B;&#x8005;&#x8FDB;&#x884C;&#x5339;&#x914D;&#x3002;&#x6BD4;&#x5982;&#x6709;&#x8FD9;&#x6837;&#x4E00;&#x6761;&#x89C4;&#x5219;&#xFF1A;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">host = 10.20.153.10 =&gt; host = 10.20.153.11</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8BE5;&#x6761;&#x89C4;&#x5219;&#x8868;&#x793A; IP &#x4E3A; 10.20.153.10 &#x7684;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;<strong>&#x53EA;&#x53EF;</strong>&#x8C03;&#x7528; IP &#x4E3A; 10.20.153.11 &#x673A;&#x5668;&#x4E0A;&#x7684;&#x670D;&#x52A1;&#xFF0C;&#x4E0D;&#x53EF;&#x8C03;&#x7528;&#x5176;&#x4ED6;&#x673A;&#x5668;&#x4E0A;&#x7684;&#x670D;&#x52A1;&#x3002;&#x6761;&#x4EF6;&#x8DEF;&#x7531;&#x89C4;&#x5219;&#x7684;&#x683C;&#x5F0F;&#x5982;&#x4E0B;&#xFF1A;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x5339;&#x914D;&#x6761;&#x4EF6;] =&gt; [&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#x5339;&#x914D;&#x6761;&#x4EF6;]</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5982;&#x679C;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x5339;&#x914D;&#x6761;&#x4EF6;&#x4E3A;&#x7A7A;&#xFF0C;&#x8868;&#x793A;&#x4E0D;&#x5BF9;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x8FDB;&#x884C;&#x9650;&#x5236;&#x3002;&#x5982;&#x679C;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#x5339;&#x914D;&#x6761;&#x4EF6;&#x4E3A;&#x7A7A;&#xFF0C;&#x8868;&#x793A;&#x5BF9;&#x67D0;&#x4E9B;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x7981;&#x7528;&#x670D;&#x52A1;&#x3002;</p>
+<p>&#x6761;&#x4EF6;&#x8DEF;&#x7531;&#x5B9E;&#x73B0;&#x7C7B; ConditionRouter &#x5728;&#x8FDB;&#x884C;&#x5DE5;&#x4F5C;&#x524D;&#xFF0C;&#x9700;&#x8981;&#x5148;&#x5BF9;&#x7528;&#x6237;&#x914D;&#x7F6E;&#x7684;&#x8DEF;&#x7531;&#x89C4;&#x5219;&#x8FDB;&#x884C;&#x89E3;&#x6790;&#xFF0C;&#x5F97;&#x5230;&#x4E00;&#x7CFB;&#x5217;&#x7684;&#x6761;&#x4EF6;&#x3002;&#x7136;&#x540E;&#x518D;&#x6839;&#x636E;&#x8FD9;&#x4E9B;&#x6761;&#x4EF6;&#x5BF9;&#x670D;&#x52A1;&#x8FDB;&#x884C;&#x8DEF;&#x7531;&#x3002;&#x672C;&#x7AE0;&#x5C06;&#x5206;&#x4E24;&#x8282;&#x8FDB;&#x884C;&#x8BF4;&#x660E;&#xFF0C;&#x8282;&#x4ECB;&#x7ECD;&#x8868;&#x8FBE;&#x5F0F;&#x89E3;&#x6790;&#x8FC7;&#x7A0B;&#x3002;&#x8282;&#x4ECB;&#x7ECD;&#x670D;&#x52A1;&#x8DEF;&#x7531;&#x7684;&#x8FC7;&#x7A0B;&#x3002;&#x4E0B;&#x9762;&#xFF0C;&#x6211;&#x4EEC;&#x5148;&#x4ECE;&#x8868;&#x8FBE;&#x5F0F;&#x89E3;&#x6790;&#x8FC7;&#x7A0B;&#x770B;&#x8D77;&#x3002;</p>
+<h2 id="&#x8868;&#x8FBE;&#x5F0F;&#x89E3;&#x6790;"><a href="#&#x8868;&#x8FBE;&#x5F0F;&#x89E3;&#x6790;" class="headerlink" title="&#x8868;&#x8FBE;&#x5F0F;&#x89E3;&#x6790;"></a>&#x8868;&#x8FBE;&#x5F0F;&#x89E3;&#x6790;</h2><p>&#x6761;&#x4EF6;&#x8868;&#x8FBE;&#x5F0F;&#x7684;&#x89E3;&#x6790;&#x8FC7;&#x7A0B;&#x59CB;&#x4E8E; ConditionRouter &#x7684;&#x6784;&#x9020;&#x65B9;&#x6CD5;.&#x8BE5;&#x6784;&#x9020;&#x65B9;&#x6CD5;&#x4F1A;&#x5728;RegistryDirectory#notify&#x4E2D;&#x88AB;&#x8C03;&#x7528;,&#x6240;&#x4EE5;&#x53C2;&#x6570;&#x662F;&#x4ECE;zk&#x7684;routers&#x8282;&#x70B9;&#x4E0B;&#x7684;url,&#x4E0B;&#x9762;&#x5F00;&#x59CB;&#x5206;&#x6790;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ConditionRouter</span><span class="params">(URL url)</span> </span>{<span class="comment">//zk routers&#x8282;&#x70B9;&#x4E0B;&#x7684;url</span></span><br><span class="line">    <span class="keyword">this</span>.url = url;</span><br><span class="line">    <span class="comment">// &#x83B7;&#x53D6; priority &#x548C; force &#x914D;&#x7F6E;</span></span><br><span class="line">    <span class="keyword">this</span>.&#x5982;&#x679C;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x5339;&#x914D;&#x6761;&#x4EF6;&#x4E3A;&#x7A7A;&#xFF0C;&#x8868;&#x793A;&#x4E0D;&#x5BF9;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x8FDB;&#x884C;&#x9650;&#x5236;&#x3002;&#x5982;&#x679C;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#x5339;&#x914D;&#x6761;&#x4EF6;&#x4E3A;&#x7A7A;&#xFF0C;&#x8868;&#x793A;&#x5BF9;&#x67D0;&#x4E9B;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x7981;&#x7528;&#x670D;&#x52A1;&#x3002;priority = url.getParameter(Constants.PRIORITY_KEY, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">this</span>.force = url.getParameter(Constants.FORCE_KEY, <span class="keyword">false</span>);</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        <span class="comment">// &#x83B7;&#x53D6;&#x8DEF;&#x7531;&#x89C4;&#x5219;</span></span><br><span class="line">        String rule = url.getParameterAndDecoded(Constants.RULE_KEY);</span><br><span class="line">        <span class="keyword">if</span> (rule == <span class="keyword">null</span> || rule.trim().length() == <span class="number">0</span>) {</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">&quot;Illegal route rule!&quot;</span>);</span><br><span class="line">        }</span><br><span class="line">        rule = rule.replace(<span class="string">&quot;consumer.&quot;</span>, <span class="string">&quot;&quot;</span>).replace(<span class="string">&quot;provider.&quot;</span>, <span class="string">&quot;&quot;</span>);</span><br><span class="line">        <span class="comment">// &#x5B9A;&#x4F4D; =&gt; &#x5206;&#x9694;&#x7B26;</span></span><br><span class="line">        <span class="keyword">int</span> i = rule.indexOf(<span class="string">&quot;=&gt;&quot;</span>);</span><br><span class="line">        <span class="comment">// &#x5206;&#x522B;&#x83B7;&#x53D6;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x548C;&#x63D0;&#x4F9B;&#x8005;&#x5339;&#x914D;&#x89C4;&#x5219;</span></span><br><span class="line">        String whenRule = i &lt; <span class="number">0</span> ? <span class="keyword">null</span> : rule.substring(<span class="number">0</span>, i).trim(); <span class="comment">//host = 10.20.153.10 (&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x5339;&#x914D;&#x6761;&#x4EF6;)</span></span><br><span class="line">        String thenRule = i &lt; <span class="number">0</span> ? rule.trim() : rule.substring(i + <span class="number">2</span>).trim();<span class="comment">//host = 10.20.153.11 (&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#x5339;&#x914D;&#x6761;&#x4EF6;)</span></span><br><span class="line">        <span class="comment">// &#x89E3;&#x6790;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x5339;&#x914D;&#x89C4;&#x5219;</span></span><br><span class="line">        Map&lt;String, MatchPair&gt; when = StringUtils.isBlank(whenRule) || <span class="string">&quot;true&quot;</span>.equals(whenRule) ? <span class="keyword">new</span> HashMap&lt;String, MatchPair&gt;() : parseRule(whenRule);</span><br><span class="line">        <span class="comment">// &#x89E3;&#x6790;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#x5339;&#x914D;&#x89C4;&#x5219;</span></span><br><span class="line">        Map&lt;String, MatchPair&gt; then = StringUtils.isBlank(thenRule) || <span class="string">&quot;false&quot;</span>.equals(thenRule) ? <span class="keyword">null</span> : parseRule(thenRule);</span><br><span class="line">        <span class="comment">// &#x5C06;&#x89E3;&#x6790;&#x51FA;&#x7684;&#x5339;&#x914D;&#x89C4;&#x5219;&#x5206;&#x522B;&#x8D4B;&#x503C;&#x7ED9; whenCondition &#x548C; thenCondition &#x6210;&#x5458;&#x53D8;&#x91CF;</span></span><br><span class="line">        <span class="keyword">this</span>.whenCondition = when; </span><br><span class="line">        <span class="keyword">this</span>.thenCondition = then;&#x63A8;&#x8350;&#x9605;&#x8BFB;:</span><br><span class="line"></span><br><span class="line">https:<span class="comment">//dubbo.incubator.apache.org/zh-cn/</span></span><br><span class="line"></span><br><span class="line">https:<span class="comment">//segmentfault.com/blog/dubboanalysis</span></span><br><span class="line">    } <span class="keyword">catch</span> (ParseException e) {</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(e.getMessage(), e);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5047;&#x5982;&#x6211;&#x4EEC;&#x8FD9;&#x91CC;&#x7684;&#x8DEF;&#x7531;&#x89C4;&#x5219;&#x4E3A;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">host = 10.20.153.10 =&gt; host = 10.20.153.11</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x9996;&#x5148;&#x4F1A;&#x88AB;&#x5206;&#x5272;&#x4E3A;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">String whenRule = rule.substring(<span class="number">0</span>, i).trim(); <span class="comment">//host = 10.20.153.10 (&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x5339;&#x914D;&#x6761;&#x4EF6;)</span></span><br><span class="line">String thenRule = rule.substring(i + <span class="number">2</span>).trim();<span class="comment">//host = 10.20.153.11 (&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#x5339;&#x914D;&#x6761;&#x4EF6;</span></span><br></pre></td></tr></tbody></table></figure>
+<p>&#x901A;&#x8FC7;parseRule()&#x89E3;&#x6790;.&#x7ED3;&#x679C;&#x7684;Map&#x662F;<code>Map&lt;String, MatchPair&gt;</code>&#x7C7B;&#x578B;.&#x800C;<code>MatchPair</code>&#x662F;&#x4E00;&#x4E2A;&#x5185;&#x90E8;&#x7C7B;,&#x5B83;&#x7684;&#x5B9A;&#x4E49;&#x5982;&#x4E0B;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">MatchPair</span> </span>{</span><br><span class="line">    <span class="keyword">final</span> Set&lt;String&gt; matches = <span class="keyword">new</span> HashSet&lt;String&gt;();</span><br><span class="line">    <span class="keyword">final</span> Set&lt;String&gt; mismatches = <span class="keyword">new</span> HashSet&lt;String&gt;();</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>parseRule()&#x7684;&#x5B57;&#x7B26;&#x4E32;&#x89E3;&#x6790;&#x4EE3;&#x7801;&#x8FD9;&#x91CC;&#x5C31;&#x4E0D;&#x5206;&#x6790;&#x4E86;.&#x6700;&#x540E;&#x6211;&#x4EEC;&#x5F97;&#x5230;&#x7684;&#x7ED3;&#x679C;:</p>
+<figure class="highlight json"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">----- whenCondition ------</span><br><span class="line">{</span><br><span class="line">    <span class="attr">&quot;host&quot;</span>: {</span><br><span class="line">        <span class="attr">&quot;matches&quot;</span>: [<span class="string">&quot;10.20.153.10&quot;</span>],</span><br><span class="line">        <span class="attr">&quot;mismatches&quot;</span>: []</span><br><span class="line">    }</span><br><span class="line">}</span><br><span class="line">----- thenCondition ------</span><br><span class="line">{</span><br><span class="line">    <span class="attr">&quot;host&quot;</span>: {</span><br><span class="line">        <span class="attr">&quot;matches&quot;</span>: [<span class="string">&quot;10.20.153.11&quot;</span>],</span><br><span class="line">        <span class="attr">&quot;mismatches&quot;</span>: []</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x6700;&#x540E;&#x628A;whenCondition&#x548C;thenCondition&#x8FDB;&#x884C;&#x4FDD;&#x5B58;.</p>
+<blockquote>
+<p>&#x518D;&#x770B;&#x4E00;&#x4E2A;<code>parseRule()</code>&#x7684;&#x4F8B;&#x5B50;.&#x5982;&#x679C;&#x53C2;&#x6570;String&#x4E3A;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; host = 2.2.2.2 &amp; host != 1.1.1.1 &amp; method = hello</span><br><span class="line">&gt;</span><br></pre></td></tr></tbody></table></figure>
+</blockquote>
+<blockquote>
+<p>&#x90A3;&#x4E48;<code>parseRule()</code>&#x8FD4;&#x56DE;&#x7684;&#x7ED3;&#x679C;&#x662F;</p>
+<figure class="highlight"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&gt; {</span><br><span class="line">&gt;  &quot;host&quot;: {</span><br><span class="line">&gt;      &quot;matches&quot;: [&quot;2.2.2.2&quot;],</span><br><span class="line">&gt;      &quot;mismatches&quot;: [&quot;1.1.1.1&quot;]</span><br><span class="line">&gt;  },</span><br><span class="line">&gt;  &quot;method&quot;: {</span><br><span class="line">&gt;      &quot;matches&quot;: [&quot;hello&quot;],</span><br><span class="line">&gt;      &quot;mismatches&quot;: []</span><br><span class="line">&gt;  }</span><br><span class="line">&gt; }</span><br><span class="line">&gt;</span><br></pre></td></tr></tbody></table></figure>
+</blockquote>
+<blockquote>
+<p><code>ConditionRouterTest</code>&#x7C7B;&#x91CC;&#x9762;&#x6709;&#x8BB8;&#x591A;&#x5339;&#x914D;&#x7684;&#x6D4B;&#x8BD5;&#x793A;&#x4F8B;,&#x53EF;&#x4EE5;&#x53C2;&#x8003;.</p>
+</blockquote>
+<h2 id="&#x670D;&#x52A1;&#x8DEF;&#x7531;"><a href="#&#x670D;&#x52A1;&#x8DEF;&#x7531;" class="headerlink" title="&#x670D;&#x52A1;&#x8DEF;&#x7531;"></a>&#x670D;&#x52A1;&#x8DEF;&#x7531;</h2><p>&#x670D;&#x52A1;&#x8DEF;&#x7531;&#x5C31;&#x662F;&#x8C03;&#x7528;ConditionRouter&#x7684;<code>route()</code>&#x65B9;&#x6CD5;.&#x8FD9;&#x4E2A;&#x65B9;&#x6CD5;&#x5728;&#x4EC0;&#x4E48;&#x65F6;&#x5019;&#x88AB;&#x8C03;&#x7528;&#x5462;.&#x5178;&#x578B;&#x7684;&#x4F8B;&#x5B50;&#x5C31;&#x662F;&#x5728;<code>RegistryDirectory#toMethodInvokers</code>,&#x6240;&#x6709;Invoker&#x521B;&#x5EFA;&#x5B8C;&#x6210;&#x7684;&#x65F6;&#x5019;&#x8FDB;&#x884C;&#x8C03;&#x7528;.&#x4E5F;&#x5C31;&#x662F;&#x8BF4;<strong>&#x670D;&#x52A1;&#x8DEF;&#x7531;&#x7684;&#x8FC7;&#x7A0B;&#x5C31;&#x662F;&#x901A;&#x8FC7;&#x4E4B;&#x524D;&#x52A0;&#x8F7D;&#x7684;&#x8DEF;&#x7531;&#x6761;&#x4EF6;&#x7B5B;&#x9009;&#x51FA;&#x5408;&#x9002;&#x7684;invoker&#x7684;&#x8FC7;&#x7A0B;</strong>.</p>
+<p>&#x5339;&#x914D;&#x7684;&#x7EC6;&#x8282;&#x5C31;&#x4E0D;&#x770B;&#x4E86;.&#x8FD9;&#x91CC;&#x7B80;&#x5355;&#x770B;<code>route()</code>&#x7684;&#x6E90;&#x4EE3;&#x7801;:</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> &lt;T&gt; List&lt;Invoker&lt;T&gt;&gt; route(List&lt;Invoker&lt;T&gt;&gt; invokers, URL url, Invocation invocation)</span><br><span class="line">    <span class="keyword">throws</span> RpcException {</span><br><span class="line">    <span class="comment">//url&#x53C2;&#x6570; = &#x6D88;&#x8D39;&#x8005;url</span></span><br><span class="line">    <span class="keyword">if</span> (invokers == <span class="keyword">null</span> || invokers.isEmpty()) {</span><br><span class="line">        <span class="keyword">return</span> invokers;</span><br><span class="line">    }</span><br><span class="line">    <span class="keyword">try</span> {</span><br><span class="line">        <span class="comment">// &#x5148;&#x5BF9;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x6761;&#x4EF6;&#x8FDB;&#x884C;&#x5339;&#x914D;&#xFF0C;&#x5982;&#x679C;&#x5339;&#x914D;&#x5931;&#x8D25;&#xFF0C;&#x8868;&#x660E;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005; url &#x4E0D;&#x7B26;&#x5408;&#x5339;&#x914D;&#x89C4;&#x5219;&#xFF0C;</span></span><br><span class="line">        <span class="comment">// &#x65E0;&#x9700;&#x8FDB;&#x884C;&#x540E;&#x7EED;&#x5339;&#x914D;&#xFF0C;&#x76F4;&#x63A5;&#x8FD4;&#x56DE; Invoker &#x5217;&#x8868;&#x5373;&#x53EF;&#x3002;&#x6BD4;&#x5982;&#x4E0B;&#x9762;&#x7684;&#x89C4;&#x5219;&#xFF1A;</span></span><br><span class="line">        <span class="comment">//     host = 10.20.153.10 =&gt; host = 10.0.0.10</span></span><br><span class="line">        <span class="comment">// &#x8FD9;&#x6761;&#x8DEF;&#x7531;&#x89C4;&#x5219;&#x5E0C;&#x671B; IP &#x4E3A; 10.20.153.10 &#x7684;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x8C03;&#x7528; IP &#x4E3A; 10.0.0.10 &#x673A;&#x5668;&#x4E0A;&#x7684;&#x670D;&#x52A1;&#x3002;</span></span><br><span class="line">        <span class="comment">// &#x5F53;&#x6D88;&#x8D39;&#x8005; ip &#x4E3A; 10.20.153.11 &#x65F6;&#xFF0C;matchWhen &#x8FD4;&#x56DE; false&#xFF0C;&#x8868;&#x660E;&#x5F53;&#x524D;&#x8FD9;&#x6761;&#x8DEF;&#x7531;&#x89C4;&#x5219;&#x4E0D;&#x9002;&#x7528;&#x4E8E;</span></span><br><span class="line">        <span class="comment">// &#x5F53;&#x524D;&#x7684;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#xFF0C;&#x6B64;&#x65F6;&#x65E0;&#x9700;&#x518D;&#x8FDB;&#x884C;&#x540E;&#x7EED;&#x5339;&#x914D;&#xFF0C;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;&#x5373;&#x53EF;&#x3002;</span></span><br><span class="line">        <span class="keyword">if</span> (!matchWhen(url, invocation)) {</span><br><span class="line">            <span class="keyword">return</span> invokers;</span><br><span class="line">        }</span><br><span class="line">        List&lt;Invoker&lt;T&gt;&gt; result = <span class="keyword">new</span> ArrayList&lt;Invoker&lt;T&gt;&gt;();</span><br><span class="line">        <span class="comment">// &#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#x5339;&#x914D;&#x6761;&#x4EF6;&#x672A;&#x914D;&#x7F6E;&#xFF0C;&#x8868;&#x660E;&#x5BF9;&#x6307;&#x5B9A;&#x7684;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x7981;&#x7528;&#x670D;&#x52A1;&#xFF0C;&#x4E5F;&#x5C31;&#x662F;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x5728;&#x9ED1;&#x540D;&#x5355;&#x4E2D;</span></span><br><span class="line">        <span class="keyword">if</span> (thenCondition == <span class="keyword">null</span>) {</span><br><span class="line">            logger.warn(<span class="string">&quot;The current consumer in the service blacklist. consumer: &quot;</span> + NetUtils.getLocalHost() + <span class="string">&quot;, service: &quot;</span> + url.getServiceKey());</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        }</span><br><span class="line">        <span class="comment">// &#x8FD9;&#x91CC;&#x53EF;&#x4EE5;&#x7B80;&#x5355;&#x7684;&#x628A; Invoker &#x7406;&#x89E3;&#x4E3A;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#xFF0C;&#x73B0;&#x5728;&#x4F7F;&#x7528;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#x5339;&#x914D;&#x89C4;&#x5219;&#x5BF9;</span></span><br><span class="line">        <span class="comment">// Invoker &#x5217;&#x8868;&#x8FDB;&#x884C;&#x5339;&#x914D;</span></span><br><span class="line">        <span class="keyword">for</span> (Invoker&lt;T&gt; invoker : invokers) {</span><br><span class="line">            <span class="comment">// &#x82E5;&#x5339;&#x914D;&#x6210;&#x529F;&#xFF0C;&#x8868;&#x660E;&#x5F53;&#x524D; Invoker &#x7B26;&#x5408;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#x5339;&#x914D;&#x89C4;&#x5219;&#x3002;</span></span><br><span class="line">            <span class="comment">// &#x6B64;&#x65F6;&#x5C06; Invoker &#x6DFB;&#x52A0;&#x5230; result &#x5217;&#x8868;&#x4E2D;</span></span><br><span class="line">            <span class="keyword">if</span> (matchThen(invoker.getUrl(), url)) {</span><br><span class="line">                result.add(invoker);</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">        <span class="comment">// &#x8FD4;&#x56DE;&#x5339;&#x914D;&#x7ED3;&#x679C;&#xFF0C;&#x5982;&#x679C; result &#x4E3A;&#x7A7A;&#x5217;&#x8868;&#xFF0C;&#x4E14; force = true&#xFF0C;&#x8868;&#x793A;&#x5F3A;&#x5236;&#x8FD4;&#x56DE;&#x7A7A;&#x5217;&#x8868;&#xFF0C;</span></span><br><span class="line">        <span class="comment">// &#x5426;&#x5219;&#x8DEF;&#x7531;&#x7ED3;&#x679C;&#x4E3A;&#x7A7A;&#x7684;&#x8DEF;&#x7531;&#x89C4;&#x5219;&#x5C06;&#x81EA;&#x52A8;&#x5931;&#x6548;</span></span><br><span class="line">        <span class="keyword">if</span> (!result.isEmpty()) {</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        } <span class="keyword">else</span> <span class="keyword">if</span> (force) {</span><br><span class="line">            logger.warn(<span class="string">&quot;The route result is empty and force execute. consumer: &quot;</span> + NetUtils.getLocalHost() + <span class="string">&quot;, service: &quot;</span> + url.getServiceKey() + <span class="string">&quot;, router: &quot;</span> + url.getParameterAndDecoded(Constants.RULE_KEY));</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        }</span><br><span class="line">    } <span class="keyword">catch</span> (Throwable t) {</span><br><span class="line">        logger.error(<span class="string">&quot;Failed to execute condition router rule: &quot;</span> + getUrl() + <span class="string">&quot;, invokers: &quot;</span> + invokers + <span class="string">&quot;, cause: &quot;</span> + t.getMessage(), t);</span><br><span class="line">    }</span><br><span class="line">    <span class="comment">// &#x539F;&#x6837;&#x8FD4;&#x56DE;&#xFF0C;&#x6B64;&#x65F6; force = false&#xFF0C;&#x8868;&#x793A;&#x8BE5;&#x6761;&#x8DEF;&#x7531;&#x89C4;&#x5219;&#x5931;&#x6548;</span></span><br><span class="line">    <span class="keyword">return</span> invokers;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="&#x6700;&#x540E;"><a href="#&#x6700;&#x540E;" class="headerlink" title="&#x6700;&#x540E;"></a>&#x6700;&#x540E;</h2><p>&#x5728;&#x4E0A;&#x4E00;&#x7AE0;&#x4E3A;&#x6B62;&#x4E00;&#x76F4;&#x5728;&#x7528;&#x5B98;&#x65B9;&#x7684;example demo&#x6765;&#x8FDB;&#x884C;&#x6F14;&#x793A;.&#x800C;demo&#x8FD0;&#x884C;&#x65F6;AbstractDirectory&#x7684;router&#x53D8;&#x91CF;&#x662F;null.&#x4E5F;&#x5C31;&#x662F;router&#x6CA1;&#x6709;&#x88AB;&#x751F;&#x6210;,&#x6CA1;&#x6709;&#x8FDB;&#x884C;&#x670D;&#x52A1;&#x8DEF;&#x7531;&#x7684;&#x73AF;&#x8282;.&#x56E0;&#x6B64;&#x672C;&#x7AE0;&#x5C31;&#x6CA1;&#x6709;&#x8FDB;&#x884C;&#x592A;&#x591A;&#x7684;&#x4EE3;&#x7801;&#x8DDF;&#x8E2A;.</p>
+<p>&#x7B80;&#x5355;&#x8BF4;&#x4E00;&#x4E0B;router&#x7684;&#x521B;&#x5EFA;&#x65F6;&#x673A;,&#x5176;&#x5B9E;&#x8FD9;&#x90E8;&#x5206;&#x5E94;&#x8BE5;&#x653E;&#x5728;&#x6587;&#x7AE0;&#x7684;&#x5F00;&#x5934;&#x53BB;&#x8BB2;&#x7684;,&#x4E0D;&#x77E5;&#x4E3A;&#x4F55;&#x6211;&#x5C1D;&#x8BD5;&#x521B;&#x5EFA;&#x8DEF;&#x7531;&#x89C4;&#x5219;&#x7684;&#x65F6;&#x5019;&#x5931;&#x8D25;&#x4E86;(&#x5F85;&#x4F1A;&#x4F1A;&#x8BB2;),&#x6240;&#x4EE5;&#x4E0B;&#x9762;&#x7684;&#x5185;&#x5BB9;&#x53EA;&#x662F;&#x6839;&#x636E;&#x6E90;&#x7801;&#x7684;&#x731C;&#x6D4B;,&#x53EF;&#x80FD;&#x4E0D;&#x51C6;&#x786E;:</p>
+<p>AbstractDirectory&#x7684;router&#x53D8;&#x91CF;&#x7684;&#x6784;&#x9020;&#x65F6;&#x673A;,&#x4E5F;&#x5C31;&#x662F;ConditionRouter&#x7684;&#x6784;&#x9020;&#x65F6;&#x673A;,&#x4E00;&#x5171;&#x6709;&#x4E24;&#x6B21;.&#x4E00;&#x6B21;&#x662F;&#x5728;AbstractDirectory&#x7684;&#x6784;&#x9020;&#x51FD;&#x6570;&#x7684;&#x53C2;&#x6570;&#x4E2D;.&#x8FD8;&#x6709;&#x4E00;&#x6B21;&#x662F;&#x5728;RegistryDirectory&#x7684;notify()&#x91CC;&#x9762;.</p>
+<p>&#x800C;RegistryDirectory&#x7684;notify()&#x65B9;&#x6CD5;&#x4F1A;&#x4ECE;zk&#x4E2D;&#x83B7;&#x53D6;router&#x7684;URL.demo&#x4E2D;&#x83B7;&#x53D6;&#x5230;&#x7684;URL&#x662F;&#x65E0;&#x6548;&#x7684;(&#x4E0D;&#x5B58;&#x5728;),&#x6240;&#x4EE5;&#x5C31;&#x6CA1;&#x6709;&#x6784;&#x9020;&#x6210;&#x529F;.&#x5982;&#x679C;&#x8FD9;&#x91CC;&#x83B7;&#x53D6;&#x5230;&#x6709;&#x6548;&#x7684;url,ConditionRouter&#x5C31;&#x4F1A;&#x88AB;&#x6784;&#x9020;,&#x5E76;&#x542F;&#x52A8;&#x670D;&#x52A1;&#x8DEF;&#x7531;.</p>
+<p>&#x90A3;&#x4E48;&#x8BE5;&#x5982;&#x4F55;&#x521B;&#x5EFA;&#x8DEF;&#x7531;&#x5462;?</p>
+<p>&#x5B98;&#x65B9;&#x6587;&#x6863;&#x8BF4;&#x9700;&#x8981;&#x901A;&#x8FC7;<a href="https://github.com/apache/incubator-dubbo-admin" target="_blank" rel="noopener">Dubbo-Admin</a>&#x5199;&#x5165;&#x8DEF;&#x7531;&#x89C4;&#x5219;.&#x4E0D;&#x77E5;&#x4E3A;&#x4F55;&#x6211;&#x5728;&#x521B;&#x5EFA;&#x8DEF;&#x7531;&#x89C4;&#x5219;&#x7684;&#x9875;&#x9762;&#x4FDD;&#x5B58;&#x4E0D;&#x4E86;..&#x5982;&#x679C;&#x8FD9;&#x91CC;&#x521B;&#x5EFA;&#x6210;&#x529F;&#x4E86;,RegistryDirectory&#x7684;notify()&#x65B9;&#x6CD5;&#x5E94;&#x8BE5;&#x5C31;&#x4F1A;&#x83B7;&#x53D6;&#x5230;&#x6709;&#x6548;&#x7684;router&#x7684;URL,&#x5E76;&#x521B;&#x5EFA;ConditionRouter,&#x542F;&#x52A8;&#x670D;&#x52A1;&#x8DEF;&#x7531;.</p>
+<p>&#x8DEF;&#x7531;&#x89C4;&#x5219;&#x548C;&#x5339;&#x914D;&#x7684;&#x903B;&#x8F91;&#x6587;&#x4E2D;&#x90FD;&#x6CA1;&#x6709;&#x8BE6;&#x7EC6;&#x4ECB;&#x7ECD;,&#x611F;&#x89C9;&#x4EE5;&#x540E;&#x8981;&#x7528;&#x7684;&#x65F6;&#x5019;&#x518D;&#x67E5;&#x5C31;&#x884C;&#x4E86;.&#x5176;&#x5B9E;&#x5173;&#x4E8E;&#x670D;&#x52A1;&#x8DEF;&#x7531;&#x77E5;&#x9053;&#x8FD9;&#x4E00;&#x53E5;&#x8BDD;&#x5C31;&#x591F;&#x4E86;:</p>
+<p><strong>&#x670D;&#x52A1;&#x8DEF;&#x7531;&#x7684;&#x8FC7;&#x7A0B;&#x5C31;&#x662F;&#x901A;&#x8FC7;&#x4E4B;&#x524D;&#x52A0;&#x8F7D;&#x7684;&#x8DEF;&#x7531;&#x6761;&#x4EF6;&#x7B5B;&#x9009;&#x51FA;&#x5408;&#x9002;&#x7684;invoker&#x7684;&#x8FC7;&#x7A0B;</strong></p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
     </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/01/20181030-2/">
-            
-                <span>并发操作合集-1.线程的生命周期</span>
-        </a>
-        <div class="abstract-content">
-            
-&#x1F364; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x76EE;&#x5F55;
-&#x1F355; &#x5E76;&#x53D1;&#x64CD;&#x4F5C;&#x5408;&#x96C6;&#x7CFB;&#x5217; &#x6E90;&#x4EE3;&#x7801;
-
-&#x5728;&#x4ECB;&#x7ECD;&#x5E76;&#x53D1;&#x7684;&#x64CD;&#x4F5C;&#x4E4B;&#x524D;&#xFF0C;&#x5FC5;&#x9700;&#x5148;&#x7406;&#x89E3;&#x7EBF;&#x7A0B;&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;&#x3002;
-&#x7EBF;&#x7A0B;&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;&#x4E0B;&#x56FE;&#x662F;Java&#x4E2D;&#x7EBF;&#x7A0B;&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;&#xFF0C;&#x4EE5;&#x53CA;&#x5207;&#x6362;&#x72B6;&#x6001;&#x7684;&#x5E38;&#x7528;&#x65B9;&#x6CD5;&#x3002;java.lang.Thread&#x7C7B;&#x5305;&#x542B;&#x7684;&#x72B6;&#x6001;&#x679A;&#x4E3E;&#x5B9A;&#x4E49;&#x4E86;&#x8FD9;6&#x4E2A;&#x72B6;&#x6001;&#x3002;
-
-&#x4E0D;&#x7BA1;&#x5728;&#x4EFB;&#x4F55;&#x65F6;&#x5019;&#xFF0C;&#x7EBF;&#x7A0B;&#x4F1A;&#x662F;&#x4EE5;&#x4E0B;&#x72B6;&#x6001;&#x7684;&#x5176;&#x4E2D;&#x4E00;&#x4E2A;&#xFF1A;
-
-New&#xFF08;&#x65B0;&#x5EFA;&#x72B...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/01</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发操作合集">并发操作合集</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/10/30/20181030/">
-            
-                <span>Java并发编程实战-第6章-任务执行</span>
-        </a>
-        <div class="abstract-content">
-            &#x4EC0;&#x4E48;&#x662F;&#x4EFB;&#x52A1;&#xFF1F;&#x4EFB;&#x52A1;&#x5C31;&#x662F;&#x5DE5;&#x4F5C;&#x5355;&#x5143;&#xFF0C;&#x6211;&#x4EEC;&#x628A;&#x5E94;&#x7528;&#x4E2D;&#x7684;&#x5DE5;&#x4F5C;&#x5206;&#x6210;&#x591A;&#x4E2A;&#x4EFB;&#x52A1;&#xFF0C;&#x4ECE;&#x800C;&#x8FDB;&#x884C;&#x4E8B;&#x52A1;&#x64CD;&#x4F5C;&#x548C;&#x5E76;&#x884C;&#x5DE5;&#x4F5C;&#x3002;
-&#x5728;&#x7EBF;&#x7A0B;&#x4E2D;&#x6267;&#x884C;&#x4EFB;&#x52A1;&#x9996;&#x5148;&#x4EFB;&#x52A1;&#x4E4B;&#x95F4;&#x5FC5;&#x987B;&#x662F;&#x76F8;&#x4E92;&#x72EC;&#x7ACB;&#x7684;&#xFF1A;&#x4EFB;&#x52A1;&#x5E76;&#x4E0D;&#x4F9D;&#x8D56;&#x4E8E;&#x5176;&#x4ED6;&#x4EFB;&#x52A1;&#x7684;&#x72B6;&#x6001;&#xFF0C;&#x7ED3;&#x679C;&#x6216;&#x8FB9;&#x754C;&#x6548;&#x5E94;&#x3002; 
-&#x4E32;&#x884C;&#x5730;&#x6267;&#x884C;&#x4EFB;&#x52A1;&#x6709;&#x591A;&#x79CD;&#x8C03;&#x5EA6;&#x4EFB;&#x52A1;&#x7684;&#x7B56;&#x7565;&#xFF0C;&#x800C;&#x5176;&#x4E2D;&#x4E00;&#x4E9B;&#x7B56;&#x7565;&#x80FD;&#x591F;&#x66F4;&#x597D;&#x5730;&#x5229;&#x7528;&#x6F5C;&#...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/10/30</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="《Java并发编程实战》">《Java并发编程实战》</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/10/29/20181029/">
-            
-                <span>Java并发编程实战-第5章-基础构建模块</span>
-        </a>
-        <div class="abstract-content">
-            &#x672C;&#x7AE0;&#x4E2D;&#x8BB2;&#x4ECB;&#x7ECD;&#x5728;Java5&#x548C;6&#x4E2D;&#x5F15;&#x5165;&#x7684;&#x4E00;&#x4E9B;&#x6784;&#x5EFA;&#x5E76;&#x53D1;&#x6A21;&#x5757;&#xFF0C;&#x4EE5;&#x53CA;&#x5982;&#x4F55;&#x7528;&#x8FD9;&#x4E9B;&#x6A21;&#x5757;&#x6765;&#x8FDB;&#x884C;&#x5F00;&#x53D1;&#x3002;
-&#x540C;&#x6B65;&#x5BB9;&#x5668;&#x7C7B;&#x540C;&#x6B65;&#x5BB9;&#x5668;&#x7C7B;&#x5305;&#x62EC;Vector&#x548C;Hashtable&#x3001;&#x8FD9;&#x4E9B;&#x7C7B;&#x5B9E;&#x73B0;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x65B9;&#x5F0F;&#x662F;&#xFF1A;&#x5C06;&#x5B83;&#x4EEC;&#x7684;&#x72B6;&#x6001;&#x5C01;&#x88C5;&#x8D77;&#x6765;&#xFF0C;&#x5E76;&#x5BF9;&#x6BCF;&#x4E2A;&#x516C;&#x6709;&#x65B9;&#x6CD5;&#x90FD;&#x8FDB;&#x884C;&#x540C;&#x6B65;&#xFF0C;&#x4F7F;&#x5F97;&#x6BCF;&#x6B21;&#x53EA;&#x6709;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x80FD;&#x8BBF;&#x95EE;&#x5BB9;&#x5668;&#x7684;&#x72B6;&#x6001;&#x3002;
-&#x540C;&#x6B65;&#x5BB9;&#x5668;&#x7C7B;&#x7684;&#x95EE;&#x9898;&#x5E38;&#x89C1;&#x7684;&#x590D;&#x5408;&#x64C...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/10/29</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="《Java并发编程实战》">《Java并发编程实战》</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/10/28/20181028/">
-            
-                <span>Java并发编程实战-第4章-对象的组合</span>
-        </a>
-        <div class="abstract-content">
-            &#x5728;&#x672C;&#x7AE0;&#x4E2D;&#x6D89;&#x53CA;&#x7684;&#x7EC4;&#x5408;&#x6A21;&#x5F0F;&#x4E2D;&#xFF0C;&#x5C06;&#x4F1A;&#x628A;&#x4E00;&#x4E9B;&#x73B0;&#x6709;&#x7684;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7EC4;&#x4EF6;&#x7EC4;&#x5408;&#x6210;&#x66F4;&#x5927;&#x7684;&#x7A0B;&#x5E8F;&#xFF0C;&#x4ECE;&#x800C;&#x5B9E;&#x73B0;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x3002;
-&#x8BBE;&#x8BA1;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x7C7B;&#x6211;&#x4EEC;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;&#x5C01;&#x88C5;&#x6765;&#x786E;&#x4FDD;&#x7A0B;&#x5E8F;&#x662F;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x3002;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x7C7B;&#x7684;&#x8BBE;&#x8BA1;&#x8FC7;&#x7A0B;&#xFF1A;
-
-&#x627E;&#x51FA;&#x6784;&#x6210;&#x5BF9;&#x8C61;&#x72B6;&#x6001;&#x7684;&#x6240;&#x6709;&#x5C5E;&#x6027;
-&#x627E;&#x51FA;&#x7EA6;&#x675F;&#x8FD9;&#x4E9B;&#x5C5E;&#x6027;&#x7684;&#x4E0D;&#x53D8;&#x6027;&#x6761;&#x4EF6;
-&#x5EFA;&#x7ACB;&#x8FD9;&#x4E9B;&#x5C5E;&#x6027;&#x7684;&#x5E76;&#x53D1;&#x8BBF;&#x95EE;&#x7B56;...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/10/28</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="《Java并发编程实战》">《Java并发编程实战》</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/10/27/20181027/">
-            
-                <span>Java并发编程实战-第3章-对象的共享</span>
-        </a>
-        <div class="abstract-content">
-            &#x5728;&#x4E0A;&#x4E00;&#x7AE0;&#x4E2D;&#x4ECB;&#x7ECD;&#x4E86;&#x5982;&#x4F55;&#x901A;&#x8FC7;&#x540C;&#x6B65;&#x6765;&#x907F;&#x514D;&#x591A;&#x4E2A;&#x7EBF;&#x7A0B;&#x5728;&#x540C;&#x4E00;&#x65F6;&#x95F4;&#x8BBF;&#x95EE;&#x76F8;&#x540C;&#x6570;&#x636E;&#xFF0C;&#x5728;&#x8FD9;&#x4E00;&#x7AE0;&#x4E2D;&#x5C06;&#x4ECB;&#x7ECD;&#x5982;&#x4F55;&#x5171;&#x4EAB;&#x548C;&#x53D1;&#x5E03;&#x5BF9;&#x8C61;&#xFF0C;&#x4ECE;&#x800C;&#x80FD;&#x5B89;&#x5168;&#x5730;&#x88AB;&#x591A;&#x4E2A;&#x7EBF;&#x7A0B;&#x540C;&#x65F6;&#x8BBF;&#x95EE;&#x3002;
-&#x53EF;&#x89C1;&#x6027;&#x4EC0;&#x4E48;&#x662F;&#x5185;&#x5B58;&#x53EF;&#x89C1;&#x6027;&#xFF1F;&#x53EF;&#x89C1;&#x6027;&#x5C31;&#x662F;&#x503C;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x4FEE;&#x6539;&#x4E86;&#x5BF9;&#x8C61;&#x72B6;&#x6001;&#x4E4B;&#x540E;&#xFF0C;&#x5176;&#x4ED6;&#x7EBF;&#x7A0B;&#x80FD;&#x591F;&#x770B;&#x5230;&#x53D1;&#x751F;&#x7684;&#x72B6;&#x6001;&#x53D8;&#x5316;&#x3002;&#x7136;&#x800C;&#xFF0C;&#x901A;&#x5E38;&#x65E0;&#x6CD5;&#x786E;&#x5B9A;&#x8...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/10/27</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="《Java并发编程实战》">《Java并发编程实战》</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/10/25/20181025/">
-            
-                <span>Java并发编程实战-第2章-线程安全性</span>
-        </a>
-        <div class="abstract-content">
-            &#x7F16;&#x5199;&#x7EBF;&#x7A0B;&#x5B89;&#x5168;&#x7684;&#x4EE3;&#x7801; &#x5C31;&#x662F;&#x5BF9;&#x5171;&#x4EAB;&#x7684;&#x548C;&#x53EF;&#x53D8;&#x7684;&#x72B6;&#x6001;&#x8BBF;&#x95EE;&#x64CD;&#x4F5C;&#x8FDB;&#x884C;&#x7BA1;&#x7406;&#x3002;&#x90A3;&#x4E48;&#x4EC0;&#x4E48;&#x662F;&#x72B6;&#x6001;&#xFF1F;
-&#x72B6;&#x6001;&#x662F;&#x6307;&#x5B58;&#x50A8;&#x5728;&#x72B6;&#x6001;&#x53D8;&#x91CF;&#x603B;&#x7684;&#x6570;&#x636E;&#x3002;&#x6BD4;&#x5982;&#x67D0;&#x4E2A;HashMap&#x7684;&#x72B6;&#x6001;&#xFF0C;&#x4E0D;&#x4EC5;&#x662F;HashMap&#x672C;&#x8EAB;,&#x4E5F;&#x5305;&#x62EC;&#x5B58;&#x50A8;&#x7684;Map.Entry&#x5BF9;&#x8C61;&#x3002;&#x5BF9;&#x5916;&#x90E8;&#x6709;&#x5F71;&#x54CD;&#x7684;&#x6570;&#x636E;&#x90FD;&#x80FD;&#x79F0;&#x4E3A;&#x662F;&#x72B6;&#x6001;&#x3002;
-
-&#x5171;&#x4EAB;&#x7684; : &#x53EF;&#x4EE5;&#x88AB;&#x591A;&#x4E2A;&#x7EBF;&#x7A0B;&#x540C;&#x65F6;&#x8BBF;&#x95EE;&#x7684;&#x53D8;&#x91CF;
-&#x53EF;&#x53D8;&#x7684; : &#x53D8;&#x91CF;&#x7684;&#x503C;&#x5728;&#x751F;&#x547D;&#...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/10/25</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="并发">并发</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="《Java并发编程实战》">《Java并发编程实战》</a>
-    
-</div>
-            
-        </div>
-    </article>
+    <!-- license  -->
     
     <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2019/04/20/20190420/" title="Dubbo源码跟踪实录-集群容错:服务目录Directory">
+                    <div class="prevTitle">Dubbo源码跟踪实录-集群容错:服务目录Directory</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MDUwMy8xNzAzMA==">
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
     
-    <nav class="page-nav">
-        <a class="extend prev" rel="prev" href="/archives/page/6/">&#60; PREV</a><a class="page-number" href="/archives/">1</a><span class="space">&hellip;</span><a class="page-number" href="/archives/page/5/">5</a><a class="page-number" href="/archives/page/6/">6</a><span class="page-number current">7</span>
-    </nav>
     
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
 </main>
             <!-- profile -->
             
@@ -702,6 +603,24 @@ New&#xFF08;&#x65B0;&#x5EFA;&#x72B...
 </footer>
     </div>
     <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:30vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#路由规则"><span class="toc-number">1.</span> <span class="toc-text">路由规则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#表达式解析"><span class="toc-number">2.</span> <span class="toc-text">表达式解析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#服务路由"><span class="toc-number">3.</span> <span class="toc-text">服务路由</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#最后"><span class="toc-number">4.</span> <span class="toc-text">最后</span></a></li></ol>
+    </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
     <div class="sidebar sidebar-hide">
@@ -2221,6 +2140,8 @@ jsonContent:
     
     </div>
     <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
      
     </body>
 </html>
