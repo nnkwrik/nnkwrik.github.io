@@ -289,7 +289,7 @@ height:30vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>字数统计: <span class="post-count word-count">3.2k</span>阅读时长: <span class="post-count reading-time">19 min</span></span>
+                        <span>字数统计: <span class="post-count word-count">3.2k</span>阅读时长: <span class="post-count reading-time">20 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -467,7 +467,7 @@ height:30vh;
 </li>
 </ol>
 <p>&#x6784;&#x5EFA;ZookeeperRegistry&#x4E0E;Provider&#x7C7B;&#x4F3C;,&#x8FD9;&#x91CC;&#x5C31;&#x4E0D;&#x5206;&#x6790;&#x4E86;.&#x7EE7;&#x7EED;&#x770B;&#x5B83;&#x8C03;&#x7528;&#x7684;&#x91CD;&#x8F7D;&#x65B9;&#x6CD5;</p>
-<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> &lt;T&gt; <span class="function">Invoker&lt;T&gt; <span class="title">doRefer</span><span class="params">(Cluster cluster, Registry registry, Class&lt;T&gt; type, URL url)</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="comment">// &#x521B;&#x5EFA; RegistryDirectory &#x5B9E;&#x4F8B;</span></span><br><span class="line">    RegistryDirectory&lt;T&gt; directory = <span class="keyword">new</span> RegistryDirectory&lt;T&gt;(type, url);</span><br><span class="line">    directory.setRegistry(registry);<span class="comment">//zookeeperRegistry</span></span><br><span class="line">    directory.setProtocol(protocol);<span class="comment">//DubboProtocol</span></span><br><span class="line">    <span class="comment">// all attributes of REFER_KEY</span></span><br><span class="line">    Map&lt;String, String&gt; parameters </span><br><span class="line">        = <span class="keyword">new</span> HashMap&lt;String, String&gt;(directory.getUrl().getParameters());</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// &#x6784;&#x5EFA;&#x8BA2;&#x9605;&#x8005;(&#x6D88;&#x8D39;&#x8005;)URL</span></span><br><span class="line">    URL subscribeUrl = <span class="keyword">new</span> URL(Constants.CONSUMER_PROTOCOL, parameters.remove(Constants.REGISTER_IP_KEY), <span class="number">0</span>, type.getName(), parameters);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (!Constants.ANY_VALUE.equals(url.getServiceInterface())</span><br><span class="line">        &amp;&amp; url.getParameter(Constants.REGISTER_KEY, <span class="keyword">true</span>)) {</span><br><span class="line">        <span class="comment">//&#x8C03;&#x7528;ZookeeperRegistry.doSubscribe&#x8FDB;&#x884C;&#x6CE8;&#x518C;</span></span><br><span class="line">        registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,</span><br><span class="line">                                                     Constants.CHECK_KEY, String.valueOf(<span class="keyword">false</span>)));</span><br><span class="line">    }</span><br><span class="line">    <span class="comment">//&#x8BA2;&#x9605; providers&#x3001;configurators&#x3001;routers &#x7B49;&#x8282;&#x70B9;&#x6570;&#x636E;</span></span><br><span class="line">    <span class="comment">//subscribeURL&#x52A0;&#x5165;category=providers,configurators,routers</span></span><br><span class="line">    directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY,</span><br><span class="line">                                                  Constants.PROVIDERS_CATEGORY</span><br><span class="line">                                                  + <span class="string">&quot;,&quot;</span> + Constants.CONFIGURATORS_CATEGORY</span><br><span class="line">                                                  + <span class="string">&quot;,&quot;</span> + Constants.ROUTERS_CATEGORY));</span><br><span class="line"></span><br><span class="line">    Invoker invoker = cluster.join(directory);</span><br><span class="line">    ProviderConsumerRegTable.registerConsumer(invoker, url, subscribeUrl, directory);</span><br><span class="line">    <span class="keyword">return</span> invoker;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> &lt;T&gt; <span class="function">Invoker&lt;T&gt; <span class="title">doRefer</span><span class="params">(Cluster cluster, Registry registry, Class&lt;T&gt; type, URL url)</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="comment">// &#x521B;&#x5EFA; RegistryDirectory &#x5B9E;&#x4F8B;</span></span><br><span class="line">    RegistryDirectory&lt;T&gt; directory = <span class="keyword">new</span> RegistryDirectory&lt;T&gt;(type, url);</span><br><span class="line">    directory.setRegistry(registry);<span class="comment">//zookeeperRegistry</span></span><br><span class="line">    directory.setProtocol(protocol);<span class="comment">//DubboProtocol</span></span><br><span class="line">    <span class="comment">// all attributes of REFER_KEY</span></span><br><span class="line">    Map&lt;String, String&gt; parameters </span><br><span class="line">        = <span class="keyword">new</span> HashMap&lt;String, String&gt;(directory.getUrl().getParameters());</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// &#x6784;&#x5EFA;&#x8BA2;&#x9605;&#x8005;(&#x6D88;&#x8D39;&#x8005;)URL</span></span><br><span class="line">    URL subscribeUrl = <span class="keyword">new</span> URL(Constants.CONSUMER_PROTOCOL, parameters.remove(Constants.REGISTER_IP_KEY), <span class="number">0</span>, type.getName(), parameters);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (!Constants.ANY_VALUE.equals(url.getServiceInterface())</span><br><span class="line">        &amp;&amp; url.getParameter(Constants.REGISTER_KEY, <span class="keyword">true</span>)) {</span><br><span class="line">        <span class="comment">//&#x8C03;&#x7528;ZookeeperRegistry.doSubscribe&#x8FDB;&#x884C;&#x6CE8;&#x518C;</span></span><br><span class="line">        registry.register(subscribeUrl.addParameters(Constants.CATEGORY_KEY, Constants.CONSUMERS_CATEGORY,</span><br><span class="line">                                                     Constants.CHECK_KEY, String.valueOf(<span class="keyword">false</span>)));</span><br><span class="line">    }</span><br><span class="line">    <span class="comment">//&#x8BA2;&#x9605; providers&#x3001;configurators&#x3001;routers &#x7B49;&#x8282;&#x70B9;&#x6570;&#x636E;</span></span><br><span class="line">    <span class="comment">//subscribeURL&#x52A0;&#x5165;category=providers,configurators,routers</span></span><br><span class="line">    directory.subscribe(subscribeUrl.addParameter(Constants.CATEGORY_KEY,</span><br><span class="line">                                                  Constants.PROVIDERS_CATEGORY</span><br><span class="line">                                                  + <span class="string">&quot;,&quot;</span> + Constants.CONFIGURATORS_CATEGORY</span><br><span class="line">                                                  + <span class="string">&quot;,&quot;</span> + Constants.ROUTERS_CATEGORY));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// &#x4E00;&#x4E2A;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x53EF;&#x80FD;&#x6709;&#x591A;&#x4E2A;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#xFF0C;&#x56E0;&#x6B64;&#x8FD9;&#x91CC;&#x9700;&#x8981;&#x5C06;&#x591A;&#x4E2A;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;&#x5408;&#x5E76;&#x4E3A;&#x4E00;&#x4E2A;</span></span><br><span class="line">    Invoker invoker = cluster.join(directory);</span><br><span class="line">    ProviderConsumerRegTable.registerConsumer(invoker, url, subscribeUrl, directory);</span><br><span class="line">    <span class="keyword">return</span> invoker;</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
 <p>&#x5728;&#x8FD9;&#x4E00;&#x90E8;&#x5206;&#x6211;&#x4EEC;</p>
 <p>&#x8FD9;&#x4E00;&#x90E8;&#x5206;&#x505A;&#x4E86;&#x4EC0;&#x4E48;?</p>
 <ol>
@@ -536,7 +536,7 @@ height:30vh;
 <p>&#x8FD9;&#x91CC;&#x6700;&#x7EC8;&#x4F1A;&#x8C03;&#x7528;JavassistProxyFactory &#x7C7B;&#x4E2D;getProxy()&#x6765;&#x751F;&#x6210;Proxy&#x7684;&#x4EE3;&#x7801;.&#x8FC7;&#x7A0B;&#x8FD9;&#x91CC;&#x5C31;&#x4E0D;&#x5206;&#x6790;&#x4E86;,&#x6700;&#x540E;&#x4EA7;&#x751F;&#x7684;Proxy&#x7684;&#x4EE3;&#x7801;&#x5982;&#x4E0B;:</p>
 <figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.apache.dubbo.common.bytecode;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">proxy0</span> <span class="keyword">implements</span> <span class="title">org</span>.<span class="title">apache</span>.<span class="title">dubbo</span>.<span class="title">demo</span>.<span class="title">DemoService</span> </span>{</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> java.lang.reflect.Method[] methods;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> java.lang.reflect.InvocationHandler handler;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">proxy0</span><span class="params">()</span> </span>{</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">proxy0</span><span class="params">(java.lang.reflect.InvocationHandler arg0)</span> </span>{</span><br><span class="line">        handler = $<span class="number">1</span>;</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> java.lang.<span class="function">String <span class="title">sayHello</span><span class="params">(java.lang.String arg0)</span> </span>{</span><br><span class="line">        Object[] args = <span class="keyword">new</span> Object[<span class="number">1</span>];</span><br><span class="line">        args[<span class="number">0</span>] = ($w) $<span class="number">1</span>;</span><br><span class="line">        Object ret = handler.invoke(<span class="keyword">this</span>, methods[<span class="number">0</span>], args);</span><br><span class="line">        <span class="keyword">return</span> (java.lang.String) ret;</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
 <h2 id="&#x603B;&#x7ED3;"><a href="#&#x603B;&#x7ED3;" class="headerlink" title="&#x603B;&#x7ED3;"></a>&#x603B;&#x7ED3;</h2><p>&#x56DE;&#x987E;&#x4E00;&#x4E0B;&#x4EE3;&#x7801;&#x7684;&#x8C03;&#x7528;&#x94FE;</p>
-<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">ReferenceConfig#init</span><br><span class="line">	|</span><br><span class="line">	createProxy(map) //&#x521B;&#x5EFA;&#x4EE3;&#x7406;&#x5BF9;&#x8C61;</span><br><span class="line">		|</span><br><span class="line">		1. loadRegistries() //&#x6784;&#x5EFA;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x7684;url</span><br><span class="line">		2. RegistryProtocol.refer()</span><br><span class="line">			|</span><br><span class="line">			1. &#x6784;&#x5EFA;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x5B9E;&#x4F8B;,&#x540C;&#x65F6;&#x521B;&#x5EFA;zk&#x5BA2;&#x6237;&#x7AEF;&#x8FDE;&#x63A5;</span><br><span class="line">			2. RegistryProtocol.doRefer()</span><br><span class="line">				|</span><br><span class="line">                1. &#x521B;&#x5EFA;&#x4E86;&#x4E00;&#x4E2A;RegistryDirectory&#x7684;&#x5B9E;&#x4F8B;</span><br><span class="line">                2. &#x6784;&#x5EFA;&#x8BA2;&#x9605;&#x8005;(&#x6D88;&#x8D39;&#x8005;)URL</span><br><span class="line">                3. ZookeeperRegistry#register()//&#x6839;&#x636E;&#x8BA2;&#x9605;&#x8005;URL&#x521B;&#x5EFA;zk&#x8282;&#x70B9;,&#x5E76;&#x653E;&#x5165;</span><br><span class="line">                4. directory.subscribe(subscribeURL) //&#x8BA2;&#x9605;&#x670D;&#x52A1;</span><br><span class="line">                    |</span><br><span class="line">                    1. &#x4ECE;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x83B7;&#x53D6;providerURL</span><br><span class="line">                    2. DubboRegistry#refer &#x521B;&#x5EFA;&#x4E0E;provider&#x8FDE;&#x63A5;&#x7684;netty&#x5BA2;&#x6237;&#x7AEF;</span><br><span class="line">                    3. &#x8FD4;&#x56DE;invoker</span><br><span class="line">		|</span><br><span class="line">		3. proxyFactory.getProxy(invoker)//&#x751F;&#x6210;invoker&#x7684;&#x4EE3;&#x7406;&#x7C7B;</span><br><span class="line">	|</span><br><span class="line">	&#x4FDD;&#x5B58;&#x4EE3;&#x7406;&#x5BF9;&#x8C61;&#x5230;ConsumerModel,ApplicationModel</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">ReferenceConfig#init</span><br><span class="line">	|</span><br><span class="line">	createProxy(map) //&#x521B;&#x5EFA;&#x4EE3;&#x7406;&#x5BF9;&#x8C61;</span><br><span class="line">		|</span><br><span class="line">		1. loadRegistries() //&#x6784;&#x5EFA;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x7684;url</span><br><span class="line">		2. RegistryProtocol.refer()</span><br><span class="line">			|</span><br><span class="line">			1. &#x6784;&#x5EFA;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x5B9E;&#x4F8B;,&#x540C;&#x65F6;&#x521B;&#x5EFA;zk&#x5BA2;&#x6237;&#x7AEF;&#x8FDE;&#x63A5;</span><br><span class="line">			2. RegistryProtocol.doRefer()</span><br><span class="line">				|</span><br><span class="line">                1. &#x521B;&#x5EFA;&#x4E86;&#x4E00;&#x4E2A;RegistryDirectory&#x7684;&#x5B9E;&#x4F8B;</span><br><span class="line">                2. &#x6784;&#x5EFA;&#x8BA2;&#x9605;&#x8005;(&#x6D88;&#x8D39;&#x8005;)URL</span><br><span class="line">                3. ZookeeperRegistry#register()//&#x6839;&#x636E;&#x8BA2;&#x9605;&#x8005;URL&#x521B;&#x5EFA;zk&#x8282;&#x70B9;,&#x5E76;&#x653E;&#x5165;</span><br><span class="line">                4. directory.subscribe(subscribeURL) //&#x8BA2;&#x9605;&#x670D;&#x52A1;</span><br><span class="line">                    |</span><br><span class="line">                    1. &#x4ECE;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x83B7;&#x53D6;providerURL</span><br><span class="line">                    2. DubboProtocol#refer &#x521B;&#x5EFA;&#x4E0E;provider&#x8FDE;&#x63A5;&#x7684;netty&#x5BA2;&#x6237;&#x7AEF;</span><br><span class="line">                    3. &#x8FD4;&#x56DE;invoker</span><br><span class="line">				|</span><br><span class="line">				5. cluster.join(directory);//&#x5982;&#x679C;&#x8BE5;&#x6CE8;&#x518C;&#x4E2D;&#x5FC3;&#x4E0B;&#x6709;&#x591A;&#x4E2A;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x8005;,&#x5408;&#x5E76;&#x6210;&#x4E00;&#x4E2A;</span><br><span class="line">		|</span><br><span class="line">		3. proxyFactory.getProxy(invoker)//&#x751F;&#x6210;invoker&#x7684;&#x4EE3;&#x7406;&#x7C7B;</span><br><span class="line">	|</span><br><span class="line">	&#x4FDD;&#x5B58;&#x4EE3;&#x7406;&#x5BF9;&#x8C61;&#x5230;ConsumerModel,ApplicationModel</span><br></pre></td></tr></tbody></table></figure>
 <p>&#x548C;Provider&#x5BFC;&#x51FA;&#x65F6;&#x8C03;&#x7528;&#x987A;&#x5E8F;&#x6709;&#x660E;&#x663E;&#x7684;&#x533A;&#x522B;:</p>
 <ul>
 <li>Provider:&#x5148;&#x5F00;netty&#x670D;&#x52A1;&#x7AEF;&#x518D;&#x6CE8;&#x518C;&#x670D;&#x52A1;</li>
@@ -1678,9 +1678,66 @@ top:30vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 67
+        Total : 68
         </div>
         <!-- search  -->
         
@@ -1697,6 +1754,11 @@ top:30vh;
     
     <div class="archive-year"> 2019 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/21</span><a class="archive-post-title" href="/2019/04/21/20190421-2/">Dubbo源码跟踪实录-集群容错:集群Cluster</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -2009,12 +2071,12 @@ top:30vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     
@@ -2051,10 +2113,6 @@ top:30vh;
     
         <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
     
-        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
-    
-        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
-    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
         <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
@@ -2077,13 +2135,17 @@ top:30vh;
     
         <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
     
-        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
     
         <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
     
         <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
     
         <span class="sidebar-tag-name" data-tags="ProtoBuffer"><span class="iconfont-archer">&#xe606;</span>ProtoBuffer</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
         <span class="sidebar-tag-name" data-tags="dubbo"><span class="iconfont-archer">&#xe606;</span>dubbo</span>
     
