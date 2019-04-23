@@ -17,7 +17,7 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="曽生">
     
-    <meta name="keywords" content="nnkwrik,曽生,曾丽桦">
+    <meta name="keywords" content="Hexo,曽生">
     
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
@@ -374,6 +374,38 @@ height:50vh;
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2019/04/23/20190423/">
+            
+                <span>Dubbo源码跟踪实录-服务调用过程</span>
+        </a>
+        <div class="abstract-content">
+            &#x8FDC;&#x7A0B;&#x8C03;&#x7528;&#x7684;&#x8FC7;&#x7A0B;&#xFF1A;
+&#x9996;&#x5148;&#x670D;&#x52A1;&#x6D88;&#x8D39;&#x8005;&#x901A;&#x8FC7;&#x4EE3;&#x7406;&#x5BF9;&#x8C61; Proxy &#x53D1;&#x8D77;&#x8FDC;&#x7A0B;&#x8C03;&#x7528;&#xFF0C;&#x63A5;&#x7740;&#x901A;&#x8FC7;&#x7F51;&#x7EDC;&#x5BA2;&#x6237;&#x7AEF; Client &#x5C06;&#x7F16;&#x7801;&#x540E;&#x7684;&#x8BF7;&#x6C42;&#x53D1;&#x9001;&#x7ED9;&#x670D;&#x52A1;&#x63D0;&#x4F9B;&#x65B9;&#x7684;&#x7F51;&#x7EDC;&#x5C42;&#x4E0A;&#xFF0C;&#x4E5F;&#x5C31;&#x662F; Server&#x3002;Server &#x5728;&#x6536;&#x5230;&#x8BF7;&#x6C42;&#x540E;&#xFF0C;&#x9996;&#x5148;&#x8981;&#x505A;&#x7684;&#x4E8B;&#x60C5;&#x662F;&#x5BF9;&#x6570;&#x636E;&#x5305;&#x8FDB;&#x884C;&#x89E3;&#x7801;&#x3002;&#x7136;&#x540E;&#x5C06;&#x89E3;&#x7801;&#x540E;&#x7684;&#x8BF7;&#x6C42;&#x53D1;&#x9001;&#x81F3;&#x5206;&#x53D1;&#x5668; Dispatcher&#xFF0C;&#x518D;&#x7531;&#x5206;&#x53D1;&#x5668;&#x5C06;&#x8BF7;&#x6C42;&#x6D3E;&#x53D1;&#x5230;&#x6307;&#x5B9A;&#x7684;&#x7EBF;&#x7A0B;&#x6C60;&#x4...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/04/23</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class="abstract-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="dubbo">dubbo</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Dubbo源码跟踪实录">Dubbo源码跟踪实录</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2019/04/21/20190421-3/">
             
                 <span>Dubbo源码跟踪实录-集群容错:负载均衡LoadBalance</span>
@@ -643,9 +675,9 @@ worker&#x7EBF;&#x7A0B;&#x7528;&#x4E8E;&#x5904;&#x7406;&#x5BA2;&#x6237;&#x7AEF;,&
             
             <div class="abstract-tags">
     
-        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
-    
         <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
     
@@ -683,49 +715,9 @@ Recycler&#x4F7F;&#x7528;&#x793A;&#x4F8B;&#x7A0B;&#x5E8F;:
             
             <div class="abstract-tags">
     
-        <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
-    
         <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
     
-        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2019/01/25/20190125-2/">
-            
-                <span>Netty源码剖析-性能优化工具类</span>
-        </a>
-        <div class="abstract-content">
-            
-FastThreadLocal
-Recycler
-
-FastThreadLocalFastThreadLocal&#x7684;&#x4F7F;&#x7528;&#x793A;&#x4F8B;&#x4EE3;&#x7801;
-12345678910111213141516171819private static FastThreadLocal&lt;Object&gt; threadLocal0 = new FastThreadLocal&lt;Object&gt;() {    @Override    protected Object initialValue() {        return new Object();    }};public static void main(String[] args) {    //&#x4E24;&#x4E2A;&#x7EBF;&#x7A0B;    new Thread(() -&gt; {        Object object = threadLocal0.get();        // .... do with object        System.out.println(object);    }).start();    new Thread(() -&gt; {        Object object = threadLocal0.get();        // .... do with object        System.out.println(object);    }).start();}
-&#x4E0E;ThreadLocal&#x76F8;&#x540C;,&#x5C31;&#x7B97;Thread&#x4E2D;&#x83B7;&#x53D6;&#x4E86;&#x540C;&#x4E00;&#x4E2A;object,&#x4E24;&#x4E2A;&#x7EBF;&#x7A0B;&#x5BF9;&#x8FD9;&#x4E2A;object&#x7684;&#x66F4;&#x53D8;&#x90FD;&#x4E0D;&#x4F1A;&#x76F8;&#x4E92;&#x5F71;&#x54CD;
-&#x793A;&#x4F8B;&#x7684;&#x8FD0;...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/01/25</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
         <a class="post-tag" href="javascript:void(0);" data-tags="MySQL">MySQL</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
     
@@ -1939,9 +1931,28 @@ FastThreadLocalFastThreadLocal&#x7684;&#x4F7F;&#x7528;&#x793A;&#x4F8B;&#x4EE3;&#
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 69
+        Total : 70
         </div>
         <!-- search  -->
         
@@ -1958,6 +1969,11 @@ FastThreadLocalFastThreadLocal&#x7684;&#x4F7F;&#x7528;&#x793A;&#x4F8B;&#x4EE3;&#
     
     <div class="archive-year"> 2019 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/23</span><a class="archive-post-title" href="/2019/04/23/20190423/">Dubbo源码跟踪实录-服务调用过程</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -2280,12 +2296,12 @@ FastThreadLocalFastThreadLocal&#x7684;&#x4F7F;&#x7528;&#x793A;&#x4F8B;&#x4EE3;&#
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
         </li>
     
     
@@ -2318,11 +2334,9 @@ FastThreadLocalFastThreadLocal&#x7684;&#x4F7F;&#x7528;&#x793A;&#x4F8B;&#x4EE3;&#
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
-        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
-    
         <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
     
-        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
     
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
@@ -2346,13 +2360,15 @@ FastThreadLocalFastThreadLocal&#x7684;&#x4F7F;&#x7528;&#x793A;&#x4F8B;&#x4EE3;&#
     
         <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
     
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
         <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
     
         <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
     
-        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
-    
         <span class="sidebar-tag-name" data-tags="ProtoBuffer"><span class="iconfont-archer">&#xe606;</span>ProtoBuffer</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
     
         <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
