@@ -374,6 +374,49 @@ height:50vh;
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2018/12/25/20181225-2/">
+            
+                <span>Netty源码剖析-NioEventLoop创建</span>
+        </a>
+        <div class="abstract-content">
+            
+&#x9ED8;&#x8BA4;&#x60C5;&#x51B5;&#x4E0B;,Netty&#x670D;&#x52A1;&#x7AEF;&#x8D77;&#x591A;&#x5C11;&#x7EBF;&#x7A0B;?&#x4F55;&#x65F6;&#x542F;&#x52A8;?
+Netty&#x662F;&#x5982;&#x4F55;&#x89E3;&#x51B3;jdk&#x7A7A;&#x8F6E;&#x8BE2;bug&#x7684;?
+netty&#x5982;&#x4F55;&#x4FDD;&#x8BC1;&#x5F02;&#x6B65;&#x4E32;&#x884C;&#x65E0;&#x9501;&#x5316;?
+
+NioEventLoop
+NioEventLoop&#x521B;&#x5EFA; 
+NioEventLoop&#x542F;&#x52A8;
+NioEventLoop&#x6267;&#x884C;&#x903B;&#x8F91;
+
+NioEventLoop&#x521B;&#x5EFA;1234567new NioEventLoopGroup()[&#x7EBF;&#x7A0B;&#x6570;,&#x9ED8;&#x8BA4;2*cpu]	|	new ThreadPerTaskExecutor()[&#x7EBF;&#x7A0B;&#x521B;&#x5EFA;&#x5668;]	|	for{newChlid()}[&#x6784;&#x9020;NioEventLoop]	|	chooserFactory.newChooser()[&#x7EBF;&#x7A0B;&#x9009;&#x62E9;&#x5668;]
+&#x8DDF;&#x8E2A;new NioEventLoopGroup()
+12345678910111213141516171819202122232425262728293031    public NioEventLoopGroup(int nThreads, Executor executor) {        this(nThreads, executor, SelectorProvider.provider());//&#x52A0;&#x5165;selector    }--- ...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/12/25</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class="abstract-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="慕课网">慕课网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="【Java读源码之Netty深入剖析】">【Java读源码之Netty深入剖析】</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2018/12/25/20181225-1/">
             
                 <span>Netty源码剖析-Netty服务端启动的过程</span>
@@ -740,46 +783,10 @@ Java&#x6808;
         </div>
     </article>
     
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/12/23/20181223-2/">
-            
-                <span>JVM知识点合集-1.类的加载机制</span>
-        </a>
-        <div class="abstract-content">
-            
-&#x4EC0;&#x4E48;&#x662F;&#x7C7B;&#x7684;&#x52A0;&#x8F7D;&#x7C7B;&#x7684;&#x52A0;&#x8F7D;&#x6307;&#x7684;&#x662F;&#x5C06;&#x7C7B;&#x7684;.class&#x6587;&#x4EF6;&#x4E2D;&#x7684;&#x4E8C;&#x8FDB;&#x5236;&#x6570;&#x636E;&#x8BFB;&#x5165;&#x5230;&#x5185;&#x5B58;&#x4E2D;&#xFF0C;&#x5C06;&#x5176;&#x653E;&#x5728;&#x8FD0;&#x884C;&#x65F6;&#x6570;&#x636E;&#x533A;&#x7684;&#x65B9;&#x6CD5;&#x533A;&#x5185;&#xFF0C;&#x7136;&#x540E;&#x5728;&#x5806;&#x533A;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;java.lang.Class&#x5BF9;&#x8C61;&#xFF0C;&#x7528;&#x6765;&#x5C01;&#x88C5;&#x7C7B;&#x5728;&#x65B9;&#x6CD5;&#x533A;&#x5185;&#x7684;&#x6570;&#x636E;&#x7ED3;&#x6784;&#x3002;
-&#x7C7B;&#x7684;&#x52A0;&#x8F7D;&#x65F6;&#x673A;
-&#x52A0;&#x8F7D;&#x3001;&#x9A8C;&#x8BC1;&#x3001;&#x51C6;&#x5907;&#x3001;&#x521D;&#x59CB;&#x5316;&#x548C;&#x5378;&#x8F7D;&#x8FD9;5&#x4E2A;&#x9636;&#x6BB5;&#x7684;&#x987A;&#x5E8F;&#x662F;&#x786E;&#x5B9A;&#x7684;&#x3002;&#x89E3;&#x6790;&#x9636;&#x6BB5;&#x5219;&#x4E0D;&#x4E00;&#x5B9A;:&#x5B83;&#x5728;&#x67D0;&#x...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/12/23</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class="abstract-tags">
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="JVM">JVM</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags="JVM知识点合集">JVM知识点合集</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
     <!-- paginator  -->
     
     <nav class="page-nav">
-        <a class="extend prev" rel="prev" href="/page/3/">&#60; PREV</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/5/">NEXT &#62;</a>
+        <a class="extend prev" rel="prev" href="/page/3/">&#60; PREV</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/5/">NEXT &#62;</a>
     </nav>
     
 </main>
@@ -2000,9 +2007,20 @@ Java&#x6808;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 70
+        Total : 71
         </div>
         <!-- search  -->
         
@@ -2019,6 +2037,11 @@ Java&#x6808;
     
     <div class="archive-year"> 2019 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/23</span><a class="archive-post-title" href="/2019/04/23/20190423-2/">🦁 Dubbo源码跟踪实录-目录</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -2341,17 +2364,17 @@ Java&#x6808;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
             <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
         </li>
     
     
         <li class="archive-post-item">
             <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</a>
         </li>
     
     
@@ -2384,15 +2407,19 @@ Java&#x6808;
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
-        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
-    
-        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
-    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
         <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
     
         <span class="sidebar-tag-name" data-tags="并发操作合集"><span class="iconfont-archer">&#xe606;</span>并发操作合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
     
         <span class="sidebar-tag-name" data-tags="JVM"><span class="iconfont-archer">&#xe606;</span>JVM</span>
     
@@ -2410,21 +2437,17 @@ Java&#x6808;
     
         <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
     
-        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
-    
         <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
     
         <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
     
         <span class="sidebar-tag-name" data-tags="ProtoBuffer"><span class="iconfont-archer">&#xe606;</span>ProtoBuffer</span>
     
-        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
-    
-        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
-    
         <span class="sidebar-tag-name" data-tags="dubbo"><span class="iconfont-archer">&#xe606;</span>dubbo</span>
     
         <span class="sidebar-tag-name" data-tags="Dubbo源码跟踪实录"><span class="iconfont-archer">&#xe606;</span>Dubbo源码跟踪实录</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
@@ -2459,9 +2482,9 @@ jsonContent:
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
-        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
-    
         <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
+    
+        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
     
         <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
     
