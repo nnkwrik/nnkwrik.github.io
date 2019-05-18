@@ -1,0 +1,2324 @@
+<!DOCTYPE html>
+<html lang="">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="曽生">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="曽生">
+    
+    <meta name="keywords" content="Hexo,曽生">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>深入剖析tomcat-第2章-一个简单的Servlet容器 · 农场主的黑科技.</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href="/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" href="/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href="/assets/favicon.ico">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin="">
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin="">
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"输入关键字 :D","hits_empty":"没有找到相关信息 :(","hits_stats":"找到 ${hits} 个相关信息,耗时 ${time} ms"}')
+
+            var algolia = {
+                applicationID: 'LXR3VBZBS6',
+                apiKey: '17d6d4ab4ba943bab3232eced0eea766',
+                indexName: 'index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">农场主的黑科技.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">深入剖析tomcat-第2章-一个简单的Servlet容器</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href="/">农场主的黑科技.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:30vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/andrew-leu-1113236-unsplash.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            深入剖析tomcat-第2章-一个简单的Servlet容器
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class="post-intro-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="《深入剖析tomcat》">《深入剖析tomcat》</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">1.8k</span>阅读时长: <span class="post-count reading-time">10 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2019/05/17</span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>&#x672C;&#x7AE0;&#x4F1A;&#x901A;&#x8FC7;&#x4E24;&#x4E2A;&#x5E94;&#x7528;&#x7A0B;&#x5E8F;&#x793A;&#x4F8B;&#x5C55;&#x793A;&#x7B80;&#x5355;&#x7684;servlet&#x5BB9;&#x5668;</p>
+<h2 id="javax-servlet-Servlet&#x63A5;&#x53E3;"><a href="#javax-servlet-Servlet&#x63A5;&#x53E3;" class="headerlink" title="javax.servlet.Servlet&#x63A5;&#x53E3;"></a>javax.servlet.Servlet&#x63A5;&#x53E3;</h2><p>&#x8BE5;&#x63A5;&#x53E3;&#x4E2D;&#x5B9A;&#x4E49;&#x4E86;&#x4EE5;&#x4E0B;5&#x4E2A;&#x65B9;&#x6CD5;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//servlet&#x751F;&#x547D;&#x5468;&#x671F;&#x76F8;&#x5173;&#x65B9;&#x6CD5;</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ServletConfig config)</span> <span class="keyword">throws</span> ServletException</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">service</span><span class="params">(ServletRequest request, ServletResponse response)</span> </span></span><br><span class="line"><span class="function">    <span class="keyword">throws</span> ServletException, java.io.IOException</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ServletConfig <span class="title">getServletConfig</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="keyword">public</span> java.lang.String <span class="title">getServletInfo</span><span class="params">()</span></span></span><br></pre></td></tr></tbody></table></figure>
+<ul>
+<li><code>init()</code>..&#x7A0B;&#x5E8F;&#x5458;&#x53EF;&#x4EE5;&#x81EA;&#x5B9A;&#x4E49;&#x521D;&#x59CB;&#x5316;&#x65B9;&#x6CD5;&#xFF0C;&#x4E00;&#x822C;&#x60C5;&#x51B5;&#x4E0B;&#x7559;&#x7A7A;</li>
+<li><code>service()</code>..&#x7B2C;&#x4E00;&#x4E2A;&#x5BA2;&#x6237;&#x7AEF;&#x8BF7;&#x6C42;&#x5230;&#x8FBE;&#x65F6;&#xFF0C;servlet&#x5BB9;&#x5668;&#x4F1A;&#x8C03;&#x7528;&#x76F8;&#x5E94;&#x7684;servlet&#x7684;service&#x65B9;&#x6CD5;&#xFF0C;&#x5E76;&#x628A;ServletRequest&#x548C;ServletResponse&#x4F5C;&#x4E3A;&#x53C2;&#x6570;&#x4F20;&#x5165;&#x3002;service()&#x65B9;&#x6CD5;&#x4F1A;&#x88AB;&#x8C03;&#x7528;&#x591A;&#x6B21;</li>
+<li><code>destroy()</code>..servlet&#x793A;&#x4F8B;&#x4ECE;&#x670D;&#x52A1;&#x4E2D;&#x79FB;&#x9664;&#x524D;&#x4F1A;&#x88AB;&#x8C03;&#x7528;&#xFF0C;&#x7528;&#x4E8E;&#x6E05;&#x7406;&#x8D44;&#x6E90;&#xFF0C;&#x5982;&#x5185;&#x5B58;&#xFF0C;&#x53E5;&#x67C4;&#xFF0C;&#x7EBF;&#x7A0B;&#x7B49;</li>
+</ul>
+<h2 id="&#x5E94;&#x7528;&#x7A0B;&#x5E8F;1"><a href="#&#x5E94;&#x7528;&#x7A0B;&#x5E8F;1" class="headerlink" title="&#x5E94;&#x7528;&#x7A0B;&#x5E8F;1"></a>&#x5E94;&#x7528;&#x7A0B;&#x5E8F;1</h2><p>&#x4E00;&#x4E2A;&#x529F;&#x80FD;&#x9F50;&#x5168;&#x7684;servlet&#x5BB9;&#x5668;&#x5E94;&#x8BE5;&#x5B8C;&#x6210;&#x4EE5;&#x4E0B;&#x4EFB;&#x52A1;</p>
+<ul>
+<li><p>&#x5F53;&#x7B2C;&#x4E00;&#x6B21;&#x8C03;&#x7528;servlet&#x65F6;&#xFF0C;&#x8981;&#x8F7D;&#x5165;servlet&#x7C7B;&#xFF0C;&#x8C03;&#x7528;init&#x65B9;&#x6CD5;&#xFF08;&#x4EC5;&#x6B64;&#x4E00;&#x6B21;&#xFF09;&#xFF1B;</p>
+</li>
+<li><p>&#x9488;&#x5BF9;&#x6BCF;&#x4E2A;request&#x8BF7;&#x6C42;&#xFF0C;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;Request&#x5BF9;&#x8C61;&#x548C;&#x4E00;&#x4E2A;Resposne&#x5BF9;&#x8C61;&#xFF1B;</p>
+</li>
+<li><p>&#x8C03;&#x7528;&#x76F8;&#x5E94;&#x7684;servlet&#x7684;service&#x65B9;&#x6CD5;&#xFF0C;&#x5C06;Request&#x5BF9;&#x8C61;&#x548C;Response&#x5BF9;&#x8C61;&#x4F5C;&#x4E3A;&#x53C2;&#x6570;&#x4F20;&#x5165;&#xFF1B;</p>
+</li>
+<li><p>&#x5F53;&#x5173;&#x95ED;servlet&#x65F6;&#xFF0C;&#x8C03;&#x7528;destroy&#x65B9;&#x6CD5;&#xFF0C;&#x5E76;&#x5378;&#x8F7D;&#x8BE5;servlet&#x7C7B;&#x3002;</p>
+</li>
+</ul>
+<p>&#x5E94;&#x7528;&#x5B9E;&#x4F8B;1&#x4E0D;&#x4F1A;&#x5B8C;&#x6210;&#x4E0A;&#x9762;&#x6240;&#x6709;&#x4EFB;&#x52A1;&#xFF0C;&#x53EA;&#x4F1A;&#x5B8C;&#x6210;&#x5982;&#x4E0B;&#x4E8B;&#x60C5;</p>
+<ul>
+<li><p>&#x7B49;&#x5F85;HTTP&#x8BF7;&#x6C42;&#xFF1B;</p>
+</li>
+<li><p>&#x521B;&#x5EFA;Request&#x548C;Response&#x5BF9;&#x8C61;&#xFF1B;</p>
+</li>
+<li><p>&#x82E5;&#x8BF7;&#x6C42;&#x7684;&#x662F;&#x4E00;&#x4E2A;&#x9759;&#x6001;&#x8D44;&#x6E90;&#xFF0C;&#x5219;&#x8C03;&#x7528;StaticResourceProcessor&#x5BF9;&#x8C61;&#x7684;process&#x65B9;&#x6CD5;&#xFF0C;&#x4F20;&#x5165;request&#x548C;response&#x5BF9;&#x8C61;&#xFF1B;</p>
+</li>
+<li><p>&#x82E5;&#x8BF7;&#x6C42;&#x7684;&#x662F;servlet&#xFF0C;&#x5219;&#x8F7D;&#x5165;&#x76F8;&#x5E94;&#x7684;servlet&#x7C7B;&#xFF0C;&#x8C03;&#x7528;service&#x65B9;&#x6CD5;&#xFF0C;&#x4F20;&#x5165;request&#x5BF9;&#x8C61;&#x548C;response&#x5BF9;&#x8C61;&#x3002;</p>
+</li>
+</ul>
+<p><img src="1558066259698.png" alt="1558066259698"></p>
+<h3 id="HttpServer1&#x7C7B;"><a href="#HttpServer1&#x7C7B;" class="headerlink" title="HttpServer1&#x7C7B;"></a>HttpServer1&#x7C7B;</h3><p>&#x65E2;&#x53EF;&#x4EE5;&#x5BF9;&#x9759;&#x6001;&#x8D44;&#x6E90;&#x8BF7;&#x6C42;&#xFF0C;&#x53C8;&#x80FD;&#x5BF9;servlet&#x8D44;&#x6E90;&#x8FDB;&#x884C;&#x8BF7;&#x6C42;&#x3002;</p>
+<p>&#x8BF7;&#x6C42;&#x9759;&#x6001;&#x8D44;&#x6E90;&#xFF1A;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost:8080/staticResource</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8BF7;&#x6C42;servlet&#x8D44;&#x6E90;&#xFF1A;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost:8080/servlet/servletClass</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HttpServer1</span> </span>{</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String SHUTDOWN = <span class="string">&quot;/shutdown&quot;</span>;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">boolean</span> shutdown = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">await</span><span class="params">()</span> </span>{</span><br><span class="line">		ServerSocket serverSocket = <span class="keyword">null</span>;</span><br><span class="line">		<span class="keyword">int</span> port = <span class="number">8080</span>;</span><br><span class="line">		<span class="keyword">try</span> {</span><br><span class="line">			serverSocket = <span class="keyword">new</span> ServerSocket(port, <span class="number">1</span>, InetAddress.getByName(<span class="string">&quot;127.0.0.1&quot;</span>));</span><br><span class="line">		} <span class="keyword">catch</span> (IOException e) {</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">			System.exit(<span class="number">1</span>);</span><br><span class="line">		}</span><br><span class="line">		<span class="keyword">while</span> (!shutdown) {</span><br><span class="line">			Socket socket = <span class="keyword">null</span>;</span><br><span class="line">			InputStream inputStream = <span class="keyword">null</span>;</span><br><span class="line">			OutputStream outputStream = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">try</span> {</span><br><span class="line">				socket = serverSocket.accept();</span><br><span class="line">				inputStream = socket.getInputStream();</span><br><span class="line">				outputStream = socket.getOutputStream();</span><br><span class="line"></span><br><span class="line">				Request request = <span class="keyword">new</span> Request(inputStream);</span><br><span class="line">				request.parse();</span><br><span class="line">				Response response = <span class="keyword">new</span> Response(outputStream);</span><br><span class="line">				response.setRequest(request);</span><br><span class="line"></span><br><span class="line">                <span class="comment">//&#x6839;&#x636E;uri&#x5224;&#x65AD;&#x8BF7;&#x6C42;&#x8D44;&#x6E90;&#x662F;&#x9759;&#x6001;&#x8FD8;&#x662F;servlet</span></span><br><span class="line">				<span class="keyword">if</span> (request.getUri().startsWith(<span class="string">&quot;/servlet/&quot;</span>)) {</span><br><span class="line">					ServletProcessor1 processor1 = <span class="keyword">new</span> ServletProcessor1();</span><br><span class="line">					processor1.process(request, response);</span><br><span class="line">				} <span class="keyword">else</span> {</span><br><span class="line">					StaticResourceProcessor staticResourceProcessor = <span class="keyword">new</span> StaticResourceProcessor();</span><br><span class="line">					staticResourceProcessor.process(request, response);</span><br><span class="line">				}</span><br><span class="line"></span><br><span class="line">				shutdown = request.getUri().equals(SHUTDOWN);</span><br><span class="line">			} <span class="keyword">catch</span> (IOException e) {</span><br><span class="line">				e.printStackTrace();</span><br><span class="line">			} <span class="keyword">finally</span> {</span><br><span class="line">				<span class="keyword">try</span> {</span><br><span class="line">					inputStream.close();</span><br><span class="line">					outputStream.close();</span><br><span class="line">					socket.close();</span><br><span class="line">				} <span class="keyword">catch</span> (IOException e) {</span><br><span class="line">					e.printStackTrace();</span><br><span class="line">				}</span><br><span class="line">			}</span><br><span class="line">		}</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{</span><br><span class="line">		HttpServer1 httpServer1 = <span class="keyword">new</span> HttpServer1();</span><br><span class="line">		httpServer1.await();</span><br><span class="line">	}</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x5F88;&#x591A;&#x90E8;&#x5206;&#x4E0E;&#x7B2C;1&#x7AE0;&#x7684;&#x5E94;&#x7528;&#x7A0B;&#x5E8F;&#x76F8;&#x4F3C;&#x3002;</p>
+<h3 id="Request&#x7C7B;"><a href="#Request&#x7C7B;" class="headerlink" title="Request&#x7C7B;"></a>Request&#x7C7B;</h3><p>&#x5B9E;&#x73B0;&#x4E86;<code>ServletRequest</code>&#x63A5;&#x53E3;&#xFF0C;&#x4F46;&#x5904;&#x7406;&#x65B9;&#x5F0F;&#x548C;&#x7B2C;1&#x7AE0;&#x7684;&#x51E0;&#x4E4E;&#x5B8C;&#x5168;&#x76F8;&#x540C;&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Request</span> <span class="keyword">implements</span> <span class="title">ServletRequest</span> </span>{</span><br><span class="line">	<span class="keyword">private</span> InputStream input;</span><br><span class="line">	<span class="keyword">private</span> String uri;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">Request</span><span class="params">(InputStream input)</span> </span>{</span><br><span class="line">		<span class="keyword">this</span>.input = input;</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">parse</span><span class="params">()</span> </span>{</span><br><span class="line">		StringBuilder request = <span class="keyword">new</span> StringBuilder(<span class="number">2048</span>);</span><br><span class="line">		<span class="keyword">int</span> i;</span><br><span class="line">		<span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">2048</span>];</span><br><span class="line">		<span class="keyword">try</span> {</span><br><span class="line">			i = input.read(buffer);</span><br><span class="line">		} <span class="keyword">catch</span> (IOException e) {</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">			i = -<span class="number">1</span>;</span><br><span class="line">		}</span><br><span class="line"></span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; i; j++) {</span><br><span class="line">			request.append((<span class="keyword">char</span>)buffer[j]);</span><br><span class="line">		}</span><br><span class="line">		System.out.print(request.toString());</span><br><span class="line">		uri = parseUri(request.toString());</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * the request string is standard http format, like</span></span><br><span class="line"><span class="comment">	 * GET /index.html, then the second &quot; &quot; resource is requested.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@param</span> requestString</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> String <span class="title">parseUri</span><span class="params">(String requestString)</span> </span>{</span><br><span class="line">		<span class="keyword">int</span> index1, index2;</span><br><span class="line">		index1 = requestString.indexOf(<span class="string">&apos; &apos;</span>);</span><br><span class="line">		<span class="keyword">if</span> (index1 != -<span class="number">1</span>) {</span><br><span class="line">			index2 = requestString.indexOf(<span class="string">&apos; &apos;</span>, index1 + <span class="number">1</span>);</span><br><span class="line">			<span class="keyword">if</span> (index2 &gt; index1) {</span><br><span class="line">				<span class="keyword">return</span> requestString.substring(index1 + <span class="number">1</span>, index2);</span><br><span class="line">			}</span><br><span class="line">		}</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> String <span class="title">getUri</span><span class="params">()</span> </span>{</span><br><span class="line">		<span class="keyword">return</span> uri;</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="comment">//..&#x4EE5;&#x4E0B;&#x5747;&#x4E3A;&#x83B7;&#x53D6;&#x72B6;&#x6001;&#x548C;&#x53C2;&#x6570;&#x7B49;&#x7684;getter&#x7684;&#x91CD;&#x8F7D;&#x65B9;&#x6CD5;&#xFF0C;&#x5747;&#x8FD4;&#x56DE;&#x7A7A;&#x503C;&#x3002;&#x4EE3;&#x7801;&#x7701;&#x7565;</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="Response&#x7C7B;"><a href="#Response&#x7C7B;" class="headerlink" title="Response&#x7C7B;"></a>Response&#x7C7B;</h3><p>&#x8FD9;&#x91CC;&#x76F4;&#x63A5;&#x4FDD;&#x7559;&#x4E86;&#x7B2C;1&#x7AE0;&#x53D1;&#x9001;&#x9759;&#x6001;&#x8D44;&#x6E90;&#x7684;<code>sendStaticResource()</code></p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Response</span> <span class="keyword">implements</span> <span class="title">ServletResponse</span> </span>{</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> BUFFER_SIZE = <span class="number">1024</span>;</span><br><span class="line"></span><br><span class="line">	Request request;</span><br><span class="line">	OutputStream outputStream;</span><br><span class="line">	PrintWriter printWriter;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">Response</span><span class="params">(OutputStream outputStream)</span> </span>{</span><br><span class="line">		<span class="keyword">this</span>.outputStream = outputStream;</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setRequest</span><span class="params">(Request request)</span> </span>{</span><br><span class="line">		<span class="keyword">this</span>.request = request;</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendStaticResource</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>{</span><br><span class="line">		<span class="keyword">byte</span>[] bytes = <span class="keyword">new</span> <span class="keyword">byte</span>[BUFFER_SIZE];</span><br><span class="line">		FileInputStream fis = <span class="keyword">null</span>;</span><br><span class="line">		<span class="keyword">try</span> {</span><br><span class="line">			File file = <span class="keyword">new</span> File(Constants.WEB_ROOT, request.getUri());</span><br><span class="line">			<span class="keyword">if</span> (file.exists()) {</span><br><span class="line">                sendOKHeader();<span class="comment">//&#x5199;&#x5165;&#x72B6;&#x6001;&#x7801;&#x4E3A;200&#x7684;&#x54CD;&#x5E94;&#x62A5;&#x6587;&#x5934;</span></span><br><span class="line">				fis = <span class="keyword">new</span> FileInputStream(file);</span><br><span class="line">				<span class="keyword">int</span> ch = fis.read(bytes, <span class="number">0</span>, BUFFER_SIZE);</span><br><span class="line">				<span class="keyword">while</span> (ch != -<span class="number">1</span>) {</span><br><span class="line">					outputStream.write(bytes, <span class="number">0</span>, ch);</span><br><span class="line">					ch = fis.read(bytes, <span class="number">0</span>, BUFFER_SIZE);</span><br><span class="line">				}</span><br><span class="line">			} <span class="keyword">else</span> {</span><br><span class="line">				String errorMessage = <span class="string">&quot;HTTP/1.1 404 File Not Found\r\n&quot;</span> + <span class="string">&quot;Content-Type:text/html\r\n&quot;</span> + <span class="string">&quot;Content-Length:23\r\n&quot;</span> + <span class="string">&quot;\r\n&quot;</span> + <span class="string">&quot;&lt;h1&gt;File Not Found&lt;/h1&gt;&quot;</span>;</span><br><span class="line">				outputStream.write(errorMessage.getBytes());</span><br><span class="line">			}</span><br><span class="line">		} <span class="keyword">catch</span> (Exception e) {</span><br><span class="line">			System.out.println(e.toString());</span><br><span class="line">		} <span class="keyword">finally</span> {</span><br><span class="line">			<span class="keyword">if</span> (fis != <span class="keyword">null</span>) {</span><br><span class="line">				fis.close();</span><br><span class="line">			}</span><br><span class="line">		}</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendOKHeader</span><span class="params">()</span> </span>{</span><br><span class="line">        String cacheHeader = <span class="string">&quot;HTTP/1.1 200 OK\r\n\r\n&quot;</span>;</span><br><span class="line">        <span class="keyword">try</span> {</span><br><span class="line">            outputStream.write(cacheHeader.getBytes());</span><br><span class="line">        } <span class="keyword">catch</span> (IOException e) {</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> PrintWriter <span class="title">getWriter</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>{</span><br><span class="line">		printWriter = <span class="keyword">new</span> PrintWriter(outputStream, <span class="keyword">true</span>);<span class="comment">//&#x5E03;&#x5C14;&#x503C;&#x8868;&#x793A;&#x662F;&#x5426;&#x542F;&#x7528;autoFlush</span></span><br><span class="line">		<span class="keyword">return</span> printWriter;</span><br><span class="line">	}</span><br><span class="line">	<span class="comment">//..&#x4EE5;&#x4E0B;&#x5747;&#x4E3A;&#x83B7;&#x53D6;&#x72B6;&#x6001;&#x548C;&#x53C2;&#x6570;&#x7B49;&#x7684;getter&#x7684;&#x91CD;&#x8F7D;&#x65B9;&#x6CD5;&#xFF0C;&#x5747;&#x8FD4;&#x56DE;&#x7A7A;&#x503C;&#x3002;&#x4EE3;&#x7801;&#x7701;&#x7565;</span></span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="StaticResourceProcessor&#x7C7B;"><a href="#StaticResourceProcessor&#x7C7B;" class="headerlink" title="StaticResourceProcessor&#x7C7B;"></a>StaticResourceProcessor&#x7C7B;</h3><p>&#x76F4;&#x63A5;&#x8C03;&#x7528;response&#x4E2D;&#x5B9A;&#x4E49;&#x7684;sendStaticResource()&#x53D1;&#x9001;&#x9759;&#x6001;&#x8D44;&#x6E90;&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StaticResourceProcessor</span> </span>{</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">process</span><span class="params">(Request request, Response response)</span> </span>{</span><br><span class="line">		<span class="keyword">try</span> {</span><br><span class="line">			response.sendStaticResource();</span><br><span class="line">		} <span class="keyword">catch</span> (IOException e) {</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		}</span><br><span class="line">	}</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="ServletProcessor1&#x7C7B;"><a href="#ServletProcessor1&#x7C7B;" class="headerlink" title="ServletProcessor1&#x7C7B;"></a>ServletProcessor1&#x7C7B;</h3><p>&#x5904;&#x7406;&#x5BF9;servlet&#x8D44;&#x6E90;&#x7684;HTTP&#x8BF7;&#x6C42;</p>
+<p>&#x4E3A;&#x4E86;&#x8F7D;&#x5165;servlet&#x7C7B;&#xFF0C;&#x9700;&#x8981;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x7C7B;&#x8F7D;&#x5165;&#x5668;&#xFF0C;&#x5E76;&#x4E14;&#x6307;&#x660E;&#x5230;&#x54EA;&#x91CC;&#x67E5;&#x627E;&#x8981;&#x8F7D;&#x5165;&#x7684;&#x7C7B;&#x3002;&#x672C;&#x8282;&#x4E2D;&#x4F1A;&#x5230;Constant.WEB&#x4E0B;&#x627E;&#x8981;&#x8F7D;&#x5165;&#x7684;&#x7C7B;,&#x8FDB;&#x884C;&#x52A0;&#x8F7D;&#x3002;&#x52A0;&#x8F7D;&#x5B8C;&#x6210;&#x540E;&#x8C03;&#x7528;&#x5B83;&#x7684;service()</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ServletProcessor1</span> </span>{</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">process</span><span class="params">(Request request, Response response)</span> </span>{</span><br><span class="line">		String uri = request.getUri();<span class="comment">//&#x4ECE;request&#x4E2D;&#x53D6;&#x51FA;uri&#xFF1A;/servlet/servletName</span></span><br><span class="line">		String servletName = uri.substring(uri.lastIndexOf(<span class="string">&quot;/&quot;</span>) + <span class="number">1</span>);</span><br><span class="line">		URLClassLoader loader = <span class="keyword">null</span>;	<span class="comment">//&#x4E00;&#x4E2A;&#x7C7B;&#x8F7D;&#x5165;&#x5668;&#xFF0C;&#x7528;&#x6765;&#x8F7D;&#x5165;servlet&#x7C7B;</span></span><br><span class="line"></span><br><span class="line">		<span class="keyword">try</span> {</span><br><span class="line">            <span class="comment">//&#x6BCF;&#x4E2A;&#x5143;&#x7D20;&#x90FD;&#x6307;&#x660E;&#x4E86;&#x7C7B;&#x8F7D;&#x5165;&#x5668;&#x8981;&#x5230;&#x54EA;&#x91CC;&#x67E5;&#x627E;&#x7C7B;</span></span><br><span class="line">			URL[] urls = <span class="keyword">new</span> URL[<span class="number">1</span>];</span><br><span class="line">			URLStreamHandler streamHandler = <span class="keyword">null</span>;</span><br><span class="line">			<span class="comment">//File classPath = new File(Constants.WEB_ROOT);</span></span><br><span class="line">            <span class="keyword">final</span> File classPath = <span class="keyword">new</span> File(getClasspath());</span><br><span class="line">            </span><br><span class="line">			<span class="comment">//&#x67E5;&#x627E;servlet&#x7C7B;&#x7684;&#x76EE;&#x5F55;&#xFF08;&#x4ED3;&#x5E93;&#xFF09;</span></span><br><span class="line">			String repository = (<span class="keyword">new</span> URL(<span class="string">&quot;file&quot;</span>, <span class="keyword">null</span>, classPath.getCanonicalPath() + File.separator)).toString();</span><br><span class="line">			urls[<span class="number">0</span>] = <span class="keyword">new</span> URL(<span class="keyword">null</span>, repository, streamHandler);</span><br><span class="line">            <span class="comment">//&#x6784;&#x9020;servlet&#x7C7B;&#x8F7D;&#x5165;&#x5668;</span></span><br><span class="line">			loader = <span class="keyword">new</span> URLClassLoader(urls);</span><br><span class="line">		} <span class="keyword">catch</span> (IOException e) {</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		}</span><br><span class="line"></span><br><span class="line">		Class&lt;?&gt; myClass = <span class="keyword">null</span>;</span><br><span class="line">		<span class="keyword">try</span> {</span><br><span class="line">			<span class="keyword">final</span> String fullClassName = <span class="keyword">this</span>.getClass().getPackage().getName() + <span class="string">&quot;.&quot;</span> + servletName;</span><br><span class="line">			<span class="comment">//&#x8F7D;&#x5165;servlet&#x7C7B;</span></span><br><span class="line">			myClass = loader.loadClass(fullClassName);</span><br><span class="line">		} <span class="keyword">catch</span> (ClassNotFoundException e) {</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		}</span><br><span class="line"></span><br><span class="line">		Servlet servlet = <span class="keyword">null</span>;</span><br><span class="line">		<span class="keyword">try</span> {</span><br><span class="line">			servlet = (Servlet)myClass.newInstance();</span><br><span class="line">            <span class="comment">//&#x8C03;&#x7528;servlet&#x5B9E;&#x4F8B;&#x7684;service()</span></span><br><span class="line">			servlet.service((ServletRequest)request, (ServletResponse)response);</span><br><span class="line">		} <span class="keyword">catch</span> (InstantiationException e) {</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		} <span class="keyword">catch</span> (IllegalAccessException e) {</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		} <span class="keyword">catch</span> (ServletException e) {</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		} <span class="keyword">catch</span> (IOException e) {</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		}</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">private</span> String <span class="title">getClasspath</span><span class="params">()</span> </span>{</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">this</span>.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();</span><br><span class="line">	}</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="&#x6D4B;&#x8BD5;&#x7B80;&#x5355;&#x7684;servlet&#xFF1A;PrimitiveServlet"><a href="#&#x6D4B;&#x8BD5;&#x7B80;&#x5355;&#x7684;servlet&#xFF1A;PrimitiveServlet" class="headerlink" title="&#x6D4B;&#x8BD5;&#x7B80;&#x5355;&#x7684;servlet&#xFF1A;PrimitiveServlet"></a>&#x6D4B;&#x8BD5;&#x7B80;&#x5355;&#x7684;servlet&#xFF1A;PrimitiveServlet</h3><p>&#x7F16;&#x5199;&#x4E00;&#x4E2A;&#x7B80;&#x5355;&#x7684;servlet</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PrimitiveServlet</span> <span class="keyword">implements</span> <span class="title">Servlet</span> </span>{</span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ServletConfig servletConfig)</span> <span class="keyword">throws</span> ServletException </span>{</span><br><span class="line">		System.out.println(<span class="string">&quot;primary servlet init!!!&quot;</span>);</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> ServletConfig <span class="title">getServletConfig</span><span class="params">()</span> </span>{</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">service</span><span class="params">(ServletRequest servletRequest, ServletResponse servletResponse)</span> <span class="keyword">throws</span> ServletException, IOException </span>{</span><br><span class="line">		System.out.println(<span class="string">&quot;service method is invoked!!!&quot;</span>);</span><br><span class="line"></span><br><span class="line">		PrintWriter out = servletResponse.getWriter();</span><br><span class="line">		out.println(<span class="string">&quot;Hello. Roses are red.&quot;</span>);</span><br><span class="line">		out.print(<span class="string">&quot;Violets are blue&quot;</span>);</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> String <span class="title">getServletInfo</span><span class="params">()</span> </span>{</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">	}</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span> </span>{</span><br><span class="line">		System.out.println(<span class="string">&quot;primary servlet destroyed!&quot;</span>);</span><br><span class="line">	}</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x670D;&#x52A1;&#x5668;&#x542F;&#x52A8;&#x540E;&#x6D4F;&#x89C8;&#x5668;&#x8BBF;&#x95EE;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost:8080/servlet/PrimitiveServlet</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x6D4F;&#x89C8;&#x5668;&#x4F1A;&#x8F93;&#x51FA;</p>
+<figure class="highlight plain"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Hello. Roses are red.</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="&#x5E94;&#x7528;&#x7A0B;&#x5E8F;2&#xFF1A;&#x5BF9;&#x5E94;&#x7528;&#x7A0B;&#x5E8F;1&#x7684;&#x4E00;&#x4E9B;&#x4F18;&#x5316;"><a href="#&#x5E94;&#x7528;&#x7A0B;&#x5E8F;2&#xFF1A;&#x5BF9;&#x5E94;&#x7528;&#x7A0B;&#x5E8F;1&#x7684;&#x4E00;&#x4E9B;&#x4F18;&#x5316;" class="headerlink" title="&#x5E94;&#x7528;&#x7A0B;&#x5E8F;2&#xFF1A;&#x5BF9;&#x5E94;&#x7528;&#x7A0B;&#x5E8F;1&#x7684;&#x4E00;&#x4E9B;&#x4F18;&#x5316;"></a>&#x5E94;&#x7528;&#x7A0B;&#x5E8F;2&#xFF1A;&#x5BF9;&#x5E94;&#x7528;&#x7A0B;&#x5E8F;1&#x7684;&#x4E00;&#x4E9B;&#x4F18;&#x5316;</h2><p>&#x7A0B;&#x5E8F;1&#x5728;&#x8C03;&#x7528;&#x76EE;&#x6807;servlet&#x7684;service()&#x65F6;&#x5BF9;request&#x548C;Response&#x8FDB;&#x884C;&#x4E86;&#x5F3A;&#x8F6C;&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> {</span><br><span class="line">    servlet = (Servlet)myClass.newInstance();</span><br><span class="line">    <span class="comment">//&#x8C03;&#x7528;servlet&#x5B9E;&#x4F8B;&#x7684;service()</span></span><br><span class="line">    servlet.service((ServletRequest)request, (ServletResponse)response);</span><br><span class="line">}</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x672C;&#x5C0F;&#x8282;&#x7528;&#x5916;&#x89C2;&#x6A21;&#x5F0F;&#x6765;&#x4F18;&#x5316;&#x8FD9;&#x4E00;&#x90E8;&#x5206;</p>
+<p><img src="1558142420233.png" alt="1558142420233"></p>
+<p>&#x7B80;&#x5355;&#x8BF4;&#x660E;&#x4E00;&#x4E0B;&#x5C31;&#x662F;&#xFF0C;RequestFacade&#x6301;&#x6709;Request&#xFF0C;&#x8C03;&#x7528;servlet&#x7684;service()&#x65F6;&#x4F20;&#x9012;Facade&#x7C7B;&#xFF0C;&#x800C;&#x975E;request&#x7C7B;&#x3002;</p>
+<figure class="highlight java"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RequestFacade requestFacade = <span class="keyword">new</span> RequestFacade(request);</span><br><span class="line">ResponseFacade responseFacade = <span class="keyword">new</span> ResponseFacade(response);</span><br><span class="line">servlet.service((ServletRequest)requestFacade, (ServletResponse)responseFacade);</span><br></pre></td></tr></tbody></table></figure>
+<p>&#x8FD9;&#x4E48;&#x505A;&#x7684;&#x539F;&#x56E0;&#x662F;Request&#xFF0C;Response&#x4E2D;&#x5305;&#x542B;sendStaticResource()&#x7B49;servlet&#x65E0;&#x9700;&#x53BB;&#x8C03;&#x7528;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x4F20;&#x9012;Facade&#x7C7B;&#x4F7F;servlet&#x5BF9;&#x8FD9;&#x4E9B;&#x65B9;&#x6CD5;&#x4E0D;&#x53EF;&#x89C1;&#x3002;</p>
+<h2 id="&#x53C2;&#x8003;"><a href="#&#x53C2;&#x8003;" class="headerlink" title="&#x53C2;&#x8003;"></a>&#x53C2;&#x8003;</h2><p><a href="http://sishuok.com/forum/blogPost/list/4067.html" target="_blank" rel="noopener">http://sishuok.com/forum/blogPost/list/4067.html</a></p>
+<p><a href="https://blog.csdn.net/qq_33983617/article/details/81836539" target="_blank" rel="noopener">https://blog.csdn.net/qq_33983617/article/details/81836539</a></p>
+<p>&#x6E90;&#x4EE3;&#x7801;&#xFF1A;<a href="https://github.com/serivires/how-tomcat-works/" target="_blank" rel="noopener">https://github.com/serivires/how-tomcat-works/</a></p>
+<script>
+        document.querySelectorAll('.github-emoji')
+          .forEach(el => {
+            if (!el.dataset.src) { return; }
+            const img = document.createElement('img');
+            img.style = 'display:none !important;';
+            img.src = el.dataset.src;
+            img.addEventListener('error', () => {
+              img.remove();
+              el.style.color = 'inherit';
+              el.style.backgroundImage = 'none';
+              el.style.background = 'none';
+            });
+            img.addEventListener('load', () => {
+              img.remove();
+            });
+            document.body.appendChild(img);
+          });
+      </script>
+    </article>
+    <!-- license  -->
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2019/05/17/20190517-2/" title="深入剖析tomcat-第1章-一个简单的Web服务器">
+                    <div class="prevTitle">深入剖析tomcat-第1章-一个简单的Web服务器</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid="MTAyMC80MDUwMy8xNzAzMA==">
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:nnkwrik@gmail.com" class="iconfont-archer email" title="email"></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/nnkwrik" class="iconfont-archer github" target="_blank" title="github"></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title="wechat">
+                  
+                  <img class="profile-qr" src="/assets/qr.png">
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:30vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#javax-servlet-Servlet接口"><span class="toc-number">1.</span> <span class="toc-text">javax.servlet.Servlet接口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#应用程序1"><span class="toc-number">2.</span> <span class="toc-text">应用程序1</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HttpServer1类"><span class="toc-number">2.1.</span> <span class="toc-text">HttpServer1类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Request类"><span class="toc-number">2.2.</span> <span class="toc-text">Request类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Response类"><span class="toc-number">2.3.</span> <span class="toc-text">Response类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#StaticResourceProcessor类"><span class="toc-number">2.4.</span> <span class="toc-text">StaticResourceProcessor类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ServletProcessor1类"><span class="toc-number">2.5.</span> <span class="toc-text">ServletProcessor1类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#测试简单的servlet：PrimitiveServlet"><span class="toc-number">2.6.</span> <span class="toc-text">测试简单的servlet：PrimitiveServlet</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#应用程序2：对应用程序1的一些优化"><span class="toc-number">3.</span> <span class="toc-text">应用程序2：对应用程序1的一些优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">4.</span> <span class="toc-text">参考</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 74
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger">
+                <span class="iconfont-archer search-icon">&#xe627;</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/17</span><a class="archive-post-title" href="/2019/05/17/20190517-3/">深入剖析tomcat-第2章-一个简单的Servlet容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/17</span><a class="archive-post-title" href="/2019/05/17/20190517-2/">深入剖析tomcat-第1章-一个简单的Web服务器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/17</span><a class="archive-post-title" href="/2019/05/17/20190517/">深入剖析tomcat-前言</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/23</span><a class="archive-post-title" href="/2019/04/23/20190423-2/">🦁 Dubbo源码跟踪实录-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/23</span><a class="archive-post-title" href="/2019/04/23/20190423/">Dubbo源码跟踪实录-服务调用过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/21</span><a class="archive-post-title" href="/2019/04/21/20190421-3/">Dubbo源码跟踪实录-集群容错:负载均衡LoadBalance</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/21</span><a class="archive-post-title" href="/2019/04/21/20190421-2/">Dubbo源码跟踪实录-集群容错:集群Cluster</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/21</span><a class="archive-post-title" href="/2019/04/21/20190421/">Dubbo源码跟踪实录-集群容错:服务路由Router</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href="/2019/04/20/20190420/">Dubbo源码跟踪实录-集群容错:服务目录Directory</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/19</span><a class="archive-post-title" href="/2019/04/19/20190419/">Dubbo源码跟踪实录-从Consumer启动到服务引入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href="/2019/04/16/20190416/">Dubbo源码跟踪实录-从Provider启动到服务注册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/05</span><a class="archive-post-title" href="/2019/04/05/20190405/">ProtoBuffer的数据格式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span><a class="archive-post-title" href="/2019/02/10/20190210/">Netty源码剖析-总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/26</span><a class="archive-post-title" href="/2019/01/26/20190126/">Netty源码剖析-性能优化工具类2</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href="/2019/01/25/20190125-2/">Netty源码剖析-性能优化工具类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href="/2019/01/25/20190125/">Netty源码剖析-编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href="/2019/01/24/20190124/">Netty源码剖析-解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/21</span><a class="archive-post-title" href="/2019/01/21/20190121-2/">Netty源码剖析-ByteBuf-总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/21</span><a class="archive-post-title" href="/2019/01/21/20190121/">Netty源码剖析-ByteBuf-3</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/19</span><a class="archive-post-title" href="/2019/01/19/20190119/">Netty源码剖析-ByteBuf-2</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href="/2019/01/18/20190118/">校招准备视频笔记-高级知识点</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span><a class="archive-post-title" href="/2019/01/17/20190117-1/">校招准备视频笔记-设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span><a class="archive-post-title" href="/2019/01/17/20190117/">校招准备视频笔记-面向对象</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href="/2019/01/15/20190115-1/">校招准备视频笔记-编码技巧</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/15</span><a class="archive-post-title" href="/2019/01/15/20190115/">校招准备视频笔记-程序设计语言基础</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-3/">校招准备视频笔记-数据库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-2/">校招准备视频笔记-网络</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107-1/">校招准备视频笔记-操作系统</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/07</span><a class="archive-post-title" href="/2019/01/07/20190107/">Netty源码剖析-ByteBuf-1</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106-1/">事件和异常的传播</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/06</span><a class="archive-post-title" href="/2019/01/06/20190106/">Netty源码剖析-pipeline创建</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228-1/">Netty源码剖析-新连接接入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span><a class="archive-post-title" href="/2018/12/28/20181228/">Netty源码剖析-NioEventLoop执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-2/">Netty源码剖析-NioEventLoop创建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225-1/">Netty源码剖析-Netty服务端启动的过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/25</span><a class="archive-post-title" href="/2018/12/25/20181225/">Netty源码剖析-Netty基本组件</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224-3/">高性能MySQL-第5章-创建高性能的索引</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/24</span><a class="archive-post-title" href="/2018/12/24/20181224/">高性能MySQL-第1章-MySQL架构与历史</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-7/">高性能MySQL-第4章-Schema与数据类型优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-6/">🍓 JVM知识点合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-5/">JVM知识点合集-4.Class文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-4/">JVM知识点合集-3.GC算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-3/">JVM知识点合集-2.内存结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223-2/">JVM知识点合集-1.类的加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/23</span><a class="archive-post-title" href="/2018/12/23/20181223/">深入理解Java虚拟机-第12章-Java内存模型与线程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222-2/">深入理解Java虚拟机-第8章-虚拟机字节码执行引擎</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181222/">深入理解Java虚拟机-第7章-虚拟机类加载机制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href="/2018/12/21/20181221/">深入理解Java虚拟机-第6章-类文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/19</span><a class="archive-post-title" href="/2018/12/19/20181219/">重构的艺术？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/30</span><a class="archive-post-title" href="/2018/11/30/20181130/">万能的Jackson</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span><a class="archive-post-title" href="/2018/11/20/20181120/">Guava的Cache</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/19</span><a class="archive-post-title" href="/2018/11/19/20181119/">Spring Cloud中使用RabbitMQ的两种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href="/2018/11/12/20181112/">深入理解Java虚拟机-第4章-虚拟机性能监控与故障处理工具</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href="/2018/11/10/20181110/">深入理解Java虚拟机-第3章-垃圾收集器与内存分配策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109-2/">深入理解Java虚拟机-第2章-Java内存区域与内存溢出异常</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href="/2018/11/09/20181109/">深入理解Java虚拟机-第1章-走近Java</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/05</span><a class="archive-post-title" href="/2018/11/05/20181105/">Java并发编程实战-第7章-取消与关闭</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-5/">🍤 并发操作合集-目录</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-4/">并发操作合集-11.ThreadLocal</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-3/">并发操作合集-10.Executor和线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104-2/">并发操作合集-9.并发工具：Semaphore,CountDownLatch,CyclicBarrier</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181104/">并发操作合集-8.并发容器：CopyOnWriteArrayList</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/04</span><a class="archive-post-title" href="/2018/11/04/20181102-3/">并发操作合集-7.并发容器：BlockingQueue</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102-2/">并发操作合集-6.并发容器：ConcurrentHashMap</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href="/2018/11/02/20181102/">并发操作合集-5.原子变量和volatile</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181030-2/">并发操作合集-1.线程的生命周期</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181031/">并发操作合集-2.状态转换方法：wait,notify,sleep,join,yield</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101-2/">并发操作合集-4.Lcok和Condition</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href="/2018/11/01/20181101/">并发操作合集-3.Synchronized使用指南</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/30</span><a class="archive-post-title" href="/2018/10/30/20181030/">Java并发编程实战-第6章-任务执行</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/29</span><a class="archive-post-title" href="/2018/10/29/20181029/">Java并发编程实战-第5章-基础构建模块</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href="/2018/10/28/20181028/">Java并发编程实战-第4章-对象的组合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span><a class="archive-post-title" href="/2018/10/27/20181027/">Java并发编程实战-第3章-对象的共享</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/25</span><a class="archive-post-title" href="/2018/10/25/20181025/">Java并发编程实战-第2章-线程安全性</a>
+        </li>
+    
+    </ul></div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="慕课网"><span class="iconfont-archer">&#xe606;</span>慕课网</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java校招面试】"><span class="iconfont-archer">&#xe606;</span>【Java校招面试】</span>
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发"><span class="iconfont-archer">&#xe606;</span>并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="并发操作合集"><span class="iconfont-archer">&#xe606;</span>并发操作合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM"><span class="iconfont-archer">&#xe606;</span>JVM</span>
+    
+        <span class="sidebar-tag-name" data-tags="《深入理解Java虚拟机》"><span class="iconfont-archer">&#xe606;</span>《深入理解Java虚拟机》</span>
+    
+        <span class="sidebar-tag-name" data-tags="微服务"><span class="iconfont-archer">&#xe606;</span>微服务</span>
+    
+        <span class="sidebar-tag-name" data-tags="消息队列"><span class="iconfont-archer">&#xe606;</span>消息队列</span>
+    
+        <span class="sidebar-tag-name" data-tags="缓存"><span class="iconfont-archer">&#xe606;</span>缓存</span>
+    
+        <span class="sidebar-tag-name" data-tags="瞎逼叨"><span class="iconfont-archer">&#xe606;</span>瞎逼叨</span>
+    
+        <span class="sidebar-tag-name" data-tags="JSON"><span class="iconfont-archer">&#xe606;</span>JSON</span>
+    
+        <span class="sidebar-tag-name" data-tags="JVM知识点合集"><span class="iconfont-archer">&#xe606;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-tag-name" data-tags="MySQL"><span class="iconfont-archer">&#xe606;</span>MySQL</span>
+    
+        <span class="sidebar-tag-name" data-tags="《高性能MySQL》"><span class="iconfont-archer">&#xe606;</span>《高性能MySQL》</span>
+    
+        <span class="sidebar-tag-name" data-tags="【Java读源码之Netty深入剖析】"><span class="iconfont-archer">&#xe606;</span>【Java读源码之Netty深入剖析】</span>
+    
+        <span class="sidebar-tag-name" data-tags="ProtoBuffer"><span class="iconfont-archer">&#xe606;</span>ProtoBuffer</span>
+    
+        <span class="sidebar-tag-name" data-tags="dubbo"><span class="iconfont-archer">&#xe606;</span>dubbo</span>
+    
+        <span class="sidebar-tag-name" data-tags="Dubbo源码跟踪实录"><span class="iconfont-archer">&#xe606;</span>Dubbo源码跟踪实录</span>
+    
+        <span class="sidebar-tag-name" data-tags="《深入剖析tomcat》"><span class="iconfont-archer">&#xe606;</span>《深入剖析tomcat》</span>
+    
+        <span class="sidebar-tag-name" data-tags="《Java并发编程实战》"><span class="iconfont-archer">&#xe606;</span>《Java并发编程实战》</span>
+    
+        <span class="sidebar-tag-name" data-tags="【MySQL面试指南】"><span class="iconfont-archer">&#xe606;</span>【MySQL面试指南】</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br>
+    1、请确保node版本大于6.2<br>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="视频笔记"><span class="iconfont-archer">&#xe60a;</span>视频笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="并发操作合集"><span class="iconfont-archer">&#xe60a;</span>并发操作合集</span>
+    
+        <span class="sidebar-category-name" data-categories="读书笔记"><span class="iconfont-archer">&#xe60a;</span>读书笔记</span>
+    
+        <span class="sidebar-category-name" data-categories="框架使用"><span class="iconfont-archer">&#xe60a;</span>框架使用</span>
+    
+        <span class="sidebar-category-name" data-categories="瞎逼叨"><span class="iconfont-archer">&#xe60a;</span>瞎逼叨</span>
+    
+        <span class="sidebar-category-name" data-categories="JVM知识点合集"><span class="iconfont-archer">&#xe60a;</span>JVM知识点合集</span>
+    
+        <span class="sidebar-category-name" data-categories="框架原理"><span class="iconfont-archer">&#xe60a;</span>框架原理</span>
+    
+        <span class="sidebar-category-name" data-categories="源码解析"><span class="iconfont-archer">&#xe60a;</span>源码解析</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "曽生"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
